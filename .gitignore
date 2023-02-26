@@ -1,0 +1,38 @@
+
+#=============== Common=======================
+.vs/
+
+#=============== Build results ===============
+*/[Dd]ebug/
+*/[Dd]ebugPublic/
+*/[Rr]elease/
+*/[Rr]eleases/
+*/x86/
+*/x64/
+*/win32_framework/x64/
+*/win32_framework/[Dd]ebug/
+
+#=============== VS_2015======================
+ipch/
+*.cachefile
+*.VC.db
+*.VC.VC.opendb
+*.db
+
+#=============== Build========================
+*.opendb
+*.opensdf
+*.tlog
+*.log
+*.suo
+*.user
+*.dll
+*.ilk
+*.lib
+*.exp
+*.exe
+*.obj
+*.idb
+*.pdb
+*.temp
+
