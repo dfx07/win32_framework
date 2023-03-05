@@ -76,14 +76,14 @@ static double CallEasingBack(EaseMode  mode      ,// Chế độ
 {
     if (t >= duration) return vto;
 
-    auto t1  = hard_map(t, 0.0, duration, EASING_STANDTIME_START, EASING_STANDTIME_END, EASING_EPSILON);
+    auto t1  = math::hard_map(t, 0.0, duration, EASING_STANDTIME_START, EASING_STANDTIME_END, EASING_EPSILON);
 
     auto vt1 = 0.0;
     if      (mode == EaseMode::Out)     vt1 = easing::back_out(t1);
     else if (mode == EaseMode::InOut)   vt1 = easing::back_inout(t1);
     else                                vt1 = easing::back_in(t1);
 
-    auto value = soft_map(vt1, EASING_STANDTIME_START, EASING_STANDTIME_END, vfrom, vto, EASING_EPSILON);
+    auto value = math::soft_map(vt1, EASING_STANDTIME_START, EASING_STANDTIME_END, vfrom, vto, EASING_EPSILON);
     return value;
 }
 
@@ -96,14 +96,14 @@ static double CallEasingQuint(EaseMode  mode       ,// Chế độ
 {
     if (t >= duration) return vto;
 
-    auto t1  = hard_map(t, 0.f, duration, EASING_STANDTIME_START, EASING_STANDTIME_END, EASING_EPSILON);
+    auto t1  = math::hard_map(t, 0.f, duration, EASING_STANDTIME_START, EASING_STANDTIME_END, EASING_EPSILON);
 
     auto vt1 = 0.0;
     if      (mode == EaseMode::Out)     vt1 = easing::quint_in(t1);
     else if (mode == EaseMode::InOut)   vt1 = easing::quint_inout(t1);
     else                                vt1 = easing::quint_in(t1);
 
-    auto value = soft_map(vt1, EASING_STANDTIME_START, EASING_STANDTIME_END, vfrom, vto, EASING_EPSILON);
+    auto value = math::soft_map(vt1, EASING_STANDTIME_START, EASING_STANDTIME_END, vfrom, vto, EASING_EPSILON);
     return value;
 }
 
@@ -116,14 +116,14 @@ static double CallEasingElastic(EaseMode  mode      ,// Chế độ
 {
     if (t >= duration) return vto;
 
-    auto t1  = hard_map(t, 0.f, duration, EASING_STANDTIME_START, EASING_STANDTIME_END, EASING_EPSILON);
+    auto t1  = math::hard_map(t, 0.f, duration, EASING_STANDTIME_START, EASING_STANDTIME_END, EASING_EPSILON);
 
     auto vt1 = 0.0;
     if      (mode == EaseMode::Out)     vt1 = easing::elastic_out(t1);
     else if (mode == EaseMode::InOut)   vt1 = easing::elastic_inout(t1);
     else                                vt1 = easing::elastic_in(t1);
 
-    auto value = soft_map(vt1, EASING_STANDTIME_START, EASING_STANDTIME_END, vfrom, vto, EASING_EPSILON);
+    auto value = math::soft_map(vt1, EASING_STANDTIME_START, EASING_STANDTIME_END, vfrom, vto, EASING_EPSILON);
     return value;
 }
 
@@ -137,14 +137,14 @@ static double CallEasingBounce(EaseMode  mode      ,// Chế độ
 {
     if (t >= duration) return vto;
 
-    auto t1  = hard_map(t, 0.f, duration, EASING_STANDTIME_START, EASING_STANDTIME_END, EASING_EPSILON);
+    auto t1  = math::hard_map(t, 0.f, duration, EASING_STANDTIME_START, EASING_STANDTIME_END, EASING_EPSILON);
 
     double vt1 = 0.0;
     if      (mode == EaseMode::Out)     vt1 = easing::bounce_out(t1);
     else if (mode == EaseMode::InOut)   vt1 = easing::bounce_inout(t1);
     else                                vt1 = easing::bounce_in(t1);
 
-    auto value = soft_map(vt1, EASING_STANDTIME_START, EASING_STANDTIME_END, vfrom, vto, EASING_EPSILON);
+    auto value = math::soft_map(vt1, EASING_STANDTIME_START, EASING_STANDTIME_END, vfrom, vto, EASING_EPSILON);
     return value;
 }
 
@@ -344,24 +344,26 @@ private:
 class EasingDataBase : EasingBase
 {
 public:
-	easingbase_ptr   action;
-	EaseType         type;
-	EaseMode         mode;
+	easingbase_ptr    action;
+	EaseType          type;
+	EaseMode          mode;
 	double            from;
 	double            to;
+    double            duration;
 
     double            value;
-    bool             pause;
+    bool              pause;
 
 public:
 	EasingDataBase(easingbase_ptr action, EaseType type,
-		EaseMode mode, double from , double to, double value_begin)
+		EaseMode mode, double duration, double from , double to, double value_begin)
 	{
 		this->action = action;
 		this->type	 = type	 ;
 		this->mode	 = mode	 ;
 		this->from	 = from	 ;
 		this->to	 = to	 ;
+        this->duration = duration;
 
         this->value  = value_begin;
         this->pause  = false;
@@ -372,29 +374,27 @@ class EasingEngine : EasingBase
 {
 private:
     // common setup property
-    double                    cumulativeTime;
-    bool                     pause;
-    double                    duration;
+    double                   m_dCumulativeTime = 0;
+    bool                     m_bPause;
 
     // data list contain
     std::vector<EasingDataBase> m_data_list;
 
 public:
-
-    virtual void Reset()    { cumulativeTime = 0.f; }
-    virtual void Start()    { this->Reset(); pause = false; }
-    virtual void Pause()    { pause = true;  }
-    virtual void Continue() { pause = false; }
-    virtual bool IsActive() { return !pause; }
-    virtual void Setup(double _durationsecond)
+    EasingEngine()
     {
-        pause    = true;
-        duration = S2MS(_durationsecond);
-
         this->Reset();
     }
 
-    virtual bool AddExec(EaseType type, EaseMode mode, double _from, double _to)
+public:
+
+    virtual void Reset()    { m_dCumulativeTime = 0.f; }
+    virtual void Start()    { this->Reset(); m_bPause = false; }
+    virtual void Pause()    { m_bPause = true;  }
+    virtual void Continue() { m_bPause = false; }
+    virtual bool IsActive() { return !m_bPause; }
+
+    virtual bool AddExec(EaseType type, EaseMode mode, double _duration, double _from, double _to)
     {
         easingaction_ptr action = NULL;
 
@@ -428,7 +428,7 @@ public:
             return false;
         }
 
-        m_data_list.emplace_back(EasingDataBase(action, type, mode, _from, _to , _from));
+        m_data_list.emplace_back(EasingDataBase(action, type, mode, _duration, _from, _to , _from));
 
         return true;
     }
@@ -439,29 +439,29 @@ public:
     //==================================================================================
     virtual void Update(double t)
     {
-        if (pause) return;
+        if (m_bPause) return;
 
-        if (cumulativeTime >= duration)
-        {
-            pause = true;
-            return;
-        }
+        m_dCumulativeTime += t;
 
-        cumulativeTime += t;
+        double cumula_map = 0.0, value = 0.0, from = 0.0, to = 0.0;
+        double duration = 0.0;
 
-        double cumula_map = 0, value = 0; double from = 0; double to = 0;
+        m_bPause = true;
 
         for (int i = 0; i < m_data_list.size(); i++)
         {
             if (m_data_list[i].pause) continue;
 
-            from = m_data_list[i].from;
-            to   = m_data_list[i].to;
+            m_bPause = false;
+
+            from     = m_data_list[i].from;
+            to       = m_data_list[i].to;
+            duration = m_data_list[i].duration;
 
             auto _action = std::static_pointer_cast<EasingAction>(m_data_list[i].action);
             if (nullptr == _action) continue;
 
-            cumula_map = hard_map(cumulativeTime, 0.f, duration, EASING_STANDTIME_START, EASING_STANDTIME_END, EASING_EPSILON);
+            cumula_map = math::hard_map(m_dCumulativeTime, 0.f, duration, EASING_STANDTIME_START, EASING_STANDTIME_END, EASING_EPSILON);
 
             // call function caculation data easing
             switch (m_data_list[i].mode)
@@ -477,7 +477,7 @@ public:
                     break;
             }
 
-            value = soft_map(value, EASING_STANDTIME_START, EASING_STANDTIME_END, from, to, EASING_EPSILON);
+            value = math::soft_map(value, EASING_STANDTIME_START, EASING_STANDTIME_END, from, to, EASING_EPSILON);
 
             m_data_list[i].value = value;
         }

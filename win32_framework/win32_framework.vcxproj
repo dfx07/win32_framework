@@ -143,6 +143,9 @@
     <ClCompile Include="win32_framework.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\include\wcontrol.h" />
+    <ClInclude Include="..\include\wdef.h" />
+    <ClInclude Include="..\include\whandle.h" />
     <ClInclude Include="..\include\xalgorithm.h" />
     <ClInclude Include="..\include\xeasing.h" />
     <ClInclude Include="..\include\xsysdef.h" />

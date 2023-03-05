@@ -26,6 +26,8 @@ ___BEGIN_NAMESPACE___
 //==================================================================================
 //⮟⮟ Section : function math
 //==================================================================================
+____BEGIN_SECTION____(math)
+
 /***********************************************************************************
 *! @brief  : clamp value from min to max
 *! @param    [In] x : in range [min - max]
@@ -84,6 +86,8 @@ static double soft_map(IN double x, IN double min_s, IN double max_s,
 	auto value = (A*min_d - B*max_d) / (A - B);
 	return value;
 }
+
+_____END_SECTION_____
 
 //==================================================================================
 //⮟⮟ Section : function easing

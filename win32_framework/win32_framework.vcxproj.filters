@@ -22,6 +22,12 @@
     <Filter Include="Header Files\ui">
       <UniqueIdentifier>{5fe7312a-f36c-454d-8d11-dc7fea493646}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\graphics">
+      <UniqueIdentifier>{827c4795-fd0c-4106-b144-df9736a715c2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\controls">
+      <UniqueIdentifier>{1c41e686-8757-4421-843f-46185ca747ac}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="win32_framework.cpp">
@@ -43,6 +49,15 @@
     </ClInclude>
     <ClInclude Include="..\include\xeasing.h">
       <Filter>Header Files\math</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\wcontrol.h">
+      <Filter>Header Files\controls</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\whandle.h">
+      <Filter>Header Files\controls</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\wdef.h">
+      <Filter>Header Files\controls</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
