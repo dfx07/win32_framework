@@ -17,6 +17,10 @@
 #include "xeasing.h"
 #include "wdef.h"
 
+// disable waring visual studio c++14
+#pragma warning( disable : 26495)
+#pragma warning( disable : 26812)
+
 
 ___BEGIN_NAMESPACE___
 
@@ -28,7 +32,7 @@ class MenuContext;
 class MenuBar;
 class Window;
 
-enum ControlType
+enum class ControlType
 {
 	BUTTON,
 	MENUCONTEXT,
@@ -45,9 +49,21 @@ struct ControlRect
 	UINT      m_height;
 
 public:
+	ControlRect(): m_x(0.f), m_y(0.f),
+		m_width(0), m_height(0)
+	{
+
+	}
+
 	void Set(float x, float y, UINT w, UINT h)
 	{
 		this->SetPos(x, y);
+		this->SetSize(w, h);
+	}
+
+	void Set(int x, int y, UINT w, UINT h)
+	{
+		this->SetPos((float)x, (float)y);
 		this->SetSize(w, h);
 	}
 
@@ -201,7 +217,7 @@ private:
 	}
 
 public:
-	virtual ControlType GetType() { return ControlType::MENUCONTEXT; };
+	virtual ControlType GetType() { return static_cast<ControlType>(ControlType::MENUCONTEXT); };
 
 	virtual int OnInitControl(UINT& IDS)
 	{
@@ -337,7 +353,8 @@ public:
 	std::vector<MenuBarItem> m_items;
 
 public:
-	MenuBar() : Control()
+	MenuBar() : Control(), 
+		m_hMenuBar()
 	{
 
 	}
@@ -409,7 +426,7 @@ public:
 ***********************************************************************************/
 class Dllexport Button : public Control
 {
-	enum BtnState
+	enum class BtnState
 	{
 		Click,
 		Normal,
@@ -460,8 +477,7 @@ protected:
 	}
 
 public:
-	Button() : Control(),
-		m_eState(BtnState::Normal)
+	Button() : Control(), m_eState(BtnState::Normal)
 	{
 		m_rect.Set(0, 0, WIDTH_DEF, HEIGHT_DEF);
 	}
@@ -475,6 +491,8 @@ public:
 		delete m_image;
 	}
 
+	virtual ControlType GetType() { static_cast<ControlType>(ControlType::BUTTON); }
+
 public:
 
 	void SetLabel(std::wstring lab) { m_label = lab; }
@@ -486,8 +504,8 @@ public:
 		m_ID = IDS++;
 		m_hwnd = (HWND)CreateWindow(L"BUTTON", m_label.c_str(),			// Button text 
 						WS_CHILD | WS_VISIBLE | BS_OWNERDRAW  /*| BS_NOTIFY*/,
-						m_rect.m_x,										// x position 
-						m_rect.m_y,										// y position 
+						(int)m_rect.m_x,								// x position 
+						(int)m_rect.m_y,								// y position 
 						m_rect.m_width,									// Button width
 						m_rect.m_height,								// Button height
 						m_hwndPar,										// Parent window
@@ -597,9 +615,9 @@ private:
 	{
 		m_easing.Update(m_effect_time_update);
 
-		auto r = m_easing.Value(0);
-		auto g = m_easing.Value(1);
-		auto b = m_easing.Value(2);
+		auto r = static_cast<BYTE>(m_easing.Value(0));
+		auto g = static_cast<BYTE>(m_easing.Value(1));
+		auto b = static_cast<BYTE>(m_easing.Value(2));
 
 		delete m_background_normal;
 		m_background_normal = new Gdiplus::SolidBrush(Gdiplus::Color(r, g, b));
@@ -746,15 +764,12 @@ public:
 
 		m_render.Flush(true);
 	}
-
-	virtual ControlType GetType() { return ControlType::BUTTON; };
 };
 
 /**********************************************************************************
 * ⮟⮟ Class name: Combobox control
 * Combobox control for window
 ***********************************************************************************/
-
 
 class Dllexport Combobox : public Control
 {
@@ -763,8 +778,8 @@ class Dllexport Combobox : public Control
 
 	struct CBB_ITEM
 	{
-		std::wstring     text; // dữ liệu text hiển thị trên cbb
-		void*            data; // dữ liêu của item tự định nghĩa và kiểm soát
+		std::wstring  text = L""; // dữ liệu text hiển thị trên cbb
+		void*         data = NULL; // dữ liêu của item tự định nghĩa và kiểm soát
 	};
 
 private:
@@ -793,6 +808,9 @@ public:
 			delete items[i].data;
 		}
 	}
+
+	virtual ControlType GetType() { static_cast<ControlType>(ControlType::COMBOBOX); }
+
 private:
 
 	void UpdateItems()
@@ -990,8 +1008,6 @@ public:
 		return selected;
 	}
 
-	virtual ControlType GetType() { return ControlType::COMBOBOX; }
-
 public:
 	virtual int OnInitControl(UINT& IDS)
 	{
@@ -1003,7 +1019,7 @@ public:
 		else            style |= CBS_DROPDOWNLIST;
 
 		m_hwnd = CreateWindow(L"Combobox", NULL, style,							//
-							m_rect.m_x, m_rect.m_y,								// x, y
+							(int)m_rect.m_x, (int)m_rect.m_y,					// x, y
 							m_rect.m_width, m_rect.m_height*(int)items.size(),	// chiều rộng / chiều cao
 							m_hwndPar,											// Handle cha
 							(HMENU)(UINT_PTR)m_ID, NULL, NULL);
@@ -1048,13 +1064,13 @@ private:
 		SetWindowText(m_hwnd, m_text.c_str());
 	}
 
-	virtual ControlType GetType() { return ControlType::LABEL; }
+	
 
 	void CalcTextSize(int width, int height)
 	{
 		SIZE size;
 		HDC hdc = GetDC(m_hwnd);
-		GetTextExtentPoint32(hdc, m_text.c_str(), wcslen(m_text.c_str()), &size);
+		GetTextExtentPoint32(hdc, m_text.c_str(), (int)wcslen(m_text.c_str()), &size);
 		
 		width = size.cx;
 		height = size.cy;
@@ -1070,12 +1086,14 @@ public:
 	}
 
 public:
-	Label(const wchar_t* text = L"")
-		: Control()
+	Label(const wchar_t* text = L""): Control()
 	{
 		m_text = text;
 	}
 
+	virtual ControlType GetType() { return ControlType::LABEL; }
+
+public:
 	void SetText(const wchar_t* text)
 	{
 		m_text = text;
@@ -1102,7 +1120,7 @@ public:
 
 		m_hwnd = CreateWindow(L"STATIC", m_text.c_str(),
 					style,											// style + control name
-					m_rect.m_x, m_rect.m_y,							// x, y
+					(int)m_rect.m_x, (int)m_rect.m_y,				// x, y
 					m_rect.m_width, m_rect.m_height,				// width / height
 					m_hwndPar,										// Handle parent
 					(HMENU)(UINT_PTR)m_ID,							// ID

@@ -47,6 +47,14 @@
     attribs[attribCount++] = 0;  \
 }
 
+#define ON_FUNCTION_WINDOW(bFunCheck, ...)\
+{\
+	if(bFunCheck) \
+	{\
+		return bFunCheck(__VA_ARGS__);\
+	}\
+}
+
 #define GL_WIN_CLASS  L"FOX_WINHANDLE_CLASS"
 
 #define   GL_PRESSED    1
@@ -229,12 +237,6 @@ enum class FontWeight
 	Light,
 };
 
-struct WndRender
-{
-	HDC		m_hDc;
-	HGLRC	m_hGLRC;
-};
-
 struct WndProp
 {
 	bool                m_bFullScreen;
@@ -265,11 +267,12 @@ struct WndProp
 		this->set_default();
 	}
 
-	WndProp(const char* title, int xpos, int ypos, int width = 640, int height = 480)
+	WndProp(const char* title, int xpos, int ypos, int width = 640, int height = 480):
+		m_dwExStyle(0), m_dwStyle(0)
 	{
-		m_bFullScreen = false;
-		m_bGDIplus = false;
-		m_bOpenGL = true;
+		m_bFullScreen	= false;
+		m_bGDIplus		= false;
+		m_bOpenGL		= true;
 		m_iAntialiasing = -1;
 	}
 };
@@ -308,7 +311,7 @@ private:
 private:
 	HWND                   m_hWnd;
 	WndProp                m_pProp;
-	WndRender              m_pRender;
+	WindowRender           m_pRender;
 	GdiplusToken           m_gdiToken;
 	std::map<int, bool>    m_mouse;
 	std::map<int, bool>    m_keyboard;
@@ -335,7 +338,7 @@ private:
 	CFPSCounter			   m_fpscounter;
 
 	// Text render 2D
-	GLWinFontRender        m_text_render;
+	//GLWinFontRender        m_text_render;
 	const char*            m_fontNameTextRender;
 	unsigned int           m_fontSizeTextRender;
 	bool                   m_bSysInfo;
@@ -358,127 +361,77 @@ private:
 	std::wstring           m_fontName;
 	unsigned int           m_fontSize;
 	FontWeight             m_fontWeight;
+
 private:
-	void(*m_funOnDraw)         (Window* win) = NULL;
-	void(*m_funOnCreated)      (Window* win) = NULL;
-	void(*m_funOnDestroy)      (Window* win) = NULL;
-	void(*m_funOnPaint)        (Window* win) = NULL;
-	void(*m_funOnMouse)        (Window* win, int button, int action) = NULL;
-	void(*m_funOnMouseRealt)   (Window* win) = NULL;
-	void(*m_funOnMouseMove)    (Window* win) = NULL;
-	void(*m_funOnKeyboard)     (Window* win) = NULL;
-	void(*m_funOnProcess)      (Window* win) = NULL;
-	void(*m_funOnResize)       (Window* win) = NULL;
-	void(*m_funOnMouseScroll)  (Window* win) = NULL;
+	typedef void(*typeFunOnDraw)         (Window* win);
+	typedef void(*typeFunOnCreated)      (Window* win);
+	typedef void(*typeFunOnDestroy)      (Window* win);
+	typedef void(*typeFunOnPaint)        (Window* win);
+	typedef void(*typeFunOnMouse)        (Window* win, int button, int action);
+	typedef void(*typeFunOnMouseRealt)   (Window* win);
+	typedef void(*typeFunOnMouseMove)    (Window* win);
+	typedef void(*typeFunOnKeyboard)     (Window* win);
+	typedef void(*typeFunOnProcess)      (Window* win);
+	typedef void(*typeFunOnResize)       (Window* win);
+	typedef void(*typeFunOnMouseScroll)  (Window* win);
+
+private:
+	typeFunOnDraw				m_funOnDraw        = NULL;
+	typeFunOnCreated			m_funOnCreated     = NULL;
+	typeFunOnDestroy			m_funOnDestroy     = NULL;
+	typeFunOnPaint				m_funOnPaint       = NULL;
+	typeFunOnMouse				m_funOnMouse       = NULL;
+	typeFunOnMouseRealt			m_funOnMouseRealt  = NULL;
+	typeFunOnMouseMove			m_funOnMouseMove   = NULL;
+	typeFunOnKeyboard			m_funOnKeyboard    = NULL;
+	typeFunOnProcess			m_funOnProcess     = NULL;
+	typeFunOnResize				m_funOnResize      = NULL;
+	typeFunOnMouseScroll		m_funOnMouseScroll = NULL;
 
 public:
-	HWND GetHwnd() { return m_hWnd; }
-	HDC  GetHDC() { return m_pRender.m_hDc; }
-	// Get set don't care
-	void SetOnDrawfunc			  (void(*funOnDraw)(Window*))		{ m_funOnDraw = funOnDraw;			}
-	void SetOnCreatedfunc		  (void(*funOnCreate)(Window*))		{ m_funOnCreated = funOnCreate;		}
-	void SetOnDestroyfunc		  (void(*funOnDestroy)(Window*))	{ m_funOnDestroy = funOnDestroy;	}
-	void SetOnPaintfunc			  (void(*funOnPaint)(Window*))		{ m_funOnPaint = funOnPaint;		}
-	void SetOnMouseButtonfunc	  (void(*funOnMouse)(Window*, int, int))		{ m_funOnMouse = funOnMouse;		}
-	void SetOnMouseButtonRealtfunc(void(*funOnMouse)(Window*))		{ m_funOnMouseRealt = funOnMouse;	}
-	void SetOnMouseMovefunc		  (void(*funOnMouseMove)(Window*))	{ m_funOnMouseMove = funOnMouseMove;}
-	void SetOnKeyboardfunc		  (void(*funOnKeyboard)(Window*))	{ m_funOnKeyboard = funOnKeyboard;	}
-	void SetProcessfunc			  (void(*funProcess)(Window*))		{ m_funOnProcess = funProcess;		}
-	void SetOnResizefunc		  (void(*funOnResize)(Window*))		{ m_funOnResize = funOnResize;		}
-	void SetOnMouseScrollfunc	  (void(*funOnScroll)(Window*))		{ m_funOnMouseScroll = funOnScroll; }
+	void SetOnDrawfunc			  (typeFunOnDraw			funOnDraw)		{ m_funOnDraw		 = funOnDraw;	  }
+	void SetOnCreatedfunc		  (typeFunOnCreated			funOnCreate)	{ m_funOnCreated	 = funOnCreate;   }
+	void SetOnDestroyfunc		  (typeFunOnDestroy			funOnDestroy)	{ m_funOnDestroy	 = funOnDestroy;  }
+	void SetOnPaintfunc			  (typeFunOnPaint			funOnPaint)		{ m_funOnPaint		 = funOnPaint;	  }
+	void SetOnMouseButtonfunc	  (typeFunOnMouse			funOnMouse)		{ m_funOnMouse		 = funOnMouse;	  }
+	void SetOnMouseButtonRealtfunc(typeFunOnMouseRealt		funOnMouse)		{ m_funOnMouseRealt  = funOnMouse;	  }
+	void SetOnMouseMovefunc		  (typeFunOnMouseMove		funOnMouseMove)	{ m_funOnMouseMove	 = funOnMouseMove;}
+	void SetOnKeyboardfunc		  (typeFunOnKeyboard		funOnKeyboard)	{ m_funOnKeyboard	 = funOnKeyboard; }
+	void SetProcessfunc			  (typeFunOnProcess			funProcess)		{ m_funOnProcess	 = funProcess;	  }
+	void SetOnResizefunc		  (typeFunOnResize			funOnResize)	{ m_funOnResize		 = funOnResize;	  }
+	void SetOnMouseScrollfunc	  (typeFunOnMouseScroll		funOnScroll)	{ m_funOnMouseScroll = funOnScroll;   }
 
 	//==================================================================================
 	//⮟⮟ Triển khai hàm   - not important                                              
 	//==================================================================================
-	virtual void OnCreated()
-	{
-		if (m_funOnCreated)
-			this->m_funOnCreated(this);
-	}
-	virtual void OnCommand(int type)
-	{
 
-	}
+	virtual void OnCreated()							{ ON_FUNCTION_WINDOW(m_funOnCreated		, this)}
+	virtual void OnCommand(int type)					{ }
+	virtual void OnKeyBoard()							{ ON_FUNCTION_WINDOW(m_funOnKeyboard	, this)}
+	virtual void OnMouseButton(int button, int action)	{ ON_FUNCTION_WINDOW(m_funOnMouse		, this, button, action)}
+	virtual void OnMouseMove()							{ ON_FUNCTION_WINDOW(m_funOnMouseMove	, this)}
+	virtual void OnProcess()							{ ON_FUNCTION_WINDOW(m_funOnProcess		, this)}
+	virtual void OnMouseRealtime()						{ ON_FUNCTION_WINDOW(m_funOnMouseRealt	, this)}
+	virtual void OnResize()								{ ON_FUNCTION_WINDOW(m_funOnResize		, this)}
+	virtual void OnMouseScroll()						{ ON_FUNCTION_WINDOW(m_funOnMouseScroll	, this)}
+	virtual void OnPaint()								{ ON_FUNCTION_WINDOW(m_funOnPaint		, this)}
 
-	virtual void OnKeyBoard()
-	{
-		if (m_funOnKeyboard)
-			this->m_funOnKeyboard(this);
-	}
-	virtual void OnMouseButton(int button, int action)
-	{
-		if (m_funOnMouse)
-			this->m_funOnMouse(this, button, action);
-	}
-	virtual void OnMouseMove()
-	{
-		if (m_funOnMouseMove)
-			this->m_funOnMouseMove(this);
-	}
-	virtual void OnProcess()
-	{
-		if (m_funOnMouseRealt)
-			this->m_funOnMouseRealt(this);
-
-		if (m_funOnProcess)
-			this->m_funOnProcess(this);
-	}
-	virtual void OnResize()
-	{
-		if (m_funOnResize)
-			this->m_funOnResize(this);
-	}
-	virtual void OnMouseScroll()
-	{
-		if (m_funOnMouseScroll)
-			this->m_funOnMouseScroll(this);
-	}
 	virtual void SwapBuffer()
 	{
-		SwapBuffers(m_pRender.m_hDc);
+		::SwapBuffers(m_pRender.m_hDc);
 	}
 
-	virtual void OnPaint()
-	{
-		if (m_funOnPaint)
-			this->m_funOnPaint(this);
-	}
+	HWND GetHwnd()	{ return m_hWnd; }
+	HDC  GetHDC()	{ return m_pRender.m_hDc; }
+
 	//==================================================================================
 	//⮝⮝ Triển khai hàm  - not important                                               
 	//==================================================================================
-	static LRESULT CALLBACK WndDummyMainProc(HWND hWnd, UINT message, WPARAM wParam,
-		LPARAM lParam)
+	static LRESULT CALLBACK WndDummyMainProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 	{
 		return DefWindowProc(hWnd, message, wParam, lParam);
 	}
 
-
-	static void paintControlBackground(HWND hwnd, HDC dc)
-	{
-		HWND parent;
-		RECT r;
-		POINT p;
-		int saved;
-
-		parent = GetParent(hwnd);
-		if (parent == NULL)
-			return;
-		if (GetWindowRect(hwnd, &r) == 0)
-			return;
-		// the above is a window rect; convert to client rect
-		p.x = r.left;
-		p.y = r.top;
-		if (ScreenToClient(parent, &p) == 0)
-			return;
-		saved = SaveDC(dc);
-		if (saved == 0)
-			return;
-		if (SetWindowOrgEx(dc, p.x, p.y, NULL) == 0)
-			return;
-		SendMessageW(parent, WM_PRINTCLIENT, (WPARAM)dc, PRF_CLIENT);
-		if (RestoreDC(dc, saved) == 0)
-			return;
-	}
 	static LRESULT CALLBACK WndMainProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 	{
 		Window* win = (Window*)::GetWindowLongPtr(hWnd, GWLP_USERDATA);
@@ -628,7 +581,14 @@ private:
 		{
 			gpu_device = (char*)glGetString(GL_RENDERER);
 		}
-		return fox::from_utf8(gpu_device);
+
+		std::wstring utf16_gpu_device;
+		utf16_gpu_device.resize(gpu_device.size() + 1, 0);
+		int nWide = MultiByteToWideChar(CP_UTF8, MB_ERR_INVALID_CHARS, gpu_device.c_str(),
+				(int)gpu_device.length(), (LPWSTR)utf16_gpu_device.c_str(), (int)utf16_gpu_device.size());
+		utf16_gpu_device.resize(nWide);
+
+		return utf16_gpu_device;
 	}
 
 private:
@@ -655,7 +615,7 @@ private:
 			UpdateTextRender();
 		}
 
-		this->UpdateWndInfo();
+		this->UpdateInfo();
 
 		// Thực hiện vẽ custom người dùng
 		if (m_funOnDraw)
@@ -767,23 +727,6 @@ private:
 	}
 
 	//==================================================================================
-	// Xử lý sự kiện khi một Control được kích hoạt sự kiện                             
-	//==================================================================================
-	//void OnCommandControl(HWND hwndCtrl, WORD ID, WORD Event)
-	//{
-	//	Control * control = GetControlFormID(ID);
-	//	if (!control) return;
-	//	control->Event(this, ID, Event);
-	//}
-
-	//void OnDrawControl(HWND hwndCtrl, WORD ID)
-	//{
-	//	Control * control = GetControlFormID(ID);
-	//	if (!control) return;
-	//	control->Draw();
-	//}
-
-	//==================================================================================
 	// Lấy control từ ID của nó                                                         
 	//==================================================================================
 	Control* GetControlFormID(WORD ID)
@@ -800,51 +743,62 @@ private:
 		return NULL;
 	}
 
-	//======================================================================================
-	//⮟⮟ Triển khai chính tạo và xử lý ngữ cảnh window  - important                        
-	//======================================================================================
+//======================================================================================
+//⮟⮟ Triển khai chính tạo và xử lý ngữ cảnh window  - important                        
+//======================================================================================
 private:
-
-	//==================================================================================
-	// Lấy mảng thuộc tính thiết lập để set style window                                
-	//==================================================================================
-	void GetFixelFormatAttribute(int *attribs, int attribsize)
+	/***************************************************************************
+	*! @brief  : setup flag load OpenGL Extension
+	*! @param  : [In] bUse : use OpenGL extension
+	*! @return : void
+	*! @author : thuong.nv          - [Date] : 05/03/2023
+	***************************************************************************/
+	void UseOpenGLExtension(const bool bUse = true)
 	{
-		int attribCount = 0;
-
-		addAtribute(attribs, WGL_DRAW_TO_WINDOW_ARB, GL_TRUE);
-		addAtribute(attribs, WGL_SUPPORT_OPENGL_ARB, GL_TRUE);
-		addAtribute(attribs, WGL_DOUBLE_BUFFER_ARB, GL_TRUE);
-		addAtribute(attribs, WGL_ACCELERATION_ARB, WGL_FULL_ACCELERATION_ARB);
-		addAtribute(attribs, WGL_PIXEL_TYPE_ARB, WGL_TYPE_RGBA_ARB);
-		addAtribute(attribs, WGL_COLOR_BITS_ARB, 32);
-		addAtribute(attribs, WGL_DEPTH_BITS_ARB, 24);
-		addAtribute(attribs, WGL_STENCIL_BITS_ARB, 8);
-
-		if (m_pProp.m_iAntialiasing > 0)
-		{
-			addAtribute(attribs, WGL_SAMPLE_BUFFERS_ARB, GL_TRUE);          // Enable multisampling
-			addAtribute(attribs, WGL_SAMPLES_ARB, m_pProp.m_iAntialiasing); // Number of samples
-		}
-		addAtributeEnd(attribs);
+		this->m_bUseOpenGLEx = bUse;
 	}
 
-	//==================================================================================
-	// Khởi tạo ngữ cảnh OpenGL (OpenGL context)                                        
-	// bOpenGLex : sử dụng OpenGL mở rộng                                               
-	//==================================================================================
-	bool CreateOpenGLContext(/*bool bOpenGLEx = true*/)
+	/***************************************************************************
+	*! @brief  : init and create OpenGL context
+	*! @param  : [In] void
+	*! @return : true : OK | false : False
+	*! @author : thuong.nv          - [Date] : 05/03/2023
+	*! @note   : use openGL extension previously established
+	***************************************************************************/
+	bool CreateOpenGLContext()
 	{
 		HDC   hDC   = GetDC(m_hWnd);
 		HGLRC hglrc = NULL;
 
 		int iPixelFormat; unsigned int num_formats = 0;
 
+		// Lấy mảng thuộc tính thiết lập để set style window 
+		auto funGetFixelFormatAttribute = [&](int* attribs, int attribsize)
+		{
+			int attribCount = 0;
+
+			addAtribute(attribs, WGL_DRAW_TO_WINDOW_ARB, GL_TRUE);
+			addAtribute(attribs, WGL_SUPPORT_OPENGL_ARB, GL_TRUE);
+			addAtribute(attribs, WGL_DOUBLE_BUFFER_ARB, GL_TRUE);
+			addAtribute(attribs, WGL_ACCELERATION_ARB, WGL_FULL_ACCELERATION_ARB);
+			addAtribute(attribs, WGL_PIXEL_TYPE_ARB, WGL_TYPE_RGBA_ARB);
+			addAtribute(attribs, WGL_COLOR_BITS_ARB, 32);
+			addAtribute(attribs, WGL_DEPTH_BITS_ARB, 24);
+			addAtribute(attribs, WGL_STENCIL_BITS_ARB, 8);
+
+			if (m_pProp.m_iAntialiasing > 0)
+			{
+				addAtribute(attribs, WGL_SAMPLE_BUFFERS_ARB, GL_TRUE);          // Enable multisampling
+				addAtribute(attribs, WGL_SAMPLES_ARB, m_pProp.m_iAntialiasing); // Number of samples
+			}
+			addAtributeEnd(attribs);
+		};
+
 		// Get pixel format attributes through "modern" extension
 		if (m_bUseOpenGLEx)
 		{
 			int pixelAttribs[47];
-			GetFixelFormatAttribute(pixelAttribs, sizeof(pixelAttribs) / sizeof(pixelAttribs[0]));
+			funGetFixelFormatAttribute(pixelAttribs, sizeof(pixelAttribs) / sizeof(pixelAttribs[0]));
 
 			wglChoosePixelFormatARB(hDC, pixelAttribs, 0, 1, &iPixelFormat, &num_formats);
 
@@ -903,15 +857,31 @@ private:
 		}
 	}
 
+	/***************************************************************************
+	*! @brief  : Remove the previously set context
+	*! @return : void
+	*! @author : thuong.nv          - [Date] : 05/03/2023
+	*! @note   : use openGL extension previously established
+	***************************************************************************/
+	void DeleteOpenGLContext()
+	{
+		ReleaseDC(m_hWnd, m_pRender.m_hDc); // release device context
+		wglDeleteContext(m_pRender.m_hGLRC);// delete the rendering context
+		m_pRender.m_hDc = NULL;
+		m_pRender.m_hGLRC = NULL;
+	}
+
+//======================================================================================
+//⮟⮟ Triển khai hàm mở rộng độc lập với window                                         
+//======================================================================================
 public:
 	/***************************************************************************
 	*! @brief  : register window class use window context
-	*! @author : thuong.nv - [Date] : 08/10/2022
-	*! @param    [In] strClassName : Name class
-	*! @param    [In] Proc		   : function hanle event
-	*! @param    [In] hInst		   : default GetModuleHandle(NULL)
+	*! @param  : [In] strClassName : Name class
+	*! @param  : [In] Proc		   : function hanle event
+	*! @param  : [In] hInst		   : default GetModuleHandle(NULL)
 	*! @return : 1 : OK , 0 : False
-	*! @note   : N/A
+	*! @author : thuong.nv          - [Date] : 05/03/2023
 	***************************************************************************/
 	static int register_window_class(const wchar_t* strClassName, WNDPROC Proc, HINSTANCE hInst)
 	{
@@ -938,12 +908,11 @@ public:
 
 	/***************************************************************************
 	*! @brief  : load extension opengl library glew
-	*! @author : thuong.nv - [Date] : 08/10/2022
-	*! @param    [In] strClassName : Name class
-	*! @param    [In] Proc		   : function hanle event
-	*! @param    [In] hInst		   : default GetModuleHandle(NULL)
+	*! @param  : [In] strClassName : Name class
+	*! @param  : [In] Proc		   : function hanle event
+	*! @param  : [In] hInst		   : default GetModuleHandle(NULL)
 	*! @return : 1: OK | 0 False;
-	*! @note   : N/A
+	*! @author : thuong.nv          - [Date] : 05/03/2023
 	***************************************************************************/
 	static int load_opengl_extension()
 	{
@@ -997,21 +966,15 @@ public:
 		return bInitOk;
 	}
 
+//======================================================================================
+//⮟⮟ Triển khai hàm xử lý GDI của window                                               
+//======================================================================================
 private:
-	//==================================================================================
-	// Xóa ngữ cảnh OpenGL trên window                                                  
-	//==================================================================================
-	void DeleteOpenGLContext()
-	{
-		ReleaseDC(m_hWnd, m_pRender.m_hDc); // release device context
-		wglDeleteContext(m_pRender.m_hGLRC);// delete the rendering context
-		m_pRender.m_hDc = NULL;
-		m_pRender.m_hGLRC = NULL;
-	}
-
-	//==================================================================================
-	// Khởi tạo window sử dụng GDI plus                                                 
-	//==================================================================================
+	/***************************************************************************
+	*! @brief  : Init GDI plus
+	*! @return : void
+	*! @author : thuong.nv          - [Date] : 05/03/2023
+	***************************************************************************/
 	void CreateGDIplus()
 	{
 		if (m_pProp.m_bGDIplus)
@@ -1022,22 +985,28 @@ private:
 			Gdiplus::Status status = Gdiplus::GdiplusStartup(&gdiplusToken, &gdiplusStartupInput, NULL);
 
 			m_gdiToken = GdiplusToken{ (status == Gdiplus::Status::Ok) ? gdiplusToken : NULL,
-									   (status == Gdiplus::Status::Ok) ? true : false };
+										(status == Gdiplus::Status::Ok) ? true : false };
 		}
 	}
 
-	//==================================================================================
-	// Xóa ngữ cảnh window sử dụng GDI plus                                             
-	//==================================================================================
+	/***************************************************************************
+	*! @brief  : Destroy init GDIplus
+	*! @return : void
+	*! @author : thuong.nv          - [Date] : 05/03/2023
+	***************************************************************************/
 	void DeleteGDIplus()
 	{
 		m_gdiToken.Shutdown();
 	}
 
+//======================================================================================
+//⮟⮟ Triển khai khởi tạo liên quan đến window                                          
+//======================================================================================
+private:
 	//==================================================================================
 	// Hàm tạo handle và thông số                                                       
 	//==================================================================================
-	bool _CreateWindow(const wchar_t* strWndClassName)
+	bool CreateWindowHandle(const wchar_t* strWndClassName)
 	{
 		// Create GDI+ startup incantation
 		this->CreateGDIplus();
@@ -1078,22 +1047,21 @@ private:
 		return true;
 	}
 
-	void SetUseOpenGLExtension(const bool& buse)
-	{
-		this->m_bUseOpenGLEx = buse;
-	}
-
+//======================================================================================
+//⮟⮟ Triển hàm thao tác từ bên ngoài tác động vào Window class                         
+//======================================================================================
+public:
 	//==================================================================================
 	// Khởi tạo window và thiết lập thông số                                            
 	//==================================================================================
-	bool _OnCreate(const wchar_t* strClassname)
+	bool OnCreateWindow(const wchar_t* strClassname)
 	{
 		bool ret = true;
 		// Update get style window
 		this->SetUpHint();
 
 		// Create a window HWND use class name
-		ret &= this->_CreateWindow(strClassname);
+		ret &= this->CreateWindowHandle(strClassname);
 
 		if (ret) // it OK
 		{
@@ -1122,14 +1090,13 @@ private:
 	//==================================================================================
 	// Khởi tạo window và thiết lập thông số                                            
 	//==================================================================================
-	bool _OnCreateOpenGLContext(bool bInitOpenGLEx = false)
+	bool OnCreateOpenGLContext(bool bUseOpenGLEx = false)
 	{
 		// Set up use OpenGL extension
-		this->SetUseOpenGLExtension(bInitOpenGLEx);
+		this->UseOpenGLExtension(bUseOpenGLEx);
 
 		// Any given OpenGL rendering context can be active at only one thread at a time.
 		// if I create opengl context in main thread then this thread not active
-		//this->CreateOpenGLContext();
 
 		if (m_pProp.m_iModeDraw == 1)
 		{
@@ -1147,7 +1114,7 @@ private:
 		// create opengl main thread
 		else
 		{
-			auto ret = this->CreateOpenGLContext();
+			auto ret = CreateOpenGLContext();
 			if(ret)
 				this->ReloadTextRender();
 			return ret;
@@ -1156,9 +1123,9 @@ private:
 		return true;
 	}
 
-	//=======================================================================================
-	//⮟⮟ Triển khai cập nhật trạng thái của window                                          
-	//=======================================================================================
+//=======================================================================================
+//⮟⮟ Triển khai cập nhật trạng thái của window                                          
+//=======================================================================================
 private:
 	//===================================================================================
 	// Lưu giữ trạng thái thông tin của window                                           
@@ -1193,7 +1160,7 @@ private:
 	//===================================================================================
 	// Cập nhật trạng thái thời gian mỗi khi một frame trôi qua                          
 	//===================================================================================
-	void UpdateWndInfo()
+	void UpdateInfo()
 	{
 		m_fpscounter.update();
 	}
@@ -1257,7 +1224,7 @@ private:
 	//===================================================================================
 	void UpdateTextRender()
 	{
-		m_text_render.UpdateView(m_width, m_height);
+		//m_text_render.UpdateView(m_width, m_height);
 	}
 
 	//===================================================================================
@@ -1266,8 +1233,8 @@ private:
 	void ReloadTextRender()
 	{
 		// Setup Text render;
-		m_text_render.Init(this->GetHDC(), m_width, m_height);
-		m_text_render.LoadFont(m_fontNameTextRender, m_fontSizeTextRender);
+		//m_text_render.Init(this->GetHDC(), m_width, m_height);
+		//m_text_render.LoadFont(m_fontNameTextRender, m_fontSizeTextRender);
 	}
 
 	//===================================================================================
@@ -1287,6 +1254,7 @@ private:
 		}
 	}
 
+
 	//===================================================================================
 	// Cập nhật thông tin stype của window                                               
 	//===================================================================================
@@ -1301,7 +1269,7 @@ private:
 			SetWindowLong(m_hWnd, GWL_EXSTYLE, m_pProp.m_dwExStyle);
 
 			// On expand, if we're given a window_rect, grow to it, otherwise do not resize.
-			xMonitorInfo monitor = fox::get_monitorinfo();
+			xMonitorInfo monitor = std::move(GetMonitorInfoEx());
 			SetWindowPos(m_hWnd, NULL, 0, 0, monitor.WIDTH, monitor.HEIGHT, SWP_NOZORDER | SWP_NOACTIVATE | SWP_FRAMECHANGED);
 
 			// Update width ,height screen
@@ -1343,9 +1311,10 @@ private:
 			SetLayeredWindowAttributes(m_hWnd, RGB(0, 0, 0), m_pProp.m_iAphaTrans, LWA_ALPHA);
 		}
 	}
-	//======================================================================================
-	//⮟⮟ Triển khai chức năng hỗ trợ cho window                                            
-	//======================================================================================
+
+//======================================================================================
+//⮟⮟ Triển khai chức năng hỗ trợ cho window                                            
+//======================================================================================
 public:
 
 	//===================================================================================
@@ -1354,9 +1323,9 @@ public:
 	void WriteText(const char* text, int x, int y, float r = 1.0f, float g = 1.0f,
 		float b = 1.0f, float a = 1.0f)
 	{
-		m_text_render.Use();
-		m_text_render.Write(x, y, text, r, g, b, a);
-		m_text_render.DontUse();
+		//m_text_render.Use();
+		//m_text_render.Write(x, y, text, r, g, b, a);
+		//m_text_render.DontUse();
 	}
 
 	//===================================================================================
@@ -1411,7 +1380,7 @@ public:
 
 	void UpdateStyleWindow()
 	{
-		m_pProp.m_dwExStyle = WS_EX_APPWINDOW | WS_EX_WINDOWEDGE ;     // Window Extended Style
+		m_pProp.m_dwExStyle = WS_EX_APPWINDOW | WS_EX_WINDOWEDGE ;  // Window Extended Style
 		m_pProp.m_dwStyle = WS_OVERLAPPEDWINDOW | WS_CLIPCHILDREN | WS_EX_TRANSPARENT;  // Windows Style
 																	//@@ WS_CLIPCHILDREN: Control của window sẽ không được vẽ khi SwapBuffer
 
@@ -1718,35 +1687,69 @@ public:
 		PostMessage(m_hWnd, WM_CLOSE, NULL, NULL);
 	}
 
-	friend Window* fox_create_window(const wchar_t* , int , int , int , int, const WndProp*);
-	friend Window* fox_create_window(Window*);
+	friend Window* create_window(const wchar_t* , int , int , int , int, const WndProp*);
+	friend Window* create_window(Window*);
 };
 
+//======================================================================================
+//⮟⮟ API Class name: whandle window                                                    
+//Control for window                                                                    
+//======================================================================================
 
-Window* fox_create_window(const wchar_t* title, int xpos, int ypos, int width = 640, int height = 480, const WndProp* prop = NULL)
+/***************************************************************************
+*! @brief  : initialize the environment before initializing the window
+*! @return : 0: Ok | 1: Register window failed | 2: create OpenGL failed
+*! @author : thuong.nv          - [Date] : 05/03/2023
+***************************************************************************/
+int Dllexport init_window()
 {
-	static int bRegWinClass   = FALSE;
-	static int bInitOpenGLex  = FALSE;
+	static bool bRegWinClass = false;
+	static bool bInitOpenGLex = false;
 
 	if (!bRegWinClass)
 		bRegWinClass = Window::register_window_class(GL_WIN_CLASS, Window::WndMainProc, GetModuleHandle(NULL));
 
+	if (!bRegWinClass)
+	{
+		_ASSERT(L"Register window class failed !");
+		return 1;
+	}
+
 	if (bRegWinClass && !bInitOpenGLex)
 		bInitOpenGLex = Window::load_opengl_extension();
 
-	if (!bRegWinClass)
+	if (!bInitOpenGLex)
+	{
+		_ASSERT(L"Created OpenGL window failed !");
+		return 2;
+	}
+
+	return 0;
+}
+
+/***************************************************************************
+*! @brief  : create window
+*! @return : void
+*! @author : thuong.nv          - [Date] : 05/03/2023
+***************************************************************************/
+Window* Dllexport create_window(const wchar_t* title,
+								int xpos, int ypos,
+								int width = 640, int height = 480,
+								const WndProp* prop = NULL)
+{
+	if (init_window() != 0)
 		return NULL;
-	
+
 	// create window handle
 	Window* win = new Window(title, xpos, ypos, width, height, prop);
-	if(!win->_OnCreate(GL_WIN_CLASS))
+	if(!win->OnCreateWindow(GL_WIN_CLASS))
 	{
 		delete win;
 		return NULL;
 	}
 	
 	// create opengl context 
-	if (!win->_OnCreateOpenGLContext(bInitOpenGLex))
+	if (!win->OnCreateOpenGLContext(true))
 	{
 		win->close();
 		delete win;
@@ -1758,28 +1761,20 @@ Window* fox_create_window(const wchar_t* title, int xpos, int ypos, int width = 
 	return win;
 }
 
-Window* fox_create_window(Window* win)
+Window* Dllexport create_window(Window* win)
 {
-	static int bRegWinClass = FALSE;
-	static int bInitOpenGLex = FALSE;
-
-	if (!bRegWinClass)
-		bRegWinClass = Window::register_window_class(GL_WIN_CLASS, Window::WndMainProc, GetModuleHandle(NULL));
-
-	if (bRegWinClass && !bInitOpenGLex)
-		bInitOpenGLex = Window::load_opengl_extension();
-
-	if (!bRegWinClass)
+	if (init_window() != 0)
 		return NULL;
 
-	if (!win->_OnCreate(GL_WIN_CLASS))
+	// create window handle
+	if (!win->OnCreateWindow(GL_WIN_CLASS))
 	{
 		delete win;
 		return NULL;
 	}
 
 	// create opengl context 
-	if (!win->_OnCreateOpenGLContext(bInitOpenGLex))
+	if (!win->OnCreateOpenGLContext(true))
 	{
 		win->close();
 		delete win;
@@ -1791,7 +1786,7 @@ Window* fox_create_window(Window* win)
 	return win;
 }
 
-void fox_destroy_window(Window* win)
+void Dllexport destroy_window(Window* win)
 {
 	delete win;
 }

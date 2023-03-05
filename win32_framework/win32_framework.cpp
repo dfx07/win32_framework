@@ -1,22 +1,71 @@
-#include <xsysutils.h>
-#include <xeasing.h>
-
+#include "whandle.h"
 
 ____USE_NAMESPACE____
 
+
+using namespace fox;
+
+
+
+void Create(Window* win)
+{
+
+
+}
+
+void MouseButton(Window* win)
+{
+    if (win->GetMouseButtonStatus(GLMouse::LeftButton))
+    {
+
+    }
+}
+
+void Keyboard(Window* win)
+{
+    if (win->GetKeyboardStatus(GLKeyboard::Escapex))
+    {
+        win->ExitFullScreen();
+    }
+
+    else if (win->GetKeyboardStatus(GLKeyboard::KeyA))
+    {
+
+    }
+}
+
+
+void Draw(Window* win)
+{
+
+}
+
+void Resize(Window* win)
+{
+
+}
+
+void Process(Window* pWin)
+{
+}
+
 int main()
 {
-    xMonitorInfo mn = fox::get_monitorinfo();
+    Window *window = new Window(L"OpenGL", 100 ,100);
+    window->SetOnDrawfunc(Draw);
+    window->SetOnCreatedfunc(Create);
+    window->SetProcessfunc(Process);
+    window->SetOnKeyboardfunc(Keyboard);
+    window->SetOnResizefunc(Resize);
 
-    fox::EasingEngine ease;
-    ease.AddExec(EaseType::Back, EaseMode::In, 100, 2000);
+    window = create_window(window);
 
-    ease.Start();
-    ease.Update(0.1);
-    double a = ease.Value(0);
+    while (window->closed())
+    {
+        window->process();
+        window->draw();
+        window->poll_event();
+    }
 
-
-    getchar();
-
-    return 1;
+    destroy_window(window);
 }

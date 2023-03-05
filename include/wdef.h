@@ -16,6 +16,10 @@
 
 #include "xsysdef.h"
 
+
+// disable waring visual studio c++14
+#pragma warning( disable : 4244)
+
 ___BEGIN_NAMESPACE___
 
 /**********************************************************************************
@@ -42,6 +46,14 @@ typedef struct GDIPLUS_TOKEN
 	ULONG_PTR	m_pGdiplusToken;
 
 }  *GDIPLUS_TOKEN_PTR;
+
+typedef struct WindowRender
+{
+	HDC		m_hDc;
+	HGLRC	m_hGLRC;
+
+} *WindowRenderPtr;
+
 
 class Dllexport GdiplusToken
 {
@@ -157,8 +169,8 @@ namespace GdiplusEx
 	class ImageFormat
 	{
 	public:
-		GdiplusEx::ImageAlignment	m_veralign;
-		GdiplusEx::ImageAlignment	m_horalign;
+		GdiplusEx::ImageAlignment	m_veralign = ImageAlignment::ImageAlignmentNear;
+		GdiplusEx::ImageAlignment	m_horalign = ImageAlignment::ImageAlignmentNear;
 
 		Gdiplus::Size				m_offset;
 
@@ -546,6 +558,29 @@ public:
 	Gdiplus::Font*			m_font_render;
 };
 
+/**********************************************************************************
+* GetMonitorInfoEx fucntion
+* Provides type and define common function time
+***********************************************************************************/
+static xMonitorInfo GetMonitorInfoEx()
+{
+	xMonitorInfo infor;
+	DEVMODE devmode;
+
+	devmode.dmSize = sizeof(DEVMODE);
+	BOOL bResult = EnumDisplaySettings(NULL, ENUM_CURRENT_SETTINGS, &devmode);
+
+	if (bResult)
+	{
+		infor.WIDTH		= devmode.dmPelsWidth;
+		infor.HEIGHT	= devmode.dmPelsHeight;
+		infor.DISFREQ	= devmode.dmDisplayFrequency;
+		infor.VERSION	= devmode.dmDriverVersion;
+		memcpy_s(infor.NAME, MAX_DEVICENAME, devmode.dmDeviceName, MAX_DEVICENAME);
+	}
+
+	return infor;
+}
 ____END_NAMESPACE____
 
 #endif // WCONTROL_H
