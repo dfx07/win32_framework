@@ -193,17 +193,12 @@ namespace GdiplusEx
 	};
 };
 
-interface IControlRender
+class IControlRender
 {
-	// Init data function
-	virtual void  CreateRender(const HDC& _hdc, const RECT& _rect);
-	virtual void  DestroyRender();
-
-	// Information function
-	virtual void* Render();
-
-	// Render function
-	virtual void  Flush(bool bDestroy = false);
+	virtual void  CreateRender(const HDC& _hdc, const RECT& _rect) = 0;
+	virtual void  DestroyRender() = 0;
+	virtual void* Render() = 0;						// Information function
+	virtual void  Flush(bool bDestroy = false) = 0; // Render function
 };
 
 /**********************************************************************************
@@ -391,7 +386,7 @@ public:
 	{
 		Gdiplus::FontFamily fontFamily(family);
 
-		m_font_render = new Gdiplus::Font(&fontFamily, 12, Gdiplus::FontStyleBold, Gdiplus::UnitPoint);
+		m_font_render = new Gdiplus::Font(&fontFamily, 9, Gdiplus::FontStyleRegular, Gdiplus::UnitPoint);
 	}
 
 	void Flush(bool bDestroy = false)

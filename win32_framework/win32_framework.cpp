@@ -1,16 +1,46 @@
-#include "whandle.h"
+﻿#include "whandle.h"
 
 ____USE_NAMESPACE____
 
 
 using namespace fox;
 
-
+Button* btn;
 
 void Create(Window* win)
 {
+    btn = new Button();
+    btn->SetLabel(L"Ngô Văn Thường");
+    btn->SetSize(200, 24);
+    btn->SetPosition(100, 100);
+    btn->SetBorderRadius(2);
+    btn->SetBorderWidth(1);
+    btn->UseEffect(true);
+    btn->Visible(true);
 
+    win->AddControl(btn);
 
+    btn = new Button();
+    btn->SetLabel(L"Ngô Văn Thường");
+    btn->SetSize(200, 24);
+    btn->SetPosition(100, 124);
+    btn->SetBorderRadius(2);
+    btn->SetBorderWidth(1);
+    btn->UseEffect(true);
+    btn->Visible(true);
+
+    win->AddControl(btn);
+
+    btn = new Button();
+    btn->SetLabel(L"Ngô Văn Thường");
+    btn->SetSize(200, 24);
+    btn->SetPosition(100, 150);
+    btn->SetBorderRadius(2);
+    btn->SetBorderWidth(1);
+    btn->UseEffect(true);
+    btn->Visible(true);
+
+    win->AddControl(btn);
 }
 
 void MouseButton(Window* win)
@@ -60,11 +90,11 @@ int main()
 
     window = create_window(window);
 
-    while (window->closed())
+    while (!window->closed())
     {
         window->process();
         window->draw();
-        window->poll_event();
+        window->wait_event();
     }
 
     destroy_window(window);

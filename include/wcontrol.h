@@ -104,18 +104,7 @@ public:
 		m_bVisble = true;
 	}
 
-public:
-	void SetPosition(int x, int y)
-	{
-		m_rect.SetPos(x, y);
-	}
-
-	void SetSize(int width, int height)
-	{
-		m_rect.SetSize(width, height);
-	}
-
-public:
+protected:
 	virtual int OnInitControl(UINT& IDS) // 0 false | 1 :true
 	{
 		if (!m_hwnd || m_ID ==0)
@@ -125,17 +114,19 @@ public:
 	}
 
 	virtual ControlType GetType() = 0;
-	virtual int			IsCreated() { return m_hwnd ? TRUE : FALSE; }
+	virtual int	 IsCreated() { return m_hwnd ? TRUE : FALSE; }
+	virtual void OnDestroy(){};
+	virtual void Draw(LPDRAWITEMSTRUCT& ){};
+	virtual void Event(Window* window, WORD _id, WORD _event){};
+	virtual bool ContainID(INT ID){ return false; };
 
-	virtual void		OnDestroy() {};
-	virtual void		Draw(LPDRAWITEMSTRUCT& ) {};
-	virtual void		Event(Window* window, WORD _id, WORD _event) {};
-	virtual bool		ContainID(INT ID) { return false; };
+protected:
+	void SetParent(HWND hwnd) { m_hwndPar = hwnd; }
 
 public:
 	HWND GetHwnd()  { return m_hwnd; }
 	INT  GetID()	{ return m_ID;	 }
-	void SetParent(HWND hwnd) { m_hwndPar = hwnd; }
+
 	void Enable(bool bEnable)
 	{
 		m_bEnable = bEnable;
@@ -147,8 +138,82 @@ public:
 		m_bVisble = bVisible;
 		::ShowWindow(m_hwnd, m_bVisble ? TRUE : FALSE);
 	}
+
+	void SetPosition(int x, int y)
+	{
+		m_rect.SetPos(x, y);
+	}
+
+	void SetSize(int width, int height)
+	{
+		m_rect.SetSize(width, height);
+	}
+
+	friend class Window;
 };
 
+/**********************************************************************************
+* ⮟⮟ Class name: Control base
+* Base class for inherited window controls
+***********************************************************************************/
+class Dllexport RectPropertyUI
+{
+protected:
+
+	typedef struct tagPropertyUI
+	{
+		unsigned int border_radius   = 0;
+		unsigned int border_width    = 0;
+		Color4		 text_color      = {255, 255, 255, 255};
+		Color4		 text_hover_color= {255, 255, 255, 255};
+		Color4		 background_color= {255, 255, 255, 255};
+		Color4		 background_hover_color = { 255, 0, 0, 255 };
+		Color4		 background_click_color = { 0, 255, 0, 255 };
+
+	} PropertyControlUI;
+
+	PropertyControlUI	m_property;
+
+public:
+	void SetBorderWidth(unsigned int iWidth)
+	{
+		m_property.border_width = iWidth;
+	}
+
+	void SetBorderRadius(unsigned int iWidth)
+	{
+		m_property.border_radius = iWidth;
+	}
+
+	void SetBackgroundColor(const Color4 cl)
+	{
+		m_property.background_color = cl;
+	}
+
+	void SetBackgroundHoverColor(const Color4 cl)
+	{
+		m_property.background_hover_color = cl;
+	}
+
+	void SetBackgroundClickColor(const Color4 cl)
+	{
+		m_property.background_hover_color = cl;
+	}
+
+	void SetTextColor(const Color4 cl)
+	{
+		m_property.text_color = cl;
+	}
+
+	void SetTextHoverColor(const Color4 cl)
+	{
+		m_property.text_hover_color = cl;
+	}
+
+protected:
+
+	friend class Window;
+};
 
 /**********************************************************************************
 * ⮟⮟ Class name: MenuContext control
@@ -263,8 +328,6 @@ public:
 			TrackPopupMenu(m_hMenu, TPM_RIGHTBUTTON, point.x, point.y, 0, m_hwndPar, NULL);
 		}
 	}
-
-	friend class Window;
 };
 
 /**********************************************************************************
@@ -418,13 +481,15 @@ public:
 		}
 		return false;
 	}
+
+	friend class Window;
 };
 
 /**********************************************************************************
 * ⮟⮟ Class name: Button control
 * Button control for window
 ***********************************************************************************/
-class Dllexport Button : public Control
+class Dllexport Button : public Control, public RectPropertyUI
 {
 	enum class BtnState
 	{
@@ -437,16 +502,16 @@ class Dllexport Button : public Control
 	enum { WIDTH_DEF	 = 80 };
 	enum { HEIGHT_DEF	 = 25 };
 
+	enum { TIME_UPDATE_EFFECT = 5};
+
 private:
-	bool		m_track_leave;
+	bool				m_track_leave;
+	bool				m_bUseEffect = false;
 
 protected:
-	ControlRect			m_rect;
-
-	std::wstring		m_label;
+	std::wstring		m_sLabel;
 	BtnState			m_eState;
 	BtnState			m_eOldState;
-
 	Gdiplus::Brush*		m_background_normal;
 	Gdiplus::Brush*		m_backgroundclick;
 	Gdiplus::Brush*		m_backgroundhover;
@@ -480,6 +545,15 @@ public:
 	Button() : Control(), m_eState(BtnState::Normal)
 	{
 		m_rect.Set(0, 0, WIDTH_DEF, HEIGHT_DEF);
+
+		m_property.background_color		  = std::move(Color4(59, 91, 179));
+		m_property.background_hover_color = std::move(Color4(229, 241, 255));
+		m_property.background_click_color = std::move(Color4(201, 224, 247));
+
+		m_property.border_radius = 0;
+		m_property.border_width  = 0;
+		m_property.text_color = std::move(Color4(255, 255, 255));
+		m_property.text_hover_color = std::move(Color4(0, 0, 0));
 	}
 
 	~Button()
@@ -491,18 +565,15 @@ public:
 		delete m_image;
 	}
 
-	virtual ControlType GetType() { static_cast<ControlType>(ControlType::BUTTON); }
+	virtual ControlType GetType() { return static_cast<ControlType>(ControlType::BUTTON); }
+	void	SetLabel(std::wstring lab) { m_sLabel = lab; }
 
-public:
-
-	void SetLabel(std::wstring lab) { m_label = lab; }
-
-public:
+private:
 	int OnInitControl(UINT& IDS)
 	{
 		UINT BackupIDS = IDS;
 		m_ID = IDS++;
-		m_hwnd = (HWND)CreateWindow(L"BUTTON", m_label.c_str(),			// Button text 
+		m_hwnd = (HWND)CreateWindow(L"BUTTON", m_sLabel.c_str(),		// Button text 
 						WS_CHILD | WS_VISIBLE | BS_OWNERDRAW  /*| BS_NOTIFY*/,
 						(int)m_rect.m_x,								// x position 
 						(int)m_rect.m_y,								// y position 
@@ -595,29 +666,33 @@ public:
 	}
 
 private:
-	const float m_effect_time_update = 5;
-
 	void BeginX1ThemeEffect()
 	{
-		::SetTimer(m_hwnd, IDC_EFFECT_X1, m_effect_time_update, (TIMERPROC)NULL);
+		if (m_bUseEffect == false)
+			return;
 
-		m_easing.AddExec(EaseType::Expo, EaseMode::In, 1, m_hover_color.r, m_normal_color.r);
-		m_easing.AddExec(EaseType::Expo, EaseMode::In, 1, m_hover_color.g, m_normal_color.g);
-		m_easing.AddExec(EaseType::Expo, EaseMode::In, 1, m_hover_color.b, m_normal_color.b);
+		::SetTimer(m_hwnd, IDC_EFFECT_X1, TIME_UPDATE_EFFECT, (TIMERPROC)NULL);
+
+		m_easing.AddExec(EaseType::Expo, EaseMode::In, S2MS(1),m_property.background_hover_color.r, m_property.background_color.r);
+		m_easing.AddExec(EaseType::Expo, EaseMode::In, S2MS(1),m_property.background_hover_color.g, m_property.background_color.g);
+		m_easing.AddExec(EaseType::Expo, EaseMode::In, S2MS(1),m_property.background_hover_color.b, m_property.background_color.b);
 
 		m_easing.Start();
 
 		delete m_background_normal;
-		m_background_normal = new Gdiplus::SolidBrush(m_hover_color.wrefcol);
+		m_background_normal = new Gdiplus::SolidBrush(m_property.background_hover_color.wrefcol);
 	}
 
 	bool UpdateX1ThemeEffect()
 	{
-		m_easing.Update(m_effect_time_update);
+		if (m_bUseEffect == false)
+			return true;
 
-		auto r = static_cast<BYTE>(m_easing.Value(0));
-		auto g = static_cast<BYTE>(m_easing.Value(1));
-		auto b = static_cast<BYTE>(m_easing.Value(2));
+		m_easing.Update(TIME_UPDATE_EFFECT);
+
+		int r = static_cast<int>(m_easing.Value(0));
+		int g = static_cast<int>(m_easing.Value(1));
+		int b = static_cast<int>(m_easing.Value(2));
 
 		delete m_background_normal;
 		m_background_normal = new Gdiplus::SolidBrush(Gdiplus::Color(r, g, b));
@@ -627,10 +702,13 @@ private:
 
 	void EndX1ThemeEffect()
 	{
+		if (m_bUseEffect == false)
+			return;
+
 		KillTimer(m_hwnd, IDC_EFFECT_X1);
 
 		delete m_background_normal;
-		m_background_normal = new Gdiplus::SolidBrush(m_normal_color.wrefcol);
+		m_background_normal = new Gdiplus::SolidBrush(m_property.background_color.wrefcol);
 	}
 
 	virtual void OnTimer(DWORD wParam)
@@ -649,10 +727,81 @@ private:
 					EndX1ThemeEffect();
 					InvalidateRect(m_hwnd, NULL, FALSE);
 				}
-
 				break;
 			}
 		}
+	}
+
+protected:
+	void CreateColorButton()
+	{
+		if (!m_background_normal)
+		{
+			m_background_normal = new Gdiplus::SolidBrush(Gdiplus::Color(m_property.background_color.wrefcol));
+		}
+		if (!m_backgroundclick)
+		{
+			m_backgroundclick = new Gdiplus::SolidBrush(Gdiplus::Color(m_property.background_click_color.wrefcol));
+		}
+		if (!m_backgroundhover)
+		{
+			m_backgroundhover = new Gdiplus::SolidBrush(Gdiplus::Color(m_property.background_hover_color.wrefcol));
+		}
+	}
+
+	void Draw(LPDRAWITEMSTRUCT& pdis)
+	{
+		//TODO : draw use swap buffer image (hdc) -> not draw each element (OK)
+		m_render.Init(pdis->hDC, pdis->rcItem);
+		m_render.LoadFont(L"Segoe UI");
+		
+		this->CreateColorButton();
+
+		// [2] Draw color button state
+		const unsigned int iRadius = m_property.border_radius;
+		const unsigned int iBorderWidth = m_property.border_width;
+		if (m_eState == BtnState::Click)
+		{
+			Gdiplus::Pen pen(Gdiplus::Color(255, 98, 162, 228), iBorderWidth);
+			m_render.DrawRectangle(iBorderWidth > 0 ? &pen : NULL, m_backgroundclick, iRadius);
+		}
+		else if (m_eState == BtnState::Hover)
+		{
+			Gdiplus::Pen pen(m_property.background_color.wrefcol, iBorderWidth);
+			m_render.DrawRectangle(iBorderWidth > 0 ? &pen : NULL, m_backgroundhover, iRadius);
+		}
+		else
+		{
+			Gdiplus::Pen pen(Gdiplus::Color(255, 255, 255, 255), iBorderWidth);
+			m_render.DrawRectangle(iBorderWidth > 0 ? &pen : NULL, m_background_normal, iRadius);
+		}
+
+		// [2] Draw image
+		if (m_image)
+		{
+			GdiplusEx::ImageFormat imgformat;
+			imgformat.SetVerticalAlignment(GdiplusEx::ImageAlignment::ImageAlignmentNear);
+			imgformat.SetHorizontalAlignment(GdiplusEx::ImageAlignment::ImageAlignmentCenter);
+			m_render.DrawImageFullRect(m_image, &imgformat);
+		}
+
+		// [3] Draw text for button
+		Gdiplus::StringFormat format;
+		format.SetAlignment(Gdiplus::StringAlignmentCenter);
+		format.SetLineAlignment(Gdiplus::StringAlignmentCenter);
+
+		if (m_eState == BtnState::Hover)
+		{
+			Gdiplus::SolidBrush hover_textcolor(Gdiplus::Color(m_property.text_hover_color.wrefcol)); // color text normal
+			m_render.DrawTextFullRect(this->m_sLabel.c_str(), &hover_textcolor, &format);
+		}
+		else
+		{
+			Gdiplus::SolidBrush normal_textcolor(Gdiplus::Color(m_property.text_color.wrefcol)); // color text normal
+			m_render.DrawTextFullRect(this->m_sLabel.c_str(), &normal_textcolor, &format);
+		}
+
+		m_render.Flush(true);
 	}
 
 public:
@@ -692,77 +841,9 @@ public:
 		this->m_EventFunLeave = fun;
 	}
 
-	void CreateColorButton()
+	void UseEffect(bool bUseEffect)
 	{
-		if (!m_background_normal)
-		{
-			m_normal_color = std::move(Color4(59, 91, 179));
-			m_background_normal = new Gdiplus::SolidBrush(Gdiplus::Color(m_normal_color.wrefcol));
-		}
-		if (!m_backgroundclick)
-		{
-			m_hot_color = std::move(Color4(201, 224, 247));
-			m_backgroundclick = new Gdiplus::SolidBrush(Gdiplus::Color(m_hot_color.wrefcol));
-		}
-		if (!m_backgroundhover)
-		{
-			m_hover_color = std::move(Color4(229, 241, 255));
-			m_backgroundhover = new Gdiplus::SolidBrush(Gdiplus::Color(m_hover_color.wrefcol));
-		}
-	}
-
-	void Draw(LPDRAWITEMSTRUCT& pdis)
-	{
-		//TODO : draw use swap buffer image (hdc) -> not draw each element (OK)
-		m_render.Init(pdis->hDC, pdis->rcItem);
-		m_render.LoadFont(L"Segoe UI");
-		
-		this->CreateColorButton();
-
-		// [2] Draw color button state
-		const int radius = 3;
-		if (m_eState == BtnState::Click)
-		{
-			Gdiplus::Pen pen(Gdiplus::Color(255, 98, 162, 228), 2);
-			m_render.DrawRectangle(&pen, m_backgroundclick, radius);
-		}
-		else if (m_eState == BtnState::Hover)
-		{
-			Gdiplus::Pen pen(Gdiplus::Color(255, 255, 255, 255), 2);
-			m_render.DrawRectangle(&pen, m_backgroundhover, radius);
-		}
-		else
-		{
-			Gdiplus::Pen pen(Gdiplus::Color(255, 255, 255, 255), 2);
-			m_render.DrawRectangle(&pen, m_background_normal, radius);
-		}
-
-		// [2] Draw image
-		if (m_image)
-		{
-			GdiplusEx::ImageFormat imgformat;
-			imgformat.SetVerticalAlignment(GdiplusEx::ImageAlignment::ImageAlignmentNear);
-			imgformat.SetHorizontalAlignment(GdiplusEx::ImageAlignment::ImageAlignmentCenter);
-			m_render.DrawImageFullRect(m_image, &imgformat);
-		}
-
-		// [3] Draw text for button
-		Gdiplus::StringFormat format;
-		format.SetAlignment(Gdiplus::StringAlignmentCenter);
-		format.SetLineAlignment(Gdiplus::StringAlignmentCenter);
-
-		if (m_eState == BtnState::Hover)
-		{
-			Gdiplus::SolidBrush hover_textcolor(Gdiplus::Color(255, 255, 255, 255)); // color text normal
-			m_render.DrawTextFullRect(this->m_label.c_str(), &hover_textcolor, &format);
-		}
-		else
-		{
-			Gdiplus::SolidBrush normal_textcolor(Gdiplus::Color(255, 255, 255, 255)); // color text normal
-			m_render.DrawTextFullRect(this->m_label.c_str(), &normal_textcolor, &format);
-		}
-
-		m_render.Flush(true);
+		m_bUseEffect = bUseEffect;
 	}
 };
 

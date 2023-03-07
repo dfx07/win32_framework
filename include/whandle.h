@@ -316,7 +316,7 @@ private:
 	std::map<int, bool>    m_mouse;
 	std::map<int, bool>    m_keyboard;
 	MSG					   m_msg;
-	bool				   m_bclosed;
+	bool				   m_bClosed;
 
 
 	short                  m_zDeltaScroll;
@@ -439,12 +439,12 @@ public:
 		{
 		case WM_CLOSE:
 		{
-			win->m_bclosed = true;
+			win->m_bClosed = true;
 			break;
 		}
 		case WM_DESTROY:
 		{
-			win->m_bclosed = true;
+			win->m_bClosed = true;
 			win->OnDestroy();
 			break;
 		}
@@ -1367,7 +1367,7 @@ public:
 		this->m_fontSizeTextRender = 16;
 
 		this->m_bSysInfo = false;
-		this->m_bclosed  = false;
+		this->m_bClosed = false;
 
 		if (prop)
 			SetPropAdvanced(*prop);
@@ -1680,8 +1680,9 @@ public:
 
 	bool closed()
 	{
-		return m_bclosed;
+		return m_bClosed;
 	}
+
 	void close()
 	{
 		PostMessage(m_hWnd, WM_CLOSE, NULL, NULL);
