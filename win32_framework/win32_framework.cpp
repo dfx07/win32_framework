@@ -1,4 +1,4 @@
-﻿#include "whandle.h"
+﻿#include "wapi.h"
 
 ____USE_NAMESPACE____
 
@@ -7,7 +7,7 @@ using namespace fox;
 
 Button* btn;
 
-void Create(Window* win)
+void Create(WindowBase* win)
 {
     btn = new Button();
     btn->SetLabel(L"Ngô Văn Thường");
@@ -41,9 +41,26 @@ void Create(Window* win)
     btn->Visible(true);
 
     win->AddControl(btn);
+
+    Checkbox* chk = new Checkbox();
+
+    chk->SetText(L"Check box 1");
+    chk->SetPosition(100, 200);
+    chk->SetSize(200, 24);
+    chk->SetBackgroundColor(Color4(59, 91, 179));
+
+    SubWindow* sub = new SubWindow();
+    sub->SetTitle(L"sub window");
+    sub->SetPosition(20, 20);
+    sub->SetSize(20, 20);
+    sub->Visible(true);
+
+    win->AddSubWindow(sub);
+    win->AddControl(chk);
+
 }
 
-void MouseButton(Window* win)
+void MouseButton(WindowBase* win)
 {
     if (win->GetMouseButtonStatus(GLMouse::LeftButton))
     {
@@ -51,11 +68,11 @@ void MouseButton(Window* win)
     }
 }
 
-void Keyboard(Window* win)
+void Keyboard(WindowBase* win)
 {
     if (win->GetKeyboardStatus(GLKeyboard::Escapex))
     {
-        win->ExitFullScreen();
+        //win->ExitFullScreen();
     }
 
     else if (win->GetKeyboardStatus(GLKeyboard::KeyA))
@@ -65,17 +82,17 @@ void Keyboard(Window* win)
 }
 
 
-void Draw(Window* win)
+void Draw(WindowBase* win)
+{
+    int c = 10;
+}
+
+void Resize(WindowBase* win)
 {
 
 }
 
-void Resize(Window* win)
-{
-
-}
-
-void Process(Window* pWin)
+void Process(WindowBase* pWin)
 {
 }
 
@@ -96,6 +113,7 @@ int main()
         window->draw();
         window->wait_event();
     }
+
 
     destroy_window(window);
 }

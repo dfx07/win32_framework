@@ -37,13 +37,14 @@
 	#define Dllexport
 #endif
 
-#define S2MS(s)				 (s  * 1000)  /*Convert second -> millisecond*/
-#define MS2S(ms)			 (ms / 1000)  /*Convert millisecond -> second*/
+#define S2MS(s)					(s  * 1000)  /*Convert second -> millisecond*/
+#define MS2S(ms)				(ms / 1000)  /*Convert millisecond -> second*/
 
-#define SAFE_DELETE(p)		 {delete   p; p = NULL;}
-#define SAFE_DELETE_ARRAY(p) {delete[] p; p = NULL;}
+#define SAFE_DELETE(p)			{delete   p; p = NULL;}
+#define SAFE_DELETE_ARRAY(p)	{delete[] p; p = NULL;}
+#define NULL_CHECK_RETURN(p, r) if(p == NULL) return r;
 
-#define MAX_DEVICENAME		 32
+#define MAX_DEVICENAME			32
 
 /// ////////////////////////////////////////////////////////////////////////////////
 /// Define struct system define

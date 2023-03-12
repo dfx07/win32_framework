@@ -143,6 +143,8 @@
     <ClCompile Include="win32_framework.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\include\wapi.h" />
+    <ClInclude Include="..\include\wbase.h" />
     <ClInclude Include="..\include\wcontrol.h" />
     <ClInclude Include="..\include\wdef.h" />
     <ClInclude Include="..\include\whandle.h" />

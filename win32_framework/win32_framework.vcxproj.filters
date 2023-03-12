@@ -59,5 +59,11 @@
     <ClInclude Include="..\include\wdef.h">
       <Filter>Header Files\controls</Filter>
     </ClInclude>
+    <ClInclude Include="..\include\wbase.h">
+      <Filter>Header Files\controls</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\wapi.h">
+      <Filter>Header Files\controls</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

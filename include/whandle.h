@@ -29,33 +29,12 @@
 
 #include "wcontrol.h"
 #include "xsystype.h"
+#include "wbase.h"
 
 #pragma comment (lib,"Gdiplus.lib")
 #pragma comment (lib,"opengl32.lib")
 #pragma comment (lib,"glew32.lib")
 
-#define addAtribute(attribs, name, value)\
-{\
-    assert((size_t) attribCount < attribsize);\
-    attribs[attribCount++] = name;  \
-    attribs[attribCount++] = value; \
-}
-
-#define addAtributeEnd(attribs)\
-{\
-    assert((size_t) attribCount < attribsize); \
-    attribs[attribCount++] = 0;  \
-}
-
-#define ON_FUNCTION_WINDOW(bFunCheck, ...)\
-{\
-	if(bFunCheck) \
-	{\
-		return bFunCheck(__VA_ARGS__);\
-	}\
-}
-
-#define GL_WIN_CLASS  L"FOX_WINHANDLE_CLASS"
 
 #define   GL_PRESSED    1
 #define   GL_RELEASE    0
@@ -277,60 +256,56 @@ struct WndProp
 	}
 };
 
-struct WndStatus
-{
-	std::wstring        m_title;
-	int                 m_x;
-	int                 m_y;
-	int                 m_width;
-	int                 m_height;
-	int                 m_RelState;
+class Window;
+class ChilWindow;
 
-	WndStatus()
-	{
-		m_title = L"None";
-		m_x = 0;
-		m_y = 0;
-		m_width = 640;
-		m_height = 480;
-		m_RelState = 0;    // Trạng thái mặc định
-	}
-};
 
 //==================================================================================
 // Class Window : Thông tin và ngữ cảnh của một handle                              
 //==================================================================================
-class Window
+class Dllexport Window : public WindowBase, public WindowOpenGLContext, public WindowEvent
 {
+protected:
+
+	static bool register_class(bool bSet = false, bool value = false)
+	{
+		static bool m_bRegisterClass = false;
+		if (bSet == true) // set
+		{
+			m_bRegisterClass = value;
+		}
+
+		return m_bRegisterClass;
+	}
+
+	static bool opengl_extension(bool bSet = false, bool value = false)
+	{
+		static bool m_bLoadOpenGLEx = false;
+		if (bSet == true) // set
+		{
+			m_bLoadOpenGLEx = value;
+		}
+
+		return m_bLoadOpenGLEx;
+	}
+
 private:
 	std::stack<WndProp>    m_PropStack;
-	std::stack<WndStatus>  m_StatusStack;
 
-	std::vector<Control*>  m_controls;
+	std::vector<WindowBase>		m_ChilWinList;
 
 private:
-	HWND                   m_hWnd;
 	WndProp                m_pProp;
-	WindowRender           m_pRender;
-	GdiplusToken           m_gdiToken;
-	std::map<int, bool>    m_mouse;
-	std::map<int, bool>    m_keyboard;
+
 	MSG					   m_msg;
-	bool				   m_bClosed;
 
 
 	short                  m_zDeltaScroll;
 
 private:
 	bool				   m_bUseOpenGLEx;
-private:
-	// Window property
-	std::wstring           m_title;
-	int                    m_x;
-	int                    m_y;
-	int                    m_width;     // The drawable width
-	int                    m_height;    // The drawable height
 
+private:
 										// State information
 	bool                   m_bShow;
 
@@ -351,9 +326,6 @@ private:
 
 	std::wstring		   m_gpu_device_name;
 
-	// Control section
-	unsigned int		   m_idsctrl;
-
 	Safe_Thread			   m_drawthread;
 	Safe_Thread			   m_processthread;
 
@@ -363,78 +335,15 @@ private:
 	FontWeight             m_fontWeight;
 
 private:
-	typedef void(*typeFunOnDraw)         (Window* win);
-	typedef void(*typeFunOnCreated)      (Window* win);
-	typedef void(*typeFunOnDestroy)      (Window* win);
-	typedef void(*typeFunOnPaint)        (Window* win);
-	typedef void(*typeFunOnMouse)        (Window* win, int button, int action);
-	typedef void(*typeFunOnMouseRealt)   (Window* win);
-	typedef void(*typeFunOnMouseMove)    (Window* win);
-	typedef void(*typeFunOnKeyboard)     (Window* win);
-	typedef void(*typeFunOnProcess)      (Window* win);
-	typedef void(*typeFunOnResize)       (Window* win);
-	typedef void(*typeFunOnMouseScroll)  (Window* win);
-
-private:
-	typeFunOnDraw				m_funOnDraw        = NULL;
-	typeFunOnCreated			m_funOnCreated     = NULL;
-	typeFunOnDestroy			m_funOnDestroy     = NULL;
-	typeFunOnPaint				m_funOnPaint       = NULL;
-	typeFunOnMouse				m_funOnMouse       = NULL;
-	typeFunOnMouseRealt			m_funOnMouseRealt  = NULL;
-	typeFunOnMouseMove			m_funOnMouseMove   = NULL;
-	typeFunOnKeyboard			m_funOnKeyboard    = NULL;
-	typeFunOnProcess			m_funOnProcess     = NULL;
-	typeFunOnResize				m_funOnResize      = NULL;
-	typeFunOnMouseScroll		m_funOnMouseScroll = NULL;
-
-public:
-	void SetOnDrawfunc			  (typeFunOnDraw			funOnDraw)		{ m_funOnDraw		 = funOnDraw;	  }
-	void SetOnCreatedfunc		  (typeFunOnCreated			funOnCreate)	{ m_funOnCreated	 = funOnCreate;   }
-	void SetOnDestroyfunc		  (typeFunOnDestroy			funOnDestroy)	{ m_funOnDestroy	 = funOnDestroy;  }
-	void SetOnPaintfunc			  (typeFunOnPaint			funOnPaint)		{ m_funOnPaint		 = funOnPaint;	  }
-	void SetOnMouseButtonfunc	  (typeFunOnMouse			funOnMouse)		{ m_funOnMouse		 = funOnMouse;	  }
-	void SetOnMouseButtonRealtfunc(typeFunOnMouseRealt		funOnMouse)		{ m_funOnMouseRealt  = funOnMouse;	  }
-	void SetOnMouseMovefunc		  (typeFunOnMouseMove		funOnMouseMove)	{ m_funOnMouseMove	 = funOnMouseMove;}
-	void SetOnKeyboardfunc		  (typeFunOnKeyboard		funOnKeyboard)	{ m_funOnKeyboard	 = funOnKeyboard; }
-	void SetProcessfunc			  (typeFunOnProcess			funProcess)		{ m_funOnProcess	 = funProcess;	  }
-	void SetOnResizefunc		  (typeFunOnResize			funOnResize)	{ m_funOnResize		 = funOnResize;	  }
-	void SetOnMouseScrollfunc	  (typeFunOnMouseScroll		funOnScroll)	{ m_funOnMouseScroll = funOnScroll;   }
-
-	//==================================================================================
-	//⮟⮟ Triển khai hàm   - not important                                              
-	//==================================================================================
-
-	virtual void OnCreated()							{ ON_FUNCTION_WINDOW(m_funOnCreated		, this)}
-	virtual void OnCommand(int type)					{ }
-	virtual void OnKeyBoard()							{ ON_FUNCTION_WINDOW(m_funOnKeyboard	, this)}
-	virtual void OnMouseButton(int button, int action)	{ ON_FUNCTION_WINDOW(m_funOnMouse		, this, button, action)}
-	virtual void OnMouseMove()							{ ON_FUNCTION_WINDOW(m_funOnMouseMove	, this)}
-	virtual void OnProcess()							{ ON_FUNCTION_WINDOW(m_funOnProcess		, this)}
-	virtual void OnMouseRealtime()						{ ON_FUNCTION_WINDOW(m_funOnMouseRealt	, this)}
-	virtual void OnResize()								{ ON_FUNCTION_WINDOW(m_funOnResize		, this)}
-	virtual void OnMouseScroll()						{ ON_FUNCTION_WINDOW(m_funOnMouseScroll	, this)}
-	virtual void OnPaint()								{ ON_FUNCTION_WINDOW(m_funOnPaint		, this)}
-
-	virtual void SwapBuffer()
-	{
-		::SwapBuffers(m_pRender.m_hDc);
-	}
-
-	HWND GetHwnd()	{ return m_hWnd; }
-	HDC  GetHDC()	{ return m_pRender.m_hDc; }
-
-	//==================================================================================
-	//⮝⮝ Triển khai hàm  - not important                                               
-	//==================================================================================
-	static LRESULT CALLBACK WndDummyMainProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
-	{
-		return DefWindowProc(hWnd, message, wParam, lParam);
-	}
-
+//======================================================================================
+//⮟⮟ Triển khai xử lý thông điệp cho window                                            
+//======================================================================================
 	static LRESULT CALLBACK WndMainProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 	{
-		Window* win = (Window*)::GetWindowLongPtr(hWnd, GWLP_USERDATA);
+		Window* win = (Window*)(GetWindowLongPtr(hWnd, GWLP_USERDATA));
+
+		NULL_CHECK_RETURN(win, DefWindowProc(hWnd, message, wParam, lParam));
+
 		switch (message)
 		{
 		case WM_CLOSE:
@@ -452,43 +361,43 @@ public:
 		case WM_SYSKEYDOWN:
 		{
 			win->SetKeyboardStatus((int)wParam, true);
-			win->OnKeyBoard();
+			win->OnKeyBoard(win);
 			break;
 		}
 		case WM_KEYUP:
 		case WM_SYSKEYUP:
 		{
 			win->SetKeyboardStatus((int)wParam, false);
-			win->OnKeyBoard();
+			win->OnKeyBoard(win);
 			break;
 		}
 		case WM_LBUTTONUP:
 		{
 			win->SetMouseButtonStatus(VK_LBUTTON, false);
-			win->OnMouseButton(GLMouse::LeftButton, GL_RELEASE);
+			win->OnMouseButton(win, GLMouse::LeftButton, GL_RELEASE);
 			break;
 		}
 		case WM_RBUTTONUP:
 		{
 			win->SetMouseButtonStatus(VK_RBUTTON, false);
-			win->OnMouseButton(GLMouse::RightButton, GL_RELEASE);
+			win->OnMouseButton(win, GLMouse::RightButton, GL_RELEASE);
 			break;
 		}
 		case WM_LBUTTONDOWN:
 		{
 			win->SetMouseButtonStatus(VK_LBUTTON, true);
-			win->OnMouseButton(GLMouse::LeftButton, GL_PRESSED);
+			win->OnMouseButton(win, GLMouse::LeftButton, GL_PRESSED);
 			break;
 		}
 		case WM_RBUTTONDOWN:
 		{
 			win->SetMouseButtonStatus(VK_RBUTTON, true);
-			win->OnMouseButton(GLMouse::RightButton, GL_PRESSED);
+			win->OnMouseButton(win, GLMouse::RightButton, GL_PRESSED);
 			break;
 		}
 		case WM_MOUSEMOVE:
 		{
-			win->OnMouseMove();
+			win->OnMouseMove(win);
 			break;
 		}
 		case WM_SIZE: //Check if the window has been resized
@@ -499,7 +408,7 @@ public:
 
 			win->UpdateTitle();
 			// cannot use opengl context in this tunnel
-			win->OnResize();
+			win->OnResize(win);
 			
 			// Refresh screen when resize window in case one thread
 			if (win->GetDrawMode() == 0)
@@ -515,7 +424,7 @@ public:
 		case WM_MOUSEWHEEL:
 		{
 			win->m_zDeltaScroll = GET_WHEEL_DELTA_WPARAM(wParam) / WHEEL_DELTA;
-			win->OnMouseScroll();
+			win->OnMouseScroll(win);
 			break;
 		}
 		case WM_COMMAND:
@@ -556,7 +465,7 @@ public:
 		}
 		case WM_PAINT:
 		{
-			win->OnPaint();
+			win->OnPaint(win);
 			break;  //[BUG] always drawing
 		}
 		case WM_ERASEBKGND:
@@ -594,7 +503,7 @@ private:
 private:
 	virtual void OnDraw()
 	{
-		if (!this->MakeContext()) return;
+		if (!MakeContext()) return;
 
 		if (m_pProp.m_iModeDraw == 1)
 		{
@@ -617,12 +526,7 @@ private:
 
 		this->UpdateInfo();
 
-		// Thực hiện vẽ custom người dùng
-		if (m_funOnDraw)
-		{
-			//glViewport(0, 0, m_width, m_height);
-			this->m_funOnDraw(this);
-		}
+		ON_FUNCTION_WINDOW(m_funOnDraw, this);
 
 		// Hiển thị thông tin fps - frametime và thông tin hệ thống nếu cần
 		if (m_bSysInfo == true)
@@ -635,113 +539,9 @@ private:
 		this->SwapBuffer();
 	}
 
-private:
+protected:
 
-	void SetMouseButtonStatus(int btn, bool status)
-	{
-		m_mouse[btn] = status;
-	}
-	void SetKeyboardStatus(int key, bool status)
-	{
-		m_keyboard[key] = status;
-	}
-	//======================================================================================
-	//⮟⮟ Triển khai window win32                                                           
-	//======================================================================================
-
-private:
-	static bool CALLBACK SetChildFont(HWND hwnd, LPARAM font)
-	{
-		HFONT hFont = (HFONT)SendMessage(hwnd, WM_GETFONT, NULL, NULL);
-		if (!hFont)
-		{
-			SendMessage(hwnd, WM_SETFONT, font, TRUE);
-		}
-		return TRUE;
-	}
-	//==================================================================================
-	// Cập nhật thông font cho window                                                   
-	//==================================================================================
-	void UpdateFont()
-	{
-		if (!m_hWnd || m_fontName.empty()) return;
-
-		int iFontWeight = FW_NORMAL;
-		switch (m_fontWeight)
-		{
-		case FontWeight::Bold: iFontWeight = FW_BOLD; break;
-		case FontWeight::Thin: iFontWeight = FW_THIN; break;
-		case FontWeight::Light: iFontWeight = FW_LIGHT; break;
-		default:
-			break;
-		}
-		HFONT hFont = NULL;
-		hFont = CreateFont(m_fontSize, 0, 0, 0, iFontWeight, 0,
-				0, 0, 0, 0, 0, 0, 0, m_fontName.c_str());
-
-		SendMessage(m_hWnd, WM_SETFONT, (WPARAM)hFont, FALSE);
-
-		EnumChildWindows(m_hWnd, (WNDENUMPROC)SetChildFont, (LPARAM)hFont);
-	}
-
-public:
-	void SetFont(const wchar_t* fontName, const unsigned int fontSize, const FontWeight fontWeight = FontWeight::Normal)
-	{
-		m_fontName = fontName;
-		m_fontSize = fontSize;
-		m_fontWeight = fontWeight;
-
-		UpdateFont();
-	}
-
-	//======================================================================================
-	//⮟⮟ Triển khai chính khởi tạo và xử lý control                                        
-	//======================================================================================
-private:
-	//==================================================================================
-	// Khởi tạo toàn bộ control đã được thêm                                            
-	//==================================================================================
-	virtual void OnInitControl()
-	{
-		for (int i = 0; i < m_controls.size(); i++)
-		{
-			if (!m_controls[i]->IsCreated())
-			{
-				m_controls[i]->SetParent(m_hWnd);
-				m_controls[i]->OnInitControl(m_idsctrl);
-			}
-		}
-	}
-
-	//==================================================================================
-	// Xóa và hủy tòa bộ control có trong window                                        
-	//==================================================================================
-	virtual void DestroyControl()
-	{
-		for (int i = 0; i < m_controls.size(); i++)
-		{
-			m_controls[i]->OnDestroy();
-			delete m_controls[i];
-		}
-		m_controls.clear();
-	}
-
-	//==================================================================================
-	// Lấy control từ ID của nó                                                         
-	//==================================================================================
-	Control* GetControlFormID(WORD ID)
-	{
-		for (int i = 0; i < m_controls.size(); i++)
-		{
-			INT CtrlID = m_controls[i]->GetID();
-
-			if (CtrlID == ID || m_controls[i]->ContainID(ID))
-			{
-				return m_controls[i];
-			}
-		}
-		return NULL;
-	}
+	virtual WindowType GetType() { return WindowType::MainWin; }
 
 //======================================================================================
 //⮟⮟ Triển khai chính tạo và xử lý ngữ cảnh window  - important                        
@@ -758,247 +558,6 @@ private:
 		this->m_bUseOpenGLEx = bUse;
 	}
 
-	/***************************************************************************
-	*! @brief  : init and create OpenGL context
-	*! @param  : [In] void
-	*! @return : true : OK | false : False
-	*! @author : thuong.nv          - [Date] : 05/03/2023
-	*! @note   : use openGL extension previously established
-	***************************************************************************/
-	bool CreateOpenGLContext()
-	{
-		HDC   hDC   = GetDC(m_hWnd);
-		HGLRC hglrc = NULL;
-
-		int iPixelFormat; unsigned int num_formats = 0;
-
-		// Lấy mảng thuộc tính thiết lập để set style window 
-		auto funGetFixelFormatAttribute = [&](int* attribs, int attribsize)
-		{
-			int attribCount = 0;
-
-			addAtribute(attribs, WGL_DRAW_TO_WINDOW_ARB, GL_TRUE);
-			addAtribute(attribs, WGL_SUPPORT_OPENGL_ARB, GL_TRUE);
-			addAtribute(attribs, WGL_DOUBLE_BUFFER_ARB, GL_TRUE);
-			addAtribute(attribs, WGL_ACCELERATION_ARB, WGL_FULL_ACCELERATION_ARB);
-			addAtribute(attribs, WGL_PIXEL_TYPE_ARB, WGL_TYPE_RGBA_ARB);
-			addAtribute(attribs, WGL_COLOR_BITS_ARB, 32);
-			addAtribute(attribs, WGL_DEPTH_BITS_ARB, 24);
-			addAtribute(attribs, WGL_STENCIL_BITS_ARB, 8);
-
-			if (m_pProp.m_iAntialiasing > 0)
-			{
-				addAtribute(attribs, WGL_SAMPLE_BUFFERS_ARB, GL_TRUE);          // Enable multisampling
-				addAtribute(attribs, WGL_SAMPLES_ARB, m_pProp.m_iAntialiasing); // Number of samples
-			}
-			addAtributeEnd(attribs);
-		};
-
-		// Get pixel format attributes through "modern" extension
-		if (m_bUseOpenGLEx)
-		{
-			int pixelAttribs[47];
-			funGetFixelFormatAttribute(pixelAttribs, sizeof(pixelAttribs) / sizeof(pixelAttribs[0]));
-
-			wglChoosePixelFormatARB(hDC, pixelAttribs, 0, 1, &iPixelFormat, &num_formats);
-
-			PIXELFORMATDESCRIPTOR pfd;
-			DescribePixelFormat(hDC, iPixelFormat, sizeof(pfd), &pfd);
-			SetPixelFormat(hDC, iPixelFormat, &pfd);
-
-			// Specify that we want to create an OpenGL x.x core profile context
-			int gl_attribs[] = {
-				WGL_CONTEXT_MAJOR_VERSION_ARB, 1,
-				WGL_CONTEXT_MINOR_VERSION_ARB, 5,
-				WGL_CONTEXT_PROFILE_MASK_ARB,  WGL_CONTEXT_CORE_PROFILE_BIT_ARB,
-				0,
-			};
-			hglrc = wglCreateContextAttribsARB(hDC, 0, gl_attribs);
-		}
-		// Get pixel format attributes through legacy PFDs
-		else
-		{
-			PIXELFORMATDESCRIPTOR pfd = {
-				sizeof(PIXELFORMATDESCRIPTOR),
-				1,
-				PFD_DRAW_TO_WINDOW | PFD_SUPPORT_OPENGL | PFD_DOUBLEBUFFER,
-				PFD_TYPE_RGBA,        // The kind of framebuffer. RGBA or palette.
-				32,                   // Colordepth of the framebuffer.
-				0, 0, 0, 0, 0, 0,
-				0,
-				0,
-				0,
-				0, 0, 0, 0,
-				24,                   // Number of bits for the depthbuffer
-				8,                    // Number of bits for the stencilbuffer
-				0,                    // Number of Aux buffers in the framebuffer.
-				PFD_MAIN_PLANE,
-				0,
-				0, 0, 0
-			};
-			iPixelFormat = ChoosePixelFormat(hDC, &pfd);
-			SetPixelFormat(hDC, iPixelFormat, &pfd);
-
-			hglrc = wglCreateContext(hDC);
-		}
-
-		if (wglMakeCurrent(hDC, hglrc))
-		{
-			m_pRender.m_hDc = hDC;
-			m_pRender.m_hGLRC = hglrc;
-			m_pProp.m_bOpenGL = true;
-			return true;
-		}
-		else
-		{
-			DeleteOpenGLContext();
-			m_pProp.m_bOpenGL = false;
-			return false;
-		}
-	}
-
-	/***************************************************************************
-	*! @brief  : Remove the previously set context
-	*! @return : void
-	*! @author : thuong.nv          - [Date] : 05/03/2023
-	*! @note   : use openGL extension previously established
-	***************************************************************************/
-	void DeleteOpenGLContext()
-	{
-		ReleaseDC(m_hWnd, m_pRender.m_hDc); // release device context
-		wglDeleteContext(m_pRender.m_hGLRC);// delete the rendering context
-		m_pRender.m_hDc = NULL;
-		m_pRender.m_hGLRC = NULL;
-	}
-
-//======================================================================================
-//⮟⮟ Triển khai hàm mở rộng độc lập với window                                         
-//======================================================================================
-public:
-	/***************************************************************************
-	*! @brief  : register window class use window context
-	*! @param  : [In] strClassName : Name class
-	*! @param  : [In] Proc		   : function hanle event
-	*! @param  : [In] hInst		   : default GetModuleHandle(NULL)
-	*! @return : 1 : OK , 0 : False
-	*! @author : thuong.nv          - [Date] : 05/03/2023
-	***************************************************************************/
-	static int register_window_class(const wchar_t* strClassName, WNDPROC Proc, HINSTANCE hInst)
-	{
-		WNDCLASSEXW  wClass;
-		ZeroMemory(&wClass, sizeof(WNDCLASSEX));
-		wClass.cbClsExtra = NULL;
-		wClass.cbSize = sizeof(WNDCLASSEX);
-		wClass.cbWndExtra = NULL;
-		wClass.hbrBackground = (HBRUSH)(COLOR_MENU);
-		wClass.hCursor = LoadCursor(NULL, IDC_ARROW);
-		wClass.hIcon = LoadIcon(NULL, IDI_APPLICATION);
-		wClass.hIconSm = NULL;
-		wClass.hInstance = hInst;
-		wClass.lpfnWndProc = (WNDPROC)Proc;
-		wClass.lpszClassName = strClassName;
-		wClass.lpszMenuName = NULL;
-		wClass.style = CS_HREDRAW | CS_VREDRAW | CS_OWNDC;
-
-		if (!RegisterClassEx(&wClass))
-			return 0;
-		return 1;
-	}
-
-
-	/***************************************************************************
-	*! @brief  : load extension opengl library glew
-	*! @param  : [In] strClassName : Name class
-	*! @param  : [In] Proc		   : function hanle event
-	*! @param  : [In] hInst		   : default GetModuleHandle(NULL)
-	*! @return : 1: OK | 0 False;
-	*! @author : thuong.nv          - [Date] : 05/03/2023
-	***************************************************************************/
-	static int load_opengl_extension()
-	{
-		int bInitOk = FALSE;
-		if (register_window_class(L"DummyClass", WndDummyMainProc, GetModuleHandle(NULL)))
-		{
-			HWND hWnd_dummy = CreateWindowEx(
-				0, L"DummyClass", L"Dummy OpenGL Window", 0,
-				CW_USEDEFAULT, CW_USEDEFAULT,
-				CW_USEDEFAULT, CW_USEDEFAULT,
-				0, 0, NULL, 0);
-
-			PIXELFORMATDESCRIPTOR pixelFormat = {
-				sizeof(PIXELFORMATDESCRIPTOR),
-				1,
-				PFD_DRAW_TO_WINDOW | PFD_SUPPORT_OPENGL | PFD_DOUBLEBUFFER,
-				PFD_TYPE_RGBA,        // The kind of framebuffer. RGBA or palette.
-				32,                   // Colordepth of the framebuffer.
-				0, 0, 0, 0, 0, 0,
-				0,
-				0,
-				0,
-				0, 0, 0, 0,
-				24,                   // Number of bits for the depthbuffer
-				8,                    // Number of bits for the stencilbuffer
-				0,                    // Number of Aux buffers in the framebuffer.
-				PFD_MAIN_PLANE,
-				0,
-				0, 0, 0
-			};
-
-			HDC hDC_dummy = GetDC(hWnd_dummy);
-			int iPixelFormat = ChoosePixelFormat(hDC_dummy, &pixelFormat);
-			SetPixelFormat(hDC_dummy, iPixelFormat, &pixelFormat);
-
-			HGLRC hglrc_dummy = wglCreateContext(hDC_dummy);
-			if (wglMakeCurrent(hDC_dummy, hglrc_dummy)) {
-
-				if (glewInit() != GLEW_OK)  // Load library OpenGL extension
-					bInitOk = FALSE;
-				else
-					bInitOk = TRUE;
-			}
-
-			wglMakeCurrent(hDC_dummy, 0);
-			wglDeleteContext(hglrc_dummy);
-			ReleaseDC(hWnd_dummy, hDC_dummy);
-			DestroyWindow(hWnd_dummy);
-		}
-
-		return bInitOk;
-	}
-
-//======================================================================================
-//⮟⮟ Triển khai hàm xử lý GDI của window                                               
-//======================================================================================
-private:
-	/***************************************************************************
-	*! @brief  : Init GDI plus
-	*! @return : void
-	*! @author : thuong.nv          - [Date] : 05/03/2023
-	***************************************************************************/
-	void CreateGDIplus()
-	{
-		if (m_pProp.m_bGDIplus)
-		{
-			Gdiplus::GdiplusStartupInput gdiplusStartupInput;
-			ULONG_PTR           gdiplusToken;
-
-			Gdiplus::Status status = Gdiplus::GdiplusStartup(&gdiplusToken, &gdiplusStartupInput, NULL);
-
-			m_gdiToken = GdiplusToken{ (status == Gdiplus::Status::Ok) ? gdiplusToken : NULL,
-										(status == Gdiplus::Status::Ok) ? true : false };
-		}
-	}
-
-	/***************************************************************************
-	*! @brief  : Destroy init GDIplus
-	*! @return : void
-	*! @author : thuong.nv          - [Date] : 05/03/2023
-	***************************************************************************/
-	void DeleteGDIplus()
-	{
-		m_gdiToken.Shutdown();
-	}
-
 //======================================================================================
 //⮟⮟ Triển khai khởi tạo liên quan đến window                                          
 //======================================================================================
@@ -1009,7 +568,10 @@ private:
 	bool CreateWindowHandle(const wchar_t* strWndClassName)
 	{
 		// Create GDI+ startup incantation
-		this->CreateGDIplus();
+		if (m_pProp.m_bGDIplus)
+		{
+			this->CreateGDIplus();
+		}
 
 		// Kích thức thực tế của vùng có thể vẽ
 		RECT wr = { 0, 0, m_width, m_height };     // set the size, but not the position
@@ -1047,15 +609,18 @@ private:
 		return true;
 	}
 
+
 //======================================================================================
 //⮟⮟ Triển hàm thao tác từ bên ngoài tác động vào Window class                         
 //======================================================================================
-public:
+protected:
 	//==================================================================================
 	// Khởi tạo window và thiết lập thông số                                            
 	//==================================================================================
-	bool OnCreateWindow(const wchar_t* strClassname)
+	bool Create(const wchar_t* strClassname)
 	{
+		this->SetStartIDControl(1000);
+
 		bool ret = true;
 		// Update get style window
 		this->SetUpHint();
@@ -1063,13 +628,15 @@ public:
 		// Create a window HWND use class name
 		ret &= this->CreateWindowHandle(strClassname);
 
+		this->SetTitle(GetTitleInfo());
+
 		if (ret) // it OK
 		{
 			// Update get style window
 			this->UpdateHint();
 
 			// Active function user custom
-			this->OnCreated();
+			this->OnCreated(this);
 
 			// Update title after created ok
 			this->UpdateTitle();
@@ -1077,8 +644,8 @@ public:
 			// Initialization control
 			this->OnInitControl();
 
-			// Update font control after initialization control
-			this->UpdateFont();
+			// Initialization sub window
+			this->OnCreateSubWindow();
 
 			// Update and setup properties when everything is done
 			this->InitProperties();
@@ -1090,7 +657,7 @@ public:
 	//==================================================================================
 	// Khởi tạo window và thiết lập thông số                                            
 	//==================================================================================
-	bool OnCreateOpenGLContext(bool bUseOpenGLEx = false)
+	bool CreateOpenGLContext(bool bUseOpenGLEx = false)
 	{
 		// Set up use OpenGL extension
 		this->UseOpenGLExtension(bUseOpenGLEx);
@@ -1114,10 +681,12 @@ public:
 		// create opengl main thread
 		else
 		{
-			auto ret = CreateOpenGLContext();
-			if(ret)
-				this->ReloadTextRender();
-			return ret;
+			if (!MakeOpenGLContext(m_hWnd, bUseOpenGLEx, m_pProp.m_iAntialiasing))
+			{
+				return false;
+			}
+
+			this->ReloadTextRender();
 		}
 
 		return true;
@@ -1127,36 +696,6 @@ public:
 //⮟⮟ Triển khai cập nhật trạng thái của window                                          
 //=======================================================================================
 private:
-	//===================================================================================
-	// Lưu giữ trạng thái thông tin của window                                           
-	//===================================================================================
-	void PushWindowStatus()
-	{
-		WndStatus status;
-		status.m_title = m_title;
-		status.m_x = m_x;
-		status.m_y = m_y;
-		status.m_width = m_width;
-		status.m_height = m_height;
-		status.m_RelState = 1;
-
-		m_StatusStack.push(status);
-	}
-
-	//===================================================================================
-	// Lấy lại trạng thái đã được lưu dữ trước đó                                        
-	//===================================================================================
-	WndStatus PopWindowStatus()
-	{
-		WndStatus status;
-		if (!m_StatusStack.empty())
-		{
-			status = m_StatusStack.top();
-			m_StatusStack.pop();
-		}
-		return status;
-	}
-
 	//===================================================================================
 	// Cập nhật trạng thái thời gian mỗi khi một frame trôi qua                          
 	//===================================================================================
@@ -1199,9 +738,9 @@ private:
 	//===================================================================================
 	// Cập nhật lại title window                                                         
 	//===================================================================================
-	void UpdateTitle()
+	std::wstring GetTitleInfo()
 	{
-		if (!m_hWnd) return;
+		NULL_CHECK_RETURN(m_hWnd, L"");
 
 		wchar_t titlebuff[256];
 
@@ -1213,10 +752,10 @@ private:
 			gpu_name = this->GetGPUDevice();
 
 		// m_gpu_deive_name updated in render thread
-		swprintf_s(titlebuff, L"%s - %d x %d - %s",  m_title.c_str(),
-			m_width, m_height,
+		swprintf_s(titlebuff, L"%s - %d x %d - %s",  m_title.c_str(), m_width, m_height,
 			gpu_name.c_str());
-		SetWindowText(m_hWnd, titlebuff);
+
+		return titlebuff;
 	}
 
 	//===================================================================================
@@ -1237,80 +776,6 @@ private:
 		//m_text_render.LoadFont(m_fontNameTextRender, m_fontSizeTextRender);
 	}
 
-	//===================================================================================
-	// Cập nhật trạng thái hiển thị                                                      
-	//===================================================================================
-	void UpdateState(bool bShow = true)
-	{
-		if (!m_hWnd) return;
-
-		if (bShow)
-		{
-			ShowWindow(this->m_hWnd, SW_SHOW);
-		}
-		else
-		{
-			ShowWindow(this->m_hWnd, SW_HIDE);
-		}
-	}
-
-
-	//===================================================================================
-	// Cập nhật thông tin stype của window                                               
-	//===================================================================================
-	void UpdateHint()
-	{
-		if (m_pProp.m_bFullScreen)
-		{
-			this->PushWindowStatus();
-
-			// Set new window style and size.
-			SetWindowLong(m_hWnd, GWL_STYLE, m_pProp.m_dwStyle);
-			SetWindowLong(m_hWnd, GWL_EXSTYLE, m_pProp.m_dwExStyle);
-
-			// On expand, if we're given a window_rect, grow to it, otherwise do not resize.
-			xMonitorInfo monitor = std::move(GetMonitorInfoEx());
-			SetWindowPos(m_hWnd, NULL, 0, 0, monitor.WIDTH, monitor.HEIGHT, SWP_NOZORDER | SWP_NOACTIVATE | SWP_FRAMECHANGED);
-
-			// Update width ,height screen
-			m_width = monitor.WIDTH;
-			m_height = monitor.HEIGHT;
-		}
-		else
-		{
-			WndStatus winState = this->PopWindowStatus();
-			if (winState.m_RelState)
-			{
-				// Cập nhật lại style của Window;
-				this->UpdateStyleWindow();
-
-				if (ChangeDisplaySettings(NULL, CDS_RESET) == DISP_CHANGE_SUCCESSFUL)
-				{
-					SetWindowLong(m_hWnd, GWL_STYLE, m_pProp.m_dwStyle);
-					SetWindowLong(m_hWnd, GWL_EXSTYLE, m_pProp.m_dwExStyle);
-					m_x = winState.m_x;
-					m_y = winState.m_y;
-					m_width = winState.m_width;
-					m_height = winState.m_height;
-
-					RECT wr = { 0, 0, m_width, m_height };           // set the size, but not the position
-					AdjustWindowRect(&wr, m_pProp.m_dwStyle, FALSE); // adjust the size
-
-					SetWindowPos(m_hWnd, HWND_NOTOPMOST, m_x, m_y, (wr.right - wr.left), (wr.bottom - wr.top), SWP_SHOWWINDOW);
-
-					// Update size window after created
-					m_width = winState.m_width;
-					m_height = winState.m_height;
-				}
-			}
-		}
-
-		if (m_pProp.m_iAphaTrans >= 0)
-		{
-			SetWindowLong(m_hWnd, GWL_EXSTYLE, GetWindowLong(m_hWnd, GWL_EXSTYLE) ^ WS_EX_LAYERED);
-			SetLayeredWindowAttributes(m_hWnd, RGB(0, 0, 0), m_pProp.m_iAphaTrans, LWA_ALPHA);
-		}
-	}
 
 //======================================================================================
 //⮟⮟ Triển khai chức năng hỗ trợ cho window                                            
@@ -1341,7 +806,7 @@ public:
 
 	Window(	const wchar_t* title, const int& xpos, const int& ypos,
 			const int& width = 640, const int height = 480,
-			const WndProp* prop = NULL) : m_hWnd(NULL)
+			const WndProp* prop = NULL) : WindowBase()
 	{
 		this->m_title  = title;
 		this->m_x	   = xpos;
@@ -1359,9 +824,6 @@ public:
 		this->m_bUpdateRenderInfo = false;
 		this->m_iIdUpdate = 0;
 
-		// control setup
-		this->m_idsctrl = 1000;
-
 		// setup default text render
 		this->m_fontNameTextRender = "Consolas";
 		this->m_fontSizeTextRender = 16;
@@ -1378,26 +840,6 @@ public:
 		this->m_pProp = prop;
 	}
 
-	void UpdateStyleWindow()
-	{
-		m_pProp.m_dwExStyle = WS_EX_APPWINDOW | WS_EX_WINDOWEDGE ;  // Window Extended Style
-		m_pProp.m_dwStyle = WS_OVERLAPPEDWINDOW | WS_CLIPCHILDREN | WS_EX_TRANSPARENT;  // Windows Style
-																	//@@ WS_CLIPCHILDREN: Control của window sẽ không được vẽ khi SwapBuffer
-
-		if (m_pProp.m_bFullScreen)                           // Are We Still In Fullscreen Mode?
-		{
-			// Window Extended Style
-			m_pProp.m_dwExStyle = m_pProp.m_dwExStyle &~(WS_EX_DLGMODALFRAME | WS_EX_WINDOWEDGE | WS_EX_CLIENTEDGE | WS_EX_STATICEDGE);
-			// Windows Style
-			m_pProp.m_dwStyle = m_pProp.m_dwStyle &~(WS_CAPTION | WS_THICKFRAME);
-		}
-	}
-
-	void SetUpHint()
-	{
-		this->UpdateStyleWindow();
-	}
-
 	void ExitFullScreen()
 	{
 		m_pProp.m_bFullScreen = false;
@@ -1410,136 +852,7 @@ public:
 		this->UpdateHint();
 	}
 
-	void Show()
-	{
-		this->m_bShow = true;
-		this->UpdateState(m_bShow);
-	}
-
-	void Hide()
-	{
-		this->m_bShow = false;
-		this->UpdateState(m_bShow);
-	}
-
-	void SetTitle(std::wstring title)
-	{
-		m_title = title;
-		this->UpdateTitle();
-	}
-
-	// Activate openGL context
-	bool MakeContext()
-	{
-		if (m_pRender.m_hDc && m_pRender.m_hGLRC)
-		{
-			if (wglMakeCurrent(m_pRender.m_hDc, m_pRender.m_hGLRC))
-			{
-				return true;
-			}
-		}
-		//assert(0);
-		return false;
-	}
-
-	// @return : 0 : false, 1 ok
-	int AddControl(Control* control)
-	{
-		if (!control)
-			return 0;
-
-		if (m_hWnd == NULL)
-		{
-			// it will initialize later
-			m_controls.push_back(control);
-		}
-		else
-		{
-			// if existed window handle then initiation control
-			control->SetParent(m_hWnd);
-			if (control->OnInitControl(m_idsctrl))
-			{
-				m_controls.push_back(control);
-			}
-			else
-			{
-				return 0;
-			}
-		}
-		return 1;
-	}
-
 	int       GetDrawMode() { return m_pProp.m_iModeDraw; }
-	int       GetWidth() { return m_width; }
-	int       GetHeight() { return m_height; }
-	int       GetMouseScroll() { return (int)m_zDeltaScroll; }
-
-	//==================================================================================
-	// Lấy vị trí tương đối của con trỏ so điểm gốc (trái trên)                         
-	//==================================================================================
-	bool GetCursorPos(int& xpos, int& ypos)
-	{
-		POINT cursor_pos;
-		if (::GetCursorPos(&cursor_pos) && ScreenToClient(m_hWnd, &cursor_pos))
-		{
-			xpos = cursor_pos.x;
-			ypos = cursor_pos.y;
-			return true;
-		}
-		else
-		{
-			xpos = 0;
-			ypos = 0;
-			return false;
-		}
-	}
-	bool GetCursorPos(float& xpos, float& ypos)
-	{
-		POINT cursor_pos;
-		if (::GetCursorPos(&cursor_pos) && ::ScreenToClient(m_hWnd, &cursor_pos))
-		{
-			xpos = (float)cursor_pos.x;
-			ypos = (float)cursor_pos.y;
-			return true;
-		}
-		else
-		{
-			xpos = 0;
-			ypos = 0;
-			return false;
-		}
-	}
-
-	POINT GetCursorPos()
-	{
-		POINT cursor_pos{ 0,0 };
-
-		if (::GetCursorPos(&cursor_pos) && ::ScreenToClient(m_hWnd, &cursor_pos))
-		{
-			return cursor_pos;
-		}
-		return cursor_pos;
-	}
-
-	//==================================================================================
-	// Lấy vị trí tương đối của con trỏ so với điểm giữa handle                         
-	//==================================================================================
-	bool GetCursorPosCenter(float& xpos, float& ypos)
-	{
-		POINT cursor_pos;
-		if (::GetCursorPos(&cursor_pos) && ScreenToClient(m_hWnd, &cursor_pos))
-		{
-			xpos = -(m_width / 2 - (float)cursor_pos.x);
-			ypos = (m_height / 2 - (float)cursor_pos.y);
-			return true;
-		}
-		else
-		{
-			xpos = 0;
-			ypos = 0;
-			return false;
-		}
-	}
 
 	//==================================================================================
 	// Sử dụng cho trường hợp dùng GDIplus (xóa sau khi sử dụng xong)                   
@@ -1547,22 +860,6 @@ public:
 	WndGDIplus* GetGraphicsFromHWND()
 	{
 		return Gdiplus::Graphics::FromHWND(m_hWnd);;
-	}
-
-	//==================================================================================
-	// Kiểm tra trạng thái key, key sẽ lấy ở GLWinDef                                   
-	//==================================================================================
-	bool GetKeyboardStatus(int keyboard)
-	{
-		return m_keyboard[keyboard];
-	}
-
-	//==================================================================================
-	// Kiểm tra trạng thái button mouse, mouse sẽ lấy ở GLWinDef                        
-	//==================================================================================
-	bool GetMouseButtonStatus(int btn)
-	{
-		return m_mouse[btn];
 	}
 
 	//==================================================================================
@@ -1581,6 +878,104 @@ public:
 		return m_fpscounter.fps();
 	}
 
+//======================================================================================
+//⮟⮟ Triển khai chức cập nhật thông tin trạng thái window                              
+//======================================================================================
+private:
+	/***************************************************************************
+	*! @brief  : Cập nhật thông tin stype của window 
+	*! @return : void
+	*! @author : thuong.nv          - [Date] : 05/03/2023
+	***************************************************************************/
+	void UpdateStyleWindow()
+	{
+		m_pProp.m_dwExStyle = WS_EX_APPWINDOW | WS_EX_WINDOWEDGE ;  // Window Extended Style
+		m_pProp.m_dwStyle = WS_OVERLAPPEDWINDOW | WS_CLIPCHILDREN | WS_EX_TRANSPARENT;  // Windows Style
+		//@@ WS_CLIPCHILDREN: Control của window sẽ không được vẽ khi SwapBuffer
+
+		if (m_pProp.m_bFullScreen)                           // Are We Still In Fullscreen Mode?
+		{
+			// Window Extended Style
+			m_pProp.m_dwExStyle = m_pProp.m_dwExStyle &~(WS_EX_DLGMODALFRAME | WS_EX_WINDOWEDGE
+				| WS_EX_CLIENTEDGE | WS_EX_STATICEDGE);
+			// Windows Style
+			m_pProp.m_dwStyle = m_pProp.m_dwStyle &~(WS_CAPTION | WS_THICKFRAME);
+		}
+
+		if (m_bShow == false)
+		{
+			// dwMyFlags ^= dwSomeFlag; remove flag 
+			m_pProp.m_dwStyle &= ~WS_VISIBLE;
+		}
+	}
+
+	/***************************************************************************
+	*! @brief  : Cập nhật thông tin stype của window 
+	*! @return : void
+	*! @author : thuong.nv          - [Date] : 05/03/2023
+	***************************************************************************/
+	void UpdateHint()
+	{
+		if (m_pProp.m_bFullScreen)
+		{
+			this->PushWindowStatus();
+
+			// Set new window style and size.
+			SetWindowLong(m_hWnd, GWL_STYLE, m_pProp.m_dwStyle);
+			SetWindowLong(m_hWnd, GWL_EXSTYLE, m_pProp.m_dwExStyle);
+
+			// On expand, if we're given a window_rect, grow to it, otherwise do not resize.
+			xMonitorInfo monitor = std::move(GetMonitorInfoEx());
+			SetWindowPos(m_hWnd, NULL, 0, 0, monitor.WIDTH, monitor.HEIGHT,
+								SWP_NOZORDER | SWP_NOACTIVATE | SWP_FRAMECHANGED);
+
+			// Update width ,height screen
+			m_width  = monitor.WIDTH;
+			m_height = monitor.HEIGHT;
+		}
+		else
+		{
+			if (!IsEmptyStackWindowStatus())
+			{
+				WindowStatus winState = PopWindowStatus();
+
+				UpdateStyleWindow();
+
+				if (ChangeDisplaySettings(NULL, CDS_RESET) == DISP_CHANGE_SUCCESSFUL)
+				{
+					SetWindowLong(m_hWnd, GWL_STYLE, m_pProp.m_dwStyle);
+					SetWindowLong(m_hWnd, GWL_EXSTYLE, m_pProp.m_dwExStyle);
+					m_x = winState.m_x;
+					m_y = winState.m_y;
+					m_width = winState.m_width;
+					m_height = winState.m_height;
+
+					RECT wr = { 0, 0, m_width, m_height };           // set the size, but not the position
+					AdjustWindowRect(&wr, m_pProp.m_dwStyle, FALSE); // adjust the size
+
+					SetWindowPos(m_hWnd, HWND_NOTOPMOST, m_x, m_y,
+						(wr.right - wr.left), (wr.bottom - wr.top), SWP_SHOWWINDOW);
+
+					// Update size window after created
+					m_width = winState.m_width;
+					m_height = winState.m_height;
+				}
+			}
+		}
+
+		if (m_pProp.m_iAphaTrans >= 0)
+		{
+			SetWindowLong(m_hWnd, GWL_EXSTYLE, GetWindowLong(m_hWnd, GWL_EXSTYLE) ^ WS_EX_LAYERED);
+			SetLayeredWindowAttributes(m_hWnd, RGB(0, 0, 0), m_pProp.m_iAphaTrans, LWA_ALPHA);
+		}
+	}
+
+private:
+	void SetUpHint()
+	{
+		this->UpdateStyleWindow();
+	}
+
 	//==================================================================================
 	// Hàm hủy Window                                                                   
 	//==================================================================================
@@ -1596,6 +991,7 @@ public:
 		DeleteGDIplus();
 		DeleteOpenGLContext();
 		DestroyControl();       //N.V.Thuong 22.04.2022
+		DestroySubWindow();
 	}
 
 private:
@@ -1619,7 +1015,7 @@ private:
 	{
 		while (!this->closed())
 		{
-			this->OnProcess();
+			this->OnProcess(this);
 		}
 	}
 
@@ -1652,7 +1048,7 @@ public:
 		}
 		else
 		{
-			this->OnProcess();
+			this->OnProcess(this);
 		}
 	}
 
@@ -1688,110 +1084,327 @@ public:
 		PostMessage(m_hWnd, WM_CLOSE, NULL, NULL);
 	}
 
+	friend int     init_window();
 	friend Window* create_window(const wchar_t* , int , int , int , int, const WndProp*);
 	friend Window* create_window(Window*);
 };
 
-//======================================================================================
-//⮟⮟ API Class name: whandle window                                                    
-//Control for window                                                                    
-//======================================================================================
 
-/***************************************************************************
-*! @brief  : initialize the environment before initializing the window
-*! @return : 0: Ok | 1: Register window failed | 2: create OpenGL failed
-*! @author : thuong.nv          - [Date] : 05/03/2023
-***************************************************************************/
-int Dllexport init_window()
+//==================================================================================
+// Class SubWindow : Thông tin và ngữ cảnh của một handle                           
+//==================================================================================
+class Dllexport SubWindow : public WindowBase , public WindowEvent
 {
-	static bool bRegWinClass = false;
-	static bool bInitOpenGLex = false;
+protected:
+	WndProp			m_pProp;
 
-	if (!bRegWinClass)
-		bRegWinClass = Window::register_window_class(GL_WIN_CLASS, Window::WndMainProc, GetModuleHandle(NULL));
-
-	if (!bRegWinClass)
+public:
+	SubWindow() : WindowBase()
 	{
-		_ASSERT(L"Register window class failed !");
-		return 1;
 	}
 
-	if (bRegWinClass && !bInitOpenGLex)
-		bInitOpenGLex = Window::load_opengl_extension();
-
-	if (!bInitOpenGLex)
+	~SubWindow()
 	{
-		_ASSERT(L"Created OpenGL window failed !");
-		return 2;
+
 	}
 
-	return 0;
-}
-
-/***************************************************************************
-*! @brief  : create window
-*! @return : void
-*! @author : thuong.nv          - [Date] : 05/03/2023
-***************************************************************************/
-Window* Dllexport create_window(const wchar_t* title,
-								int xpos, int ypos,
-								int width = 640, int height = 480,
-								const WndProp* prop = NULL)
-{
-	if (init_window() != 0)
-		return NULL;
-
-	// create window handle
-	Window* win = new Window(title, xpos, ypos, width, height, prop);
-	if(!win->OnCreateWindow(GL_WIN_CLASS))
+public:
+	bool CreateWindowHandle(const wchar_t* strWndClassName)
 	{
-		delete win;
-		return NULL;
+		// Create GDI+ startup incantation
+		if (m_pProp.m_bGDIplus)
+		{
+			this->CreateGDIplus();
+		}
+
+		// Kích thức thực tế của vùng có thể vẽ
+		RECT wr = { 0, 0, m_width, m_height };     // set the size, but not the position
+		AdjustWindowRect(&wr, m_pProp.m_dwStyle, FALSE);// adjust the size
+
+		m_hWnd = CreateWindowEx( m_pProp.m_dwExStyle,        //
+								 strWndClassName,            //
+								 m_title.c_str(),            //
+								 m_pProp.m_dwStyle,          //
+								 m_x, m_y,                   // Postion 
+								 wr.right - wr.left,         // Actual width size
+								 wr.bottom - wr.top,         // Actual height size
+								 m_hWndParent,               //
+								 NULL,                       //
+								 NULL,                       //
+								 NULL                        //
+		);
+
+		// Create window failed or associate failed
+		if (!m_hWnd)
+		{
+			this->DeleteGDIplus();
+			::DestroyWindow(m_hWnd);
+			return false;
+		}
+
+		SetWindowLongPtr(m_hWnd, GWLP_USERDATA, (LONG_PTR)this);
+
+		// Update size window after created
+		RECT rect;
+		if (GetClientRect(m_hWnd, &rect))
+		{
+			m_width = rect.right - rect.left;
+			m_height = rect.bottom - rect.top;
+		}
+		return true;
+	}
+
+//======================================================================================
+//⮟⮟ Triển khai xử lý thông điệp sub window                                            
+//======================================================================================
+protected:
+	static LRESULT CALLBACK WndSubProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
+	{
+		SubWindow* subwin = (SubWindow*)(GetWindowLongPtr(hWnd, GWLP_USERDATA));
+
+		NULL_CHECK_RETURN(subwin, DefWindowProc(hWnd, message, wParam, lParam));
+
+		switch (message)
+		{
+		case WM_CLOSE:
+		{
+			subwin->m_bClosed = true;
+			break;
+		}
+		case WM_DESTROY:
+		{
+			subwin->m_bClosed = true;
+			subwin->OnDestroy();
+			break;
+		}
+		case WM_KEYDOWN:
+		case WM_SYSKEYDOWN:
+		{
+			subwin->SetKeyboardStatus((int)wParam, true);
+			subwin->OnKeyBoard(subwin);
+			break;
+		}
+		case WM_KEYUP:
+		case WM_SYSKEYUP:
+		{
+			subwin->SetKeyboardStatus((int)wParam, false);
+			subwin->OnKeyBoard(subwin);
+			break;
+		}
+		case WM_LBUTTONUP:
+		{
+			subwin->SetMouseButtonStatus(VK_LBUTTON, false);
+			subwin->OnMouseButton(subwin, GLMouse::LeftButton, GL_RELEASE);
+			break;
+		}
+		case WM_RBUTTONUP:
+		{
+			subwin->SetMouseButtonStatus(VK_RBUTTON, false);
+			subwin->OnMouseButton(subwin, GLMouse::RightButton, GL_RELEASE);
+			break;
+		}
+		case WM_LBUTTONDOWN:
+		{
+			subwin->SetMouseButtonStatus(VK_LBUTTON, true);
+			subwin->OnMouseButton(subwin, GLMouse::LeftButton, GL_PRESSED);
+			break;
+		}
+		case WM_RBUTTONDOWN:
+		{
+			subwin->SetMouseButtonStatus(VK_RBUTTON, true);
+			subwin->OnMouseButton(subwin, GLMouse::RightButton, GL_PRESSED);
+			break;
+		}
+		case WM_MOUSEMOVE:
+		{
+			subwin->OnMouseMove(subwin);
+			break;
+		}
+		case WM_SIZE: //Check if the window has been resized
+		{
+			subwin->m_width  = LOWORD(lParam); // width
+			subwin->m_height = HIWORD(lParam); // height
+			//subwin->UpdateRenderInfo();
+
+			subwin->UpdateTitle();
+			// cannot use opengl context in this tunnel
+			subwin->OnResize(subwin);
+			
+			// Refresh screen when resize window in case one thread
+			//if (subwin->GetDrawMode() == 0)
+			//	win->OnDraw();
+
+			break;
+		}
+		case WM_SIZING:
+		{
+			subwin->UpdateTitle();
+			break;
+		}
+		case WM_MOUSEWHEEL:
+		{
+			subwin->m_zDeltaScroll = GET_WHEEL_DELTA_WPARAM(wParam) / WHEEL_DELTA;
+			subwin->OnMouseScroll(subwin);
+			break;
+		}
+		case WM_COMMAND:
+		{
+			WORD wID  = LOWORD(wParam); // item, control, or accelerator identifier
+			WORD wEvt = HIWORD(wParam); // item event
+			HWND hwndControl = (HWND)lParam;  // handle of control
+			if (hwndControl)
+			{
+				Control* ctrl = (Control*)(GetWindowLongPtr(hwndControl, GWLP_USERDATA));
+				if (ctrl) ctrl->Event(subwin, wID, wEvt);
+			}
+			break;
+		}
+		case WM_DRAWITEM:
+		{
+			WORD wID = LOWORD(wParam); // item, control, or accelerator identifier
+			LPDRAWITEMSTRUCT pdis = (LPDRAWITEMSTRUCT)lParam;
+			Control* ctrl = (Control*)(GetWindowLongPtr(pdis->hwndItem, GWLP_USERDATA));
+			if (ctrl)
+				ctrl->Draw(pdis);
+			break;
+		}
+		case WM_CTLCOLORSTATIC:
+		case WM_CTLCOLORBTN: //In order to make those edges invisble when we use RoundRect(),
+		{                //we make the color of our button's background match window's background
+			SetBkMode((HDC)wParam, TRANSPARENT);
+			HWND hwnd = (HWND)lParam;
+
+			Control* ctrl = (Control*)(GetWindowLongPtr(hwnd, GWLP_USERDATA));
+			if (ctrl && ctrl->GetType() == ControlType::LABEL)
+			{
+				Label* lab = static_cast<Label*>(ctrl);
+				lab->UpdateTextColor((HDC)wParam);
+			}
+
+			return (INT_PTR)GetStockObject((HOLLOW_BRUSH));
+		}
+		case WM_PAINT:
+		{
+			subwin->OnPaint(subwin);
+			break;  //[BUG] always drawing
+		}
+		case WM_ERASEBKGND:
+		{
+
+			return TRUE;
+		}
+		default:
+		{
+			break;
+		}
+		}
+		return DefWindowProc(hWnd, message, wParam, lParam);
+	}
+
+//======================================================================================
+//⮟⮟ Triển hàm thao tác từ bên ngoài tác động vào Window class                         
+//======================================================================================
+protected:
+	/***************************************************************************
+	*! @brief  : Cập nhật thông tin stype của window 
+	*! @return : void
+	*! @author : thuong.nv          - [Date] : 05/03/2023
+	***************************************************************************/
+	void UpdateStyleWindow()
+	{
+		m_pProp.m_dwExStyle = WS_EX_APPWINDOW | WS_EX_WINDOWEDGE ;  // Window Extended Style
+		m_pProp.m_dwStyle = WS_OVERLAPPEDWINDOW | WS_CLIPCHILDREN | WS_EX_TRANSPARENT;  // Windows Style
+		//@@ WS_CLIPCHILDREN: Control của window sẽ không được vẽ khi SwapBuffer
+
+		//if (m_pProp.m_bFullScreen)                           // Are We Still In Fullscreen Mode?
+		//{
+		//	// Window Extended Style
+		//	m_pProp.m_dwExStyle = m_pProp.m_dwExStyle &~(WS_EX_DLGMODALFRAME | WS_EX_WINDOWEDGE
+		//		| WS_EX_CLIENTEDGE | WS_EX_STATICEDGE);
+		//	// Windows Style
+		//	m_pProp.m_dwStyle = m_pProp.m_dwStyle &~(WS_CAPTION | WS_THICKFRAME);
+		//}
+
+		if (m_iShow == false)
+		{
+			// dwMyFlags ^= dwSomeFlag; remove flag 
+			m_pProp.m_dwStyle &= ~WS_VISIBLE;
+		}
+	}
+//======================================================================================
+//⮟⮟ Triển hàm thao tác từ bên ngoài tác động vào Window class                         
+//======================================================================================
+public:
+	virtual WindowType GetType() { return WindowType::SubWin; }
+
+	//==================================================================================
+	// Khởi tạo window và thiết lập thông số                                            
+	//==================================================================================
+	bool Create(const wchar_t* strClassname)
+	{
+		bool ret = true;
+
+		this->UpdateStyleWindow();
+
+		// Create a window HWND use class name
+		ret &= this->CreateWindowHandle(strClassname);
+
+		if (ret) // it OK
+		{
+			//// Update get style window
+			//this->UpdateHint();
+
+			//// Active function user custom
+			//this->OnCreated();
+
+			//// Update title after created ok
+			//this->UpdateTitle();
+
+			//// Initialization control
+			//this->OnInitControl();
+
+			//// Update font control after initialization control
+			//this->UpdateFont();
+
+			//// Update and setup properties when everything is done
+			//this->InitProperties();
+		}
+
+		if (ret)
+		{
+			if (m_iShow)
+			{
+				this->Show();
+			}
+			else
+			{
+				this->Hide();
+			}
+		}
+
+		return ret;
 	}
 	
-	// create opengl context 
-	if (!win->OnCreateOpenGLContext(true))
+
+	virtual void OnDestroy()
 	{
-		win->close();
-		delete win;
-		return NULL;
+		//// Gọi hàm mở rộng trước
+		//if (m_funOnDestroy)
+		//{
+		//	m_funOnDestroy(this);
+		//}
+
+		// Xử lý hủy mặc định
+		DeleteGDIplus();
+		//DeleteOpenGLContext();
+		DestroyControl();       //N.V.Thuong 22.04.2022
+		DestroySubWindow();
 	}
 
-	win->Show();
-
-	return win;
-}
-
-Window* Dllexport create_window(Window* win)
-{
-	if (init_window() != 0)
-		return NULL;
-
-	// create window handle
-	if (!win->OnCreateWindow(GL_WIN_CLASS))
-	{
-		delete win;
-		return NULL;
-	}
-
-	// create opengl context 
-	if (!win->OnCreateOpenGLContext(true))
-	{
-		win->close();
-		delete win;
-		return NULL;
-	}
-
-	win->Show();
-
-	return win;
-}
-
-void Dllexport destroy_window(Window* win)
-{
-	delete win;
-}
-
+	friend int     init_window();
+	friend Window* create_window(const wchar_t*, int, int, int, int, const WndProp*);
+	friend Window* create_window(Window*);
+};
 ____END_NAMESPACE____
 
 

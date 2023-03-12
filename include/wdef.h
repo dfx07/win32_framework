@@ -20,6 +20,9 @@
 // disable waring visual studio c++14
 #pragma warning( disable : 4244)
 
+#define GL_WIN_CLASS	 L"FOX_WINHANDLE_CLASS"
+#define GL_SUBWIN_CLASS  L"FOX_SUBWINHANDLE_CLASS"
+
 ___BEGIN_NAMESPACE___
 
 /**********************************************************************************
@@ -49,8 +52,11 @@ typedef struct GDIPLUS_TOKEN
 
 typedef struct WindowRender
 {
-	HDC		m_hDc;
+	HWND	m_hWnd ;
+	HDC		m_hDc  ;
 	HGLRC	m_hGLRC;
+
+	bool	m_bCreated;	// create ok
 
 } *WindowRenderPtr;
 
@@ -448,7 +454,7 @@ private:
 		g->FillPath(brush, &path);
 	}
 
-	void funDrawImage(Gdiplus::Graphics* g, Gdiplus::Image* img, const GdiplusEx::ImageFormat* imageformat)
+	void funDrawImage(Gdiplus::Graphics* g, Gdiplus::Image* img, const GdiplusEx::ImageFormat* imageformat, const Gdiplus::PointF& offset= Gdiplus::PointF(0,0))
 	{
 		using namespace Gdiplus;
 
@@ -463,29 +469,29 @@ private:
 			// alignment x
 			if (imageformat->m_veralign == GdiplusEx::ImageAlignment::ImageAlignmentCenter)
 			{
-				rect.X = rectbound.X + (rectbound.Width - image_width) / 2;
+				rect.X = rectbound.X + offset.X + (rectbound.Width - image_width) / 2;
 			}
 			else if (imageformat->m_veralign == GdiplusEx::ImageAlignment::ImageAlignmentFar)
 			{
-				rect.X = rectbound.X + rectbound.Width - image_width;
+				rect.X = rectbound.X + offset.X + rectbound.Width - image_width;
 			}
 			else
 			{
-				rect.X = rectbound.X;
+				rect.X = rectbound.X + offset.X;
 			}
 
 			// Y alignment
 			if (imageformat->m_horalign == GdiplusEx::ImageAlignment::ImageAlignmentCenter)
 			{
-				rect.Y = rectbound.Y + (rectbound.Height - image_height) / 2;
+				rect.Y = rectbound.Y + offset.Y + (rectbound.Height - image_height) / 2;
 			}
 			else if (imageformat->m_horalign == GdiplusEx::ImageAlignment::ImageAlignmentFar)
 			{
-				rect.Y = rectbound.Y + rectbound.Height - image_height;
+				rect.Y = rectbound.Y + offset.Y + rectbound.Height - image_height;
 			}
 			else
 			{
-				rect.Y = rectbound.Y;
+				rect.Y = rectbound.Y + offset.Y;
 			}
 
 			int rect_width  = image_width < rectbound.Width ? image_width : rectbound.Width;
@@ -523,20 +529,22 @@ public:
 			funcDrawRoundRectangle(m_pRender->render, pen, m_pRender->rect, radius);
 	}
 
-	void DrawTextFullRect(const wchar_t* text, const Gdiplus::Brush* brush, const Gdiplus::StringFormat* stringFormat = NULL)
+	void DrawTextFullRect(const wchar_t* text, const Gdiplus::Brush* brush, const Gdiplus::StringFormat* stringFormat = NULL, const Gdiplus::PointF& offset = Gdiplus::PointF(0, 0))
 	{
 		if (!m_pRender->render || !brush || !m_font_render) return;
 
 		Gdiplus::RectF rectf = Rect2RectF(&m_pRender->rect);
+		rectf.X += offset.X;
+		rectf.Y += offset.Y;
 
 		funDrawText(m_pRender->render, &rectf, text, m_font_render, brush, stringFormat);
 	}
 
-	void DrawImageFullRect(Gdiplus::Image* img, const GdiplusEx::ImageFormat* imageFormat = NULL)
+	void DrawImageFullRect(Gdiplus::Image* img, const GdiplusEx::ImageFormat* imageFormat = NULL, const Gdiplus::PointF& offset = Gdiplus::PointF(0, 0))
 	{
 		if (!m_pRender) return;
 
-		funDrawImage(m_pRender->render, img, imageFormat);
+		funDrawImage(m_pRender->render, img, imageFormat, offset);
 	}
 
 private:
