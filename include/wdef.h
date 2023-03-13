@@ -52,11 +52,11 @@ typedef struct GDIPLUS_TOKEN
 
 typedef struct WindowRender
 {
-	HWND	m_hWnd ;
-	HDC		m_hDc  ;
-	HGLRC	m_hGLRC;
+	HWND	m_hWnd		= NULL;
+	HDC		m_hDc		= NULL;
+	HGLRC	m_hGLRC		= NULL;
 
-	bool	m_bCreated;	// create ok
+	bool	m_bCreated  = false;	// create ok
 
 } *WindowRenderPtr;
 
@@ -382,6 +382,11 @@ public:
 		return NULL;
 	}
 
+	void* RenderInfo()
+	{
+		return m_pRender;
+	}
+
 	void Init(const HDC& hdc, const RECT& rect)
 	{
 		this->CreateRender(hdc, rect);
@@ -519,14 +524,39 @@ private:
 
 // Draw function
 public:
-	void DrawRectangle(const Gdiplus::Pen* pen, const Gdiplus::Brush* brush, int radius)
+	void DrawRectangle(const Gdiplus::Rect& rect, const Gdiplus::Pen* pen, const Gdiplus::Brush* brush, int radius)
 	{
-		if (!m_pRender->render) return;
+		NULL_CHECK_RETURN(m_pRender->render, );
+
+		if (brush)
+			funcFillRoundRectangle(m_pRender->render, brush, rect, radius);
+		if (pen)
+			funcDrawRoundRectangle(m_pRender->render, pen, rect, radius);
+	}
+
+	void DrawRectangleFull(const Gdiplus::Pen* pen, const Gdiplus::Brush* brush, int radius)
+	{
+		NULL_CHECK_RETURN(m_pRender->render, );
 
 		if(brush)
 			funcFillRoundRectangle(m_pRender->render, brush, m_pRender->rect, radius);
 		if(pen)
 			funcDrawRoundRectangle(m_pRender->render, pen, m_pRender->rect, radius);
+	}
+
+	void DrawTextRect(	const Gdiplus::Rect&		 rect,
+						const wchar_t*				 text,
+						const Gdiplus::Brush*		 brush,
+						const Gdiplus::StringFormat* stringFormat = NULL,
+						const Gdiplus::PointF&		 offset = Gdiplus::PointF(0, 0))
+	{
+		if (!m_pRender->render || !brush || !m_font_render) return;
+
+		Gdiplus::RectF rectf = Rect2RectF(&rect);
+		rectf.X += offset.X;
+		rectf.Y += offset.Y;
+
+		funDrawText(m_pRender->render, &rectf, text, m_font_render, brush, stringFormat);
 	}
 
 	void DrawTextFullRect(const wchar_t* text, const Gdiplus::Brush* brush, const Gdiplus::StringFormat* stringFormat = NULL, const Gdiplus::PointF& offset = Gdiplus::PointF(0, 0))
@@ -552,11 +582,11 @@ private:
 	HBITMAP					newBmp;
 	GdiplusToken			m_gdiplus;
 
-public:
+private:
 	GDI_DRAW_INFO			m_origDrawInfo;
 	GDI_DRAW_INFO			m_DrawInfo;
 
-public:
+private:
 	GDIPLUS_DRAW_INFO_PTR	m_pRender;
 	Gdiplus::Font*			m_font_render;
 };

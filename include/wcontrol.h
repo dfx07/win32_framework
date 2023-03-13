@@ -641,17 +641,17 @@ protected:
 		if (m_eState == BtnState::Click)
 		{
 			Gdiplus::Pen pen(Gdiplus::Color(255, 98, 162, 228), iBorderWidth);
-			m_render.DrawRectangle(iBorderWidth > 0 ? &pen : NULL, m_backgroundclick, iRadius);
+			m_render.DrawRectangleFull(iBorderWidth > 0 ? &pen : NULL, m_backgroundclick, iRadius);
 		}
 		else if (m_eState == BtnState::Hover)
 		{
 			Gdiplus::Pen pen(m_property.background_color.wrefcol, iBorderWidth);
-			m_render.DrawRectangle(iBorderWidth > 0 ? &pen : NULL, m_backgroundhover, iRadius);
+			m_render.DrawRectangleFull(iBorderWidth > 0 ? &pen : NULL, m_backgroundhover, iRadius);
 		}
 		else
 		{
 			Gdiplus::Pen pen(Gdiplus::Color(255, 255, 255, 255), iBorderWidth);
-			m_render.DrawRectangle(iBorderWidth > 0 ? &pen : NULL, m_background_normal, iRadius);
+			m_render.DrawRectangleFull(iBorderWidth > 0 ? &pen : NULL, m_background_normal, iRadius);
 		}
 
 		// [2] Draw image
@@ -1266,7 +1266,7 @@ public:
 		const unsigned int iBorderWidth = m_property.border_width;
 
 		Gdiplus::Pen pen(m_property.background_color.wrefcol, iBorderWidth);
-		m_render.DrawRectangle(iBorderWidth > 0 ? &pen : NULL, m_background_normal, iRadius);
+		m_render.DrawRectangleFull(iBorderWidth > 0 ? &pen : NULL, m_background_normal, iRadius);
 
 		// [2] Draw image check
 		if (m_bChecked)

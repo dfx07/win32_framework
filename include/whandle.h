@@ -397,6 +397,11 @@ private:
 		}
 		case WM_MOUSEMOVE:
 		{
+			for (int i = 0; i < win->m_subwindows.size(); i++)
+			{
+				win->m_subwindows[i]->PushMessage(SUB_MOVE_WIN, SUB_PROCESS_MSG, 0);
+			}
+
 			win->OnMouseMove(win);
 			break;
 		}
@@ -526,7 +531,7 @@ private:
 
 		this->UpdateInfo();
 
-		ON_FUNCTION_WINDOW(m_funOnDraw, this);
+		CHECK_RUN_FUNCTION(m_funOnDraw, this);
 
 		// Hiển thị thông tin fps - frametime và thông tin hệ thống nếu cần
 		if (m_bSysInfo == true)
@@ -1096,11 +1101,28 @@ public:
 class Dllexport SubWindow : public WindowBase , public WindowEvent
 {
 protected:
-	WndProp			m_pProp;
+	WndProp				m_pProp;
+
+	GDIplusCtrlRender	m_render;
+	HDC					m_hdc;
+
+	// Window control information
+	int					m_height_title_bar;
+	Gdiplus::Rect		m_rect_title;
+	Gdiplus::Rect		m_rect_body;
+	Button*				m_btn_minimize;
+	Button*				m_btn_close;
+
+
+	bool				m_move_window;
+	POINT				m_last_cursor_pos;
+
+	bool				m_minimize_window;
 
 public:
 	SubWindow() : WindowBase()
 	{
+		m_move_window = false;
 	}
 
 	~SubWindow()
@@ -1108,14 +1130,42 @@ public:
 
 	}
 
+//======================================================================================
+//⮟⮟ Triển hàm thao tác từ bên ngoài tác động vào Window class                         
+//======================================================================================
+protected:
+	/***************************************************************************
+	*! @brief  : Cập nhật thông tin stype của window 
+	*! @return : void
+	*! @author : thuong.nv          - [Date] : 05/03/2023
+	***************************************************************************/
+	void UpdateStyleWindow()
+	{
+		m_pProp.m_dwExStyle = 0 ;  // Window Extended Style
+		m_pProp.m_dwStyle = WS_CHILDWINDOW ;  // Windows Style
+
+		if (m_iShow == false)
+		{
+			// dwMyFlags ^= dwSomeFlag; remove flag 
+			m_pProp.m_dwStyle &= ~WS_VISIBLE;
+		}
+	}
+
+	/***************************************************************************
+	*! @brief  : Cập nhật thông tin stype của window 
+	*! @return : void
+	*! @author : thuong.nv          - [Date] : 05/03/2023
+	***************************************************************************/
+	void InitProperties()
+	{
+		m_move_window = false;
+	}
+
 public:
 	bool CreateWindowHandle(const wchar_t* strWndClassName)
 	{
 		// Create GDI+ startup incantation
-		if (m_pProp.m_bGDIplus)
-		{
-			this->CreateGDIplus();
-		}
+		this->CreateGDIplus();
 
 		// Kích thức thực tế của vùng có thể vẽ
 		RECT wr = { 0, 0, m_width, m_height };     // set the size, but not the position
@@ -1151,7 +1201,90 @@ public:
 			m_width = rect.right - rect.left;
 			m_height = rect.bottom - rect.top;
 		}
+
+		m_hdc = GetDC(m_hWnd);
+		m_render.Init(m_hdc, rect);
+		m_render.LoadFont(L"Consolas");
+
+		InitWindowControl();
+
 		return true;
+	}
+
+//======================================================================================
+//⮟⮟ Xử lý message window                                                              
+//======================================================================================
+protected:
+	int ProcessEventDefault(Control* control)
+	{
+		NULL_CHECK_RETURN(control, 0);
+
+		if (control == m_btn_minimize)
+		{
+			PushMessage(SUB_MINI_WIN, SUB_PROCESS_MSG, 0);
+			return 1;
+		}
+		else if (control == m_btn_close)
+		{
+			PushMessage(SUB_CLOSE_WIN, SUB_PROCESS_MSG, 0);
+			return 1;
+		}
+
+		return 0;
+	}
+
+	int ProcessMessage(UINT msgID, WPARAM wParam, LPARAM lParam)
+	{
+		switch (msgID)
+		{
+			case SUB_MOVE_WIN:
+			{
+				if (this->m_move_window == false)
+				{
+					std::cout << "1" << std::endl;
+					break;
+				}
+				else
+				{
+					std::cout << "22" << std::endl;
+				}
+				
+
+				POINT cursor_pos = GetCursorInScreen();
+				POINT move = {	cursor_pos.x - m_last_cursor_pos.x,
+								cursor_pos.y - m_last_cursor_pos.y };
+
+				MovePosition(move.x, move.y);
+
+				m_last_cursor_pos = cursor_pos;
+				break;
+			}
+
+			case SUB_MINI_WIN:
+			{
+				if (m_minimize_window == true)
+				{
+					SetSize(m_rect_title.Width, m_rect_title.Height + 2);
+				}
+				else
+				{
+					SetSize(m_rect_title.Width, m_rect_title.Height + 2);
+				}
+
+				m_minimize_window = !m_minimize_window;
+				break;
+			}
+
+			case SUB_CLOSE_WIN:
+			{
+				break;
+			}
+
+			default:
+				break;
+		}
+
+		return 0;
 	}
 
 //======================================================================================
@@ -1163,6 +1296,11 @@ protected:
 		SubWindow* subwin = (SubWindow*)(GetWindowLongPtr(hWnd, GWLP_USERDATA));
 
 		NULL_CHECK_RETURN(subwin, DefWindowProc(hWnd, message, wParam, lParam));
+
+		if (wParam == SUB_PROCESS_MSG)
+		{
+			return subwin->ProcessMessage(message, wParam, lParam);
+		}
 
 		switch (message)
 		{
@@ -1193,6 +1331,7 @@ protected:
 		}
 		case WM_LBUTTONUP:
 		{
+			subwin->m_move_window = false;
 			subwin->SetMouseButtonStatus(VK_LBUTTON, false);
 			subwin->OnMouseButton(subwin, GLMouse::LeftButton, GL_RELEASE);
 			break;
@@ -1205,6 +1344,17 @@ protected:
 		}
 		case WM_LBUTTONDOWN:
 		{
+			// process default
+			long x, y;
+			if (subwin->GetCursorPos(x, y))
+			{
+				if (subwin->m_rect_title.Contains(x, y))
+				{
+					subwin->m_move_window = true;
+					subwin->m_last_cursor_pos = subwin->GetCursorInScreen();
+				}
+			}
+
 			subwin->SetMouseButtonStatus(VK_LBUTTON, true);
 			subwin->OnMouseButton(subwin, GLMouse::LeftButton, GL_PRESSED);
 			break;
@@ -1218,6 +1368,10 @@ protected:
 		case WM_MOUSEMOVE:
 		{
 			subwin->OnMouseMove(subwin);
+			if (subwin->m_move_window)
+			{
+				subwin->PushMessage(SUB_MOVE_WIN, SUB_PROCESS_MSG, 0);
+			}
 			break;
 		}
 		case WM_SIZE: //Check if the window has been resized
@@ -1255,7 +1409,10 @@ protected:
 			if (hwndControl)
 			{
 				Control* ctrl = (Control*)(GetWindowLongPtr(hwndControl, GWLP_USERDATA));
-				if (ctrl) ctrl->Event(subwin, wID, wEvt);
+				if (!subwin->ProcessEventDefault(ctrl))
+				{
+					ctrl->Event(subwin, wID, wEvt);
+				}
 			}
 			break;
 		}
@@ -1270,28 +1427,24 @@ protected:
 		}
 		case WM_CTLCOLORSTATIC:
 		case WM_CTLCOLORBTN: //In order to make those edges invisble when we use RoundRect(),
-		{                //we make the color of our button's background match window's background
-			SetBkMode((HDC)wParam, TRANSPARENT);
-			HWND hwnd = (HWND)lParam;
-
-			Control* ctrl = (Control*)(GetWindowLongPtr(hwnd, GWLP_USERDATA));
-			if (ctrl && ctrl->GetType() == ControlType::LABEL)
-			{
-				Label* lab = static_cast<Label*>(ctrl);
-				lab->UpdateTextColor((HDC)wParam);
-			}
-
-			return (INT_PTR)GetStockObject((HOLLOW_BRUSH));
+		{
+			HDC hdcStatic = (HDC)wParam;
+			SetTextColor(hdcStatic, RGB(109, 194, 222));
+			SetBkColor(hdcStatic, RGB(0, 0, 0));
+			return (INT_PTR)CreateSolidBrush(RGB(0, 0, 0));
+			break;
 		}
 		case WM_PAINT:
 		{
+			DefWindowProc(hWnd, message, wParam, lParam);
+
+			subwin->OnPaintDefault();
 			subwin->OnPaint(subwin);
-			break;  //[BUG] always drawing
+			return 0;  //[BUG] always drawing
 		}
 		case WM_ERASEBKGND:
 		{
-
-			return TRUE;
+			//return TRUE;
 		}
 		default:
 		{
@@ -1301,36 +1454,67 @@ protected:
 		return DefWindowProc(hWnd, message, wParam, lParam);
 	}
 
+private:
+	fox::Color4			m_col_background;
+
 //======================================================================================
 //⮟⮟ Triển hàm thao tác từ bên ngoài tác động vào Window class                         
 //======================================================================================
-protected:
-	/***************************************************************************
-	*! @brief  : Cập nhật thông tin stype của window 
-	*! @return : void
-	*! @author : thuong.nv          - [Date] : 05/03/2023
-	***************************************************************************/
-	void UpdateStyleWindow()
+public:
+
+	void InitWindowControl()
 	{
-		m_pProp.m_dwExStyle = WS_EX_APPWINDOW | WS_EX_WINDOWEDGE ;  // Window Extended Style
-		m_pProp.m_dwStyle = WS_OVERLAPPEDWINDOW | WS_CLIPCHILDREN | WS_EX_TRANSPARENT;  // Windows Style
-		//@@ WS_CLIPCHILDREN: Control của window sẽ không được vẽ khi SwapBuffer
+		m_col_background = { 14.f, 14.f, 13.f, 255.f };
 
-		//if (m_pProp.m_bFullScreen)                           // Are We Still In Fullscreen Mode?
-		//{
-		//	// Window Extended Style
-		//	m_pProp.m_dwExStyle = m_pProp.m_dwExStyle &~(WS_EX_DLGMODALFRAME | WS_EX_WINDOWEDGE
-		//		| WS_EX_CLIENTEDGE | WS_EX_STATICEDGE);
-		//	// Windows Style
-		//	m_pProp.m_dwStyle = m_pProp.m_dwStyle &~(WS_CAPTION | WS_THICKFRAME);
-		//}
+		GDIPLUS_DRAW_INFO_PTR pRenderInfo = static_cast<GDIPLUS_DRAW_INFO_PTR>(m_render.RenderInfo());
+		NULL_CHECK_RETURN(pRenderInfo, );
 
-		if (m_iShow == false)
-		{
-			// dwMyFlags ^= dwSomeFlag; remove flag 
-			m_pProp.m_dwStyle &= ~WS_VISIBLE;
-		}
+		m_height_title_bar = 18;
+
+		m_rect_title = { 1, 1, pRenderInfo->rect.Width - 2, m_height_title_bar };
+
+		m_btn_minimize = new Button();
+		m_btn_minimize->SetLabel(L"▼");
+		m_btn_minimize->SetPosition(1, 1);
+		m_btn_minimize->SetSize(m_height_title_bar, m_height_title_bar);
+		m_btn_minimize->SetBackgroundColor(m_col_background);
+
+		this->AddControl(m_btn_minimize);
+
+		m_btn_close = new Button();
+		m_btn_close->SetLabel(L"x");
+		m_btn_close->SetPosition(pRenderInfo->rect.Width - (m_height_title_bar), 1);
+		m_btn_close->SetSize(m_height_title_bar, m_height_title_bar);
+		m_btn_close->SetBackgroundColor(m_col_background);
+
+		this->AddControl(m_btn_close);
 	}
+
+	void OnPaintDefault()
+	{
+		GDIPLUS_DRAW_INFO_PTR pRenderInfo = static_cast<GDIPLUS_DRAW_INFO_PTR>(m_render.RenderInfo());
+		NULL_CHECK_RETURN(pRenderInfo, );
+
+		// 0 > Draw background color
+		Gdiplus::Pen pen_back(Gdiplus::Color(255, 255, 255), 1);
+		Gdiplus::SolidBrush brush_back(Gdiplus::Color(14, 14, 13));
+		m_render.DrawRectangleFull(&pen_back, &brush_back, 0);
+
+		// 1 > Draw title bar
+		Gdiplus::Pen pen_title(Gdiplus::Color(28, 27, 27), 1);
+		Gdiplus::SolidBrush brush_title(Gdiplus::Color(10, 10, 9));
+		m_render.DrawRectangle(m_rect_title, &pen_title, &brush_title, 0);
+
+		Gdiplus::StringFormat format;
+		format.SetAlignment(Gdiplus::StringAlignmentNear);
+		format.SetLineAlignment(Gdiplus::StringAlignmentCenter);
+
+		Gdiplus::SolidBrush text_normal_color(Gdiplus::Color(255, 255, 255));
+		m_render.DrawTextRect(m_rect_title, m_title.c_str(), &text_normal_color, &format, Gdiplus::PointF(m_height_title_bar + 1, 0));
+
+		m_render.Flush();
+	}
+
 //======================================================================================
 //⮟⮟ Triển hàm thao tác từ bên ngoài tác động vào Window class                         
 //======================================================================================
@@ -1361,13 +1545,13 @@ public:
 			//this->UpdateTitle();
 
 			//// Initialization control
-			//this->OnInitControl();
+			this->OnInitControl();
 
 			//// Update font control after initialization control
 			//this->UpdateFont();
 
 			//// Update and setup properties when everything is done
-			//this->InitProperties();
+			this->InitProperties();
 		}
 
 		if (ret)
@@ -1388,11 +1572,8 @@ public:
 
 	virtual void OnDestroy()
 	{
-		//// Gọi hàm mở rộng trước
-		//if (m_funOnDestroy)
-		//{
-		//	m_funOnDestroy(this);
-		//}
+		// Gọi hàm mở rộng trước
+		CHECK_RUN_FUNCTION(m_funOnDestroy, this);
 
 		// Xử lý hủy mặc định
 		DeleteGDIplus();

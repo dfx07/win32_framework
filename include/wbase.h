@@ -41,6 +41,14 @@ class SubWindow;
 	}\
 }
 
+#define CHECK_RUN_FUNCTION(bFunCheck, ...)\
+{\
+	if(bFunCheck) \
+	{\
+		bFunCheck(__VA_ARGS__);\
+	}\
+}
+
 enum class ControlType
 {
 	BUTTON		,
@@ -633,6 +641,16 @@ protected:
 class Dllexport WindowBase
 {
 protected:
+	enum MESSAGE_SUBWIN
+	{
+		SUB_PROCESS_MSG   = -100000,
+		SUB_MESSAGE_START =  100002,
+		SUB_MOVE_WIN      = SUB_MESSAGE_START + 0x0001,
+		SUB_MINI_WIN      = SUB_MESSAGE_START + 0x0002,
+		SUB_CLOSE_WIN     = SUB_MESSAGE_START + 0x0003,
+	};
+
+protected:
 	HWND						m_hWnd;
 	HWND						m_hWndParent;
 	GdiplusToken				m_gdiToken;
@@ -841,7 +859,7 @@ protected:
 	virtual void UpdateSize()
 	{
 		NULL_CHECK_RETURN(m_hWnd, );
-		::SetWindowPos(m_hWnd, NULL, m_x, m_y, 0, 0, SWP_NOMOVE | SWP_NOZORDER);
+		::SetWindowPos(m_hWnd, NULL, m_x, m_y, m_width, m_height, SWP_NOMOVE | SWP_NOZORDER);
 	}
 
 	virtual void UpdateParent()
@@ -936,6 +954,24 @@ public:
 	}
 
 	/***************************************************************************
+	*! @brief  : Get current cursor position [left - top]
+	*! @return : void
+	*! @author : thuong.nv          - [Date] : 05/03/2023
+	***************************************************************************/
+	static POINT GetCursorInScreen()
+	{
+		POINT cursor_pos = {0, 0};
+		if (::GetCursorPos(&cursor_pos))
+		{
+			return cursor_pos;
+		}
+		else
+		{
+			return { 0,0 };
+		}
+	}
+
+	/***************************************************************************
 	*! @brief  : Get current cursor position [Center]
 	*! @return : true : ok | false : not ok
 	*! @author : thuong.nv          - [Date] : 05/03/2023
@@ -1003,6 +1039,18 @@ public:
 	}
 
 	/***************************************************************************
+	*! @brief  : set window position
+	*! @return : true : ok | false : not ok
+	*! @author : thuong.nv          - [Date] : 05/03/2023
+	***************************************************************************/
+	void MovePosition(const int x, const int y)
+	{
+		m_x += x;
+		m_y += y;
+		this->UpdateLocation();
+	}
+
+	/***************************************************************************
 	*! @brief  : Set size window
 	*! @return : true : ok | false : not ok
 	*! @author : thuong.nv          - [Date] : 05/03/2023
@@ -1033,6 +1081,17 @@ public:
 
 		m_hWndParent = parent;
 		this->UpdateParent();
+	}
+
+	/***************************************************************************
+	*! @brief  : send message window
+	*! @return : true : ok | false : not ok
+	*! @author : thuong.nv          - [Date] : 05/03/2023
+	***************************************************************************/
+	void PushMessage(UINT message, WPARAM wParam, LPARAM lParam)
+	{
+		NULL_CHECK_RETURN(m_hWnd, );
+		::SendMessage(m_hWnd, message, wParam, lParam);
 	}
 
 //==============================================================================
@@ -1091,7 +1150,7 @@ public:
 		else
 		{
 			subwindow->SetParent(m_hWnd);
-			if (!subwindow->Create(GL_SUBWIN_CLASS))
+			if (subwindow->Create(GL_SUBWIN_CLASS))
 			{
 				m_subwindows.push_back(subwindow);
 			}
@@ -1169,12 +1228,12 @@ protected:
 	***************************************************************************/
 	void DestroySubWindow()
 	{
-		for (int i = 0; i < m_subwindows.size(); i++)
-		{
-			m_subwindows[i]->Destroy();
-			SAFE_DELETE(m_subwindows[i]);
-		}
-		m_subwindows.clear();
+		//for (int i = 0; i < m_subwindows.size(); i++)
+		//{
+		//	m_subwindows[i]->Destroy();
+		//	SAFE_DELETE(m_subwindows[i]);
+		//}
+		//m_subwindows.clear();
 	}
 
 //==============================================================================

@@ -9,54 +9,64 @@ Button* btn;
 
 void Create(WindowBase* win)
 {
-    btn = new Button();
-    btn->SetLabel(L"Ngô Văn Thường");
-    btn->SetSize(200, 24);
-    btn->SetPosition(100, 100);
-    btn->SetBorderRadius(2);
-    btn->SetBorderWidth(1);
-    btn->UseEffect(true);
-    btn->Visible(true);
+    //btn = new Button();
+    //btn->SetLabel(L"Ngô Văn Thường");
+    //btn->SetSize(200, 24);
+    //btn->SetPosition(100, 100);
+    //btn->SetBorderRadius(2);
+    //btn->SetBorderWidth(1);
+    //btn->UseEffect(true);
+    //btn->Visible(true);
 
-    win->AddControl(btn);
+    //win->AddControl(btn);
 
-    btn = new Button();
-    btn->SetLabel(L"Ngô Văn Thường");
-    btn->SetSize(200, 24);
-    btn->SetPosition(100, 124);
-    btn->SetBorderRadius(2);
-    btn->SetBorderWidth(1);
-    btn->UseEffect(true);
-    btn->Visible(true);
+    //btn = new Button();
+    //btn->SetLabel(L"Ngô Văn Thường");
+    //btn->SetSize(200, 24);
+    //btn->SetPosition(100, 124);
+    //btn->SetBorderRadius(2);
+    //btn->SetBorderWidth(1);
+    //btn->UseEffect(true);
+    //btn->Visible(true);
 
-    win->AddControl(btn);
+    //win->AddControl(btn);
 
-    btn = new Button();
-    btn->SetLabel(L"Ngô Văn Thường");
-    btn->SetSize(200, 24);
-    btn->SetPosition(100, 150);
-    btn->SetBorderRadius(2);
-    btn->SetBorderWidth(1);
-    btn->UseEffect(true);
-    btn->Visible(true);
+    //btn = new Button();
+    //btn->SetLabel(L"Ngô Văn Thường");
+    //btn->SetSize(200, 24);
+    //btn->SetPosition(100, 150);
+    //btn->SetBorderRadius(2);
+    //btn->SetBorderWidth(1);
+    //btn->UseEffect(true);
+    //btn->Visible(true);
 
-    win->AddControl(btn);
+    //win->AddControl(btn);
 
-    Checkbox* chk = new Checkbox();
+    //Checkbox* chk = new Checkbox();
 
-    chk->SetText(L"Check box 1");
-    chk->SetPosition(100, 200);
-    chk->SetSize(200, 24);
-    chk->SetBackgroundColor(Color4(59, 91, 179));
+    //chk->SetText(L"Check box 1");
+    //chk->SetPosition(100, 200);
+    //chk->SetSize(200, 24);
+    //chk->SetBackgroundColor(Color4(59, 91, 179));
 
     SubWindow* sub = new SubWindow();
     sub->SetTitle(L"sub window");
     sub->SetPosition(20, 20);
-    sub->SetSize(20, 20);
+    sub->SetSize(200, 200);
     sub->Visible(true);
 
+    //btn = new Button();
+    //btn->SetLabel(L"Resize");
+    //btn->SetSize(40, 20);
+    //btn->SetPosition(0, 30);
+    //btn->SetBorderRadius(0);
+    //btn->SetBorderWidth(0);
+    //btn->Visible(true);
+
+    //sub->AddControl(btn);
+
     win->AddSubWindow(sub);
-    win->AddControl(chk);
+    //win->AddControl(chk);
 
 }
 
@@ -84,7 +94,8 @@ void Keyboard(WindowBase* win)
 
 void Draw(WindowBase* win)
 {
-    int c = 10;
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    glClearColor(120.0 / 255.0, 139.f / 255.0, 201.0 / 255.0, 1.0);
 }
 
 void Resize(WindowBase* win)
