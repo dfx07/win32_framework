@@ -19,14 +19,17 @@
     <Filter Include="Header Files\math">
       <UniqueIdentifier>{5e831aa2-24a3-4fd4-a051-fbb2554a1079}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Header Files\ui">
-      <UniqueIdentifier>{5fe7312a-f36c-454d-8d11-dc7fea493646}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Header Files\graphics">
       <UniqueIdentifier>{827c4795-fd0c-4106-b144-df9736a715c2}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Header Files\controls">
+    <Filter Include="Header Files\ui">
       <UniqueIdentifier>{1c41e686-8757-4421-843f-46185ca747ac}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\ui\controls">
+      <UniqueIdentifier>{8f0a1199-6ef6-40eb-ad6f-b61bd7476b3c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\ui\window">
+      <UniqueIdentifier>{18b381a7-8b66-4551-a4e4-24396f6131c5}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -51,19 +54,43 @@
       <Filter>Header Files\math</Filter>
     </ClInclude>
     <ClInclude Include="..\include\wcontrol.h">
-      <Filter>Header Files\controls</Filter>
-    </ClInclude>
-    <ClInclude Include="..\include\whandle.h">
-      <Filter>Header Files\controls</Filter>
+      <Filter>Header Files\ui</Filter>
     </ClInclude>
     <ClInclude Include="..\include\wdef.h">
-      <Filter>Header Files\controls</Filter>
+      <Filter>Header Files\ui</Filter>
     </ClInclude>
     <ClInclude Include="..\include\wbase.h">
-      <Filter>Header Files\controls</Filter>
+      <Filter>Header Files\ui</Filter>
     </ClInclude>
     <ClInclude Include="..\include\wapi.h">
-      <Filter>Header Files\controls</Filter>
+      <Filter>Header Files\ui</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\controls\xbutton.h">
+      <Filter>Header Files\ui\controls</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\controls\xcheckbox.h">
+      <Filter>Header Files\ui\controls</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\controls\xlabel.h">
+      <Filter>Header Files\ui\controls</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\controls\xcombobox.h">
+      <Filter>Header Files\ui\controls</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\controls\xcontextmenu.h">
+      <Filter>Header Files\ui\controls</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\whandle.h">
+      <Filter>Header Files\ui\window</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\window\xwindow.h">
+      <Filter>Header Files\ui\window</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\window\xsubwindow.h">
+      <Filter>Header Files\ui\window</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\wctrl.h">
+      <Filter>Header Files\ui</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

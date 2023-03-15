@@ -32,180 +32,6 @@ class MenuContext;
 class MenuBar;
 class Window;
 
-/**********************************************************************************
-* ⮟⮟ Class name: Control base
-* Base class for inherited window controls
-***********************************************************************************/
-class Dllexport RectPropertyUI
-{
-protected:
-
-	typedef struct tagPropertyUI
-	{
-		unsigned int border_radius   = 0;
-		unsigned int border_width    = 0;
-		Color4		 text_color      = {255, 255, 255, 255};
-		Color4		 text_hover_color= {255, 255, 255, 255};
-		Color4		 background_color= {255, 255, 255, 255};
-		Color4		 background_hover_color = { 255, 0, 0, 255 };
-		Color4		 background_click_color = { 0, 255, 0, 255 };
-
-	} PropertyControlUI;
-
-	PropertyControlUI	m_property;
-
-public:
-	void SetBorderWidth(unsigned int iWidth)
-	{
-		m_property.border_width = iWidth;
-	}
-
-	void SetBorderRadius(unsigned int iWidth)
-	{
-		m_property.border_radius = iWidth;
-	}
-
-	void SetBackgroundColor(const Color4 cl)
-	{
-		m_property.background_color = cl;
-	}
-
-	void SetBackgroundHoverColor(const Color4 cl)
-	{
-		m_property.background_hover_color = cl;
-	}
-
-	void SetBackgroundClickColor(const Color4 cl)
-	{
-		m_property.background_hover_color = cl;
-	}
-
-	void SetTextColor(const Color4 cl)
-	{
-		m_property.text_color = cl;
-	}
-
-	void SetTextHoverColor(const Color4 cl)
-	{
-		m_property.text_hover_color = cl;
-	}
-
-protected:
-
-	friend class Window;
-};
-
-/**********************************************************************************
-* ⮟⮟ Class name: MenuContext control
-* MenuContext control for window
-***********************************************************************************/
-class Dllexport MenuItemBase
-{
-public:
-	UINT			  m_ID;
-	UINT			  m_type;
-	std::wstring	  m_label;
-
-public:
-	void(*m_EventFun)(Window* window, Control* ctrl) = NULL;
-
-public:
-	MenuItemBase()
-	{
-		m_ID = 0;
-		m_label = L"";
-	};
-
-	void	SetEvent(void(*mn)(Window*, Control*)) { m_EventFun = mn; }
-	void	SetLabel(std::wstring lab)			  { m_label = lab;	 }
-	void	SetType(UINT type)					  { m_type = type;	 }
-	void	SetID(UINT id)						  { m_ID = id;		 }
-
-	std::wstring GetLabel()  { return m_label;	}
-	UINT		 GetType()   { return m_type;	}
-	UINT		 GetID()     { return m_ID;		}
-};
-
-class Dllexport MenuContext : public Control
-{
-protected:
-	HMENU                      m_hMenu;
-	std::vector<MenuItemBase>  m_items;
-
-public:
-	MenuContext() : Control(), m_hMenu()
-	{
-
-	}
-
-
-public:
-	virtual ControlType GetType() { return static_cast<ControlType>(ControlType::MENUCONTEXT); };
-
-	/***************************************************************************
-	*! @brief  : Init Menubar control
-	*! @return : number of control created
-	*! @author : thuong.nv          - [Date] : 05/03/2023
-	***************************************************************************/
-	virtual int OnInitControl()
-	{
-		m_hMenu = CreatePopupMenu();
-		
-		UINT uiStartID = m_ID + 1;
-
-		for (int i = 0; i < m_items.size(); i++)
-		{
-			m_items[i].SetID(uiStartID++);
-
-			if (m_items[i].GetType() == MF_SEPARATOR)
-			{
-				AppendMenu(m_hMenu, MF_SEPARATOR, m_items[i].GetID(), NULL);
-			}
-			else
-			{
-				AppendMenu(m_hMenu, m_items[i].GetType(), m_items[i].GetID(), m_items[i].GetLabel().c_str());
-			}
-		}
-
-		return (uiStartID - m_ID);
-	}
-
-	virtual void Event(Window* window, WORD _id, WORD _event)
-	{
-		for (int i = 0; i < m_items.size(); i++)
-		{
-			if (m_items[i].m_ID == _id && m_items[i].m_EventFun)
-			{
-				m_items[i].m_EventFun(window, this);
-				break;
-			}
-		}
-	}
-
-	bool ContainID(INT ID)
-	{
-		for (int i = 0; i < m_items.size(); i++)
-		{
-			if (m_items[i].m_ID == ID) return true;
-		}
-		return false;
-	}
-
-public:
-	void AddItem(const MenuItemBase& item)
-	{
-		m_items.push_back(item);
-	}
-
-	void Show(POINT point)
-	{
-		if (m_hwndPar)
-		{
-			ClientToScreen(m_hwndPar, &point);
-			TrackPopupMenu(m_hMenu, TPM_RIGHTBUTTON, point.x, point.y, 0, m_hwndPar, NULL);
-		}
-	}
-};
 
 /**********************************************************************************
 * ⮟⮟ Class name: MenuBarContext control
@@ -294,73 +120,73 @@ public:
 	friend class MenuBar;
 };
 
-class Dllexport MenuBar : public Control
-{
-public:
-	HMENU					 m_hMenuBar;
-	std::vector<MenuBarItem> m_items;
-
-public:
-	MenuBar() : Control(), m_hMenuBar()
-	{
-
-	}
-
-public:
-	virtual ControlType GetType() { return ControlType::MENUBAR; };
-
-	/***************************************************************************
-	*! @brief  : Init Menubar control
-	*! @return : number of control created
-	*! @author : thuong.nv          - [Date] : 05/03/2023
-	***************************************************************************/
-	virtual int OnInitControl()
-	{
-		m_hMenuBar = ::CreateMenu();
-		UINT uiStartID = m_ID + 1;
-
-		for (int i = 0; i < m_items.size(); i++)
-		{
-			int nMenuCreated = m_items[i].CreateMenuBarItem(uiStartID);
-			if (nMenuCreated > 0)
-			{
-				uiStartID += nMenuCreated;
-				AppendMenu(m_hMenuBar, MF_POPUP, (UINT_PTR)m_items[i].m_hMenu, m_items[i].m_text.c_str());
-				SetMenu(m_hwndPar, m_hMenuBar);
-			}
-		}
-
-		return (uiStartID - m_ID);
-	}
-
-public:
-
-	void AddItem(MenuBarItem item)
-	{
-		m_items.push_back(item);
-	}
-
-	virtual void Event(Window* window, WORD _id, WORD _event)
-	{
-		for (int i = 0; i < m_items.size(); i++)
-		{
-			if (m_items[i].CallEvent(window, this, _id))
-				return;
-		}
-	}
-
-	bool ContainID(INT ID)
-	{
-		for (int i = 0; i < m_items.size(); i++)
-		{
-			if (m_items[i].ContainID(ID))
-				return true;
-		}
-		return false;
-	}
-
-	friend class Window;
-};
+//class Dllexport MenuBar : public Control
+//{
+//public:
+//	HMENU					 m_hMenuBar;
+//	std::vector<MenuBarItem> m_items;
+//
+//public:
+//	MenuBar() : Control(), m_hMenuBar()
+//	{
+//
+//	}
+//
+//public:
+//	virtual ControlType GetType() { return ControlType::MENUBAR; };
+//
+//	/***************************************************************************
+//	*! @brief  : Init Menubar control
+//	*! @return : number of control created
+//	*! @author : thuong.nv          - [Date] : 05/03/2023
+//	***************************************************************************/
+//	virtual int OnInitControl()
+//	{
+//		m_hMenuBar = ::CreateMenu();
+//		UINT uiStartID = m_ID + 1;
+//
+//		for (int i = 0; i < m_items.size(); i++)
+//		{
+//			int nMenuCreated = m_items[i].CreateMenuBarItem(uiStartID);
+//			if (nMenuCreated > 0)
+//			{
+//				uiStartID += nMenuCreated;
+//				AppendMenu(m_hMenuBar, MF_POPUP, (UINT_PTR)m_items[i].m_hMenu, m_items[i].m_text.c_str());
+//				SetMenu(m_hwndPar, m_hMenuBar);
+//			}
+//		}
+//
+//		return (uiStartID - m_ID);
+//	}
+//
+//public:
+//
+//	void AddItem(MenuBarItem item)
+//	{
+//		m_items.push_back(item);
+//	}
+//
+//	virtual void Event(Window* window, WORD _id, WORD _event)
+//	{
+//		for (int i = 0; i < m_items.size(); i++)
+//		{
+//			if (m_items[i].CallEvent(window, this, _id))
+//				return;
+//		}
+//	}
+//
+//	bool ContainID(INT ID)
+//	{
+//		for (int i = 0; i < m_items.size(); i++)
+//		{
+//			if (m_items[i].ContainID(ID))
+//				return true;
+//		}
+//		return false;
+//	}
+//
+//	friend class Window;
+//};
 
 /**********************************************************************************
 * ⮟⮟ Class name: Button control
@@ -634,6 +460,8 @@ protected:
 		m_render.LoadFont(L"Segoe UI");
 		
 		this->CreateColorButton();
+
+		std::cout << "draw" << std::endl;
 
 		// [2] Draw color button state
 		const unsigned int iRadius = m_property.border_radius;
@@ -1108,6 +936,15 @@ public:
 	{
 		m_sLabel = text;
 		m_bChecked = false;
+
+		m_property.background_color		  = std::move(Color4(59, 91, 179));
+		m_property.background_hover_color = std::move(Color4(229, 241, 255));
+		m_property.background_click_color = std::move(Color4(201, 224, 247));
+
+		m_property.border_radius = 0;
+		m_property.border_width  = 0;
+		m_property.text_color = std::move(Color4(255, 255, 255));
+		m_property.text_hover_color = std::move(Color4(0, 0, 0));
 	}
 
 	~Checkbox()

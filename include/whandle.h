@@ -36,8 +36,15 @@
 #pragma comment (lib,"glew32.lib")
 
 
-#define   GL_PRESSED    1
-#define   GL_RELEASE    0
+enum MESSAGE_SUBWIN
+{
+	SUB_PROCESS_MSG = -100000,
+	SUB_MESSAGE_START = 100002,
+	SUB_MOVE_WIN = SUB_MESSAGE_START + 0x0001,
+	SUB_MINI_WIN = SUB_MESSAGE_START + 0x0002,
+	SUB_CLOSE_WIN = SUB_MESSAGE_START + 0x0003,
+};
+
 
 ___BEGIN_NAMESPACE___
 
@@ -1141,7 +1148,7 @@ protected:
 	***************************************************************************/
 	void UpdateStyleWindow()
 	{
-		m_pProp.m_dwExStyle = 0 ;  // Window Extended Style
+		m_pProp.m_dwExStyle = 0;  // Window Extended Style
 		m_pProp.m_dwStyle = WS_CHILDWINDOW ;  // Windows Style
 
 		if (m_iShow == false)
@@ -1194,6 +1201,9 @@ public:
 
 		SetWindowLongPtr(m_hWnd, GWLP_USERDATA, (LONG_PTR)this);
 
+		SetWindowLong(m_hWnd, GWL_EXSTYLE, GetWindowLong(m_hWnd, GWL_EXSTYLE) ^ WS_EX_LAYERED);
+		SetLayeredWindowAttributes(m_hWnd, RGB(0, 0, 0), 60, LWA_ALPHA);
+
 		// Update size window after created
 		RECT rect;
 		if (GetClientRect(m_hWnd, &rect))
@@ -1240,43 +1250,42 @@ protected:
 			case SUB_MOVE_WIN:
 			{
 				if (this->m_move_window == false)
-				{
-					std::cout << "1" << std::endl;
 					break;
-				}
-				else
-				{
-					std::cout << "22" << std::endl;
-				}
-				
 
 				POINT cursor_pos = GetCursorInScreen();
-				POINT move = {	cursor_pos.x - m_last_cursor_pos.x,
-								cursor_pos.y - m_last_cursor_pos.y };
+				POINT move = {cursor_pos.x - m_last_cursor_pos.x,
+							  cursor_pos.y - m_last_cursor_pos.y};
 
 				MovePosition(move.x, move.y);
 
 				m_last_cursor_pos = cursor_pos;
+
 				break;
 			}
 
 			case SUB_MINI_WIN:
 			{
-				if (m_minimize_window == true)
+				m_minimize_window = !m_minimize_window;
+
+				if (m_minimize_window)
 				{
-					SetSize(m_rect_title.Width, m_rect_title.Height + 2);
+					PushWindowStatus(tagWndStatus::PushType::SIZE);
+					SetSize(m_rect_title.Width + 4, m_rect_title.Height + 2);
 				}
 				else
 				{
-					SetSize(m_rect_title.Width, m_rect_title.Height + 2);
+					if (!IsEmptyStackWindowStatus())
+					{
+						WindowStatus status = PopWindowStatus();
+						SetSize(status.m_width, status.m_height);
+					}
 				}
-
-				m_minimize_window = !m_minimize_window;
 				break;
 			}
 
 			case SUB_CLOSE_WIN:
 			{
+				Close();
 				break;
 			}
 
@@ -1331,7 +1340,12 @@ protected:
 		}
 		case WM_LBUTTONUP:
 		{
-			subwin->m_move_window = false;
+			if (subwin->m_move_window)
+			{
+				subwin->m_move_window = false;
+				InvalidateRect(subwin->GetHwnd(), NULL, FALSE);
+			}
+			
 			subwin->SetMouseButtonStatus(VK_LBUTTON, false);
 			subwin->OnMouseButton(subwin, GLMouse::LeftButton, GL_RELEASE);
 			break;
@@ -1383,10 +1397,6 @@ protected:
 			subwin->UpdateTitle();
 			// cannot use opengl context in this tunnel
 			subwin->OnResize(subwin);
-			
-			// Refresh screen when resize window in case one thread
-			//if (subwin->GetDrawMode() == 0)
-			//	win->OnDraw();
 
 			break;
 		}
@@ -1411,7 +1421,7 @@ protected:
 				Control* ctrl = (Control*)(GetWindowLongPtr(hwndControl, GWLP_USERDATA));
 				if (!subwin->ProcessEventDefault(ctrl))
 				{
-					ctrl->Event(subwin, wID, wEvt);
+					ctrl->OnCommand(subwin, wID, wEvt);
 				}
 			}
 			break;
@@ -1421,26 +1431,22 @@ protected:
 			WORD wID = LOWORD(wParam); // item, control, or accelerator identifier
 			LPDRAWITEMSTRUCT pdis = (LPDRAWITEMSTRUCT)lParam;
 			Control* ctrl = (Control*)(GetWindowLongPtr(pdis->hwndItem, GWLP_USERDATA));
-			if (ctrl)
-				ctrl->Draw(pdis);
+			if (ctrl) ctrl->Draw(pdis);
 			break;
 		}
 		case WM_CTLCOLORSTATIC:
 		case WM_CTLCOLORBTN: //In order to make those edges invisble when we use RoundRect(),
 		{
-			HDC hdcStatic = (HDC)wParam;
-			SetTextColor(hdcStatic, RGB(109, 194, 222));
-			SetBkColor(hdcStatic, RGB(0, 0, 0));
-			return (INT_PTR)CreateSolidBrush(RGB(0, 0, 0));
+			SetBkColor((HDC)wParam, RGB(subwin->m_col_background.r, subwin->m_col_background.g, subwin->m_col_background.b));
+			SetBkMode((HDC)wParam, TRANSPARENT);
+			return(LRESULT)GetStockObject(HOLLOW_BRUSH);
 			break;
 		}
 		case WM_PAINT:
 		{
-			DefWindowProc(hWnd, message, wParam, lParam);
-
 			subwin->OnPaintDefault();
 			subwin->OnPaint(subwin);
-			return 0;  //[BUG] always drawing
+			break;
 		}
 		case WM_ERASEBKGND:
 		{
@@ -1497,12 +1503,12 @@ public:
 
 		// 0 > Draw background color
 		Gdiplus::Pen pen_back(Gdiplus::Color(255, 255, 255), 1);
-		Gdiplus::SolidBrush brush_back(Gdiplus::Color(14, 14, 13));
+		Gdiplus::SolidBrush brush_back(Gdiplus::Color(255, 14, 14, 13));
 		m_render.DrawRectangleFull(&pen_back, &brush_back, 0);
 
 		// 1 > Draw title bar
 		Gdiplus::Pen pen_title(Gdiplus::Color(28, 27, 27), 1);
-		Gdiplus::SolidBrush brush_title(Gdiplus::Color(10, 10, 9));
+		Gdiplus::SolidBrush brush_title(Gdiplus::Color(30, 255, 10, 9));
 		m_render.DrawRectangle(m_rect_title, &pen_title, &brush_title, 0);
 
 		Gdiplus::StringFormat format;
@@ -1521,6 +1527,50 @@ public:
 public:
 	virtual WindowType GetType() { return WindowType::SubWin; }
 
+	/***************************************************************************
+	*! @brief  : Khởi tạo toàn bộ control đã được thêm
+	*! @return : true : ok | false : not ok
+	*! @author : thuong.nv          - [Date] : 05/03/2023
+	***************************************************************************/
+	virtual void OnInitControl()
+	{
+		int err = 0;
+
+		for (int i = 0; i < m_controls.size(); i++)
+		{
+			if (!m_controls[i]->IsCreated())
+			{
+				err += (m_controls[i]->InitControl(m_hWnd, m_uiControlIDs) != 0)
+					? 1: 0;
+
+				RectPropertyUI* ptr = dynamic_cast<RectPropertyUI*>(m_controls[i]);
+				if (ptr)
+				{
+					ptr->SetBackgroundColor(m_col_background);
+				}
+			}
+		}
+
+		WindowBase::OnInitControl();
+	}
+
+	/***************************************************************************
+	*! @brief  : Get current cursor position [Center]
+	*! @return : true : ok | false : not ok
+	*! @author : thuong.nv          - [Date] : 05/03/2023
+	***************************************************************************/
+	virtual int AddControl(Control* control)
+	{
+		NULL_CHECK_RETURN(control, 0);
+
+		RectPropertyUI* pPropertyUI = dynamic_cast<RectPropertyUI*>(control);
+		if (pPropertyUI != NULL)
+		{
+			pPropertyUI->SetBackgroundColor(m_col_background);
+		}
+
+		return WindowBase::AddControl(control);
+	}
 	//==================================================================================
 	// Khởi tạo window và thiết lập thông số                                            
 	//==================================================================================

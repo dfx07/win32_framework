@@ -143,11 +143,19 @@
     <ClCompile Include="win32_framework.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\include\controls\xbutton.h" />
+    <ClInclude Include="..\include\controls\xcheckbox.h" />
+    <ClInclude Include="..\include\controls\xcombobox.h" />
+    <ClInclude Include="..\include\controls\xlabel.h" />
+    <ClInclude Include="..\include\controls\xcontextmenu.h" />
     <ClInclude Include="..\include\wapi.h" />
     <ClInclude Include="..\include\wbase.h" />
     <ClInclude Include="..\include\wcontrol.h" />
+    <ClInclude Include="..\include\wctrl.h" />
     <ClInclude Include="..\include\wdef.h" />
     <ClInclude Include="..\include\whandle.h" />
+    <ClInclude Include="..\include\window\xsubwindow.h" />
+    <ClInclude Include="..\include\window\xwindow.h" />
     <ClInclude Include="..\include\xalgorithm.h" />
     <ClInclude Include="..\include\xeasing.h" />
     <ClInclude Include="..\include\xsysdef.h" />

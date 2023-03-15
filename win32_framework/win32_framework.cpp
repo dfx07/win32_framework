@@ -42,12 +42,11 @@ void Create(WindowBase* win)
 
     //win->AddControl(btn);
 
-    //Checkbox* chk = new Checkbox();
+    Checkbox* chk = new Checkbox();
 
-    //chk->SetText(L"Check box 1");
-    //chk->SetPosition(100, 200);
-    //chk->SetSize(200, 24);
-    //chk->SetBackgroundColor(Color4(59, 91, 179));
+    chk->SetText(L"Check box");
+    chk->SetPosition(10, 40);
+    chk->SetSize(100, 20);
 
     SubWindow* sub = new SubWindow();
     sub->SetTitle(L"sub window");
@@ -64,6 +63,7 @@ void Create(WindowBase* win)
     //btn->Visible(true);
 
     //sub->AddControl(btn);
+    sub->AddControl(chk);
 
     win->AddSubWindow(sub);
     //win->AddControl(chk);
@@ -109,7 +109,7 @@ void Process(WindowBase* pWin)
 
 int main()
 {
-    Window *window = new Window(L"OpenGL", 100 ,100);
+    Window *window = new Window(L"OpenGL", 100 ,100, 640, 480);
     window->SetOnDrawfunc(Draw);
     window->SetOnCreatedfunc(Create);
     window->SetProcessfunc(Process);

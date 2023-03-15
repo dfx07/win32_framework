@@ -11,163 +11,30 @@
 #ifndef WBASE_H
 #define WBASE_H
 
-#include "wdef.h"
+#include "wctrl.h"
 #include <string>
 
 ___BEGIN_NAMESPACE___
 
-
-class Window;
-class SubWindow;
-
-#define addAtribute(attribs, name, value)\
-{\
-    assert((size_t) attribCount < attribsize);\
-    attribs[attribCount++] = name;  \
-    attribs[attribCount++] = value; \
-}
-
-#define addAtributeEnd(attribs)\
-{\
-    assert((size_t) attribCount < attribsize); \
-    attribs[attribCount++] = 0;  \
-}
-
-#define ON_FUNCTION_WINDOW(bFunCheck, ...)\
-{\
-	if(bFunCheck) \
-	{\
-		return bFunCheck(__VA_ARGS__);\
-	}\
-}
-
-#define CHECK_RUN_FUNCTION(bFunCheck, ...)\
-{\
-	if(bFunCheck) \
-	{\
-		bFunCheck(__VA_ARGS__);\
-	}\
-}
-
-enum class ControlType
-{
-	BUTTON		,
-	MENUCONTEXT	,
-	MENUBAR		,
-	COMBOBOX	,
-	LABEL		,
-	CHECKBOX	,
-};
-
-enum class WindowType
-{
-	NoDefine,
-	MainWin,
-	SubWin ,
-};
-
-class WindowBase;
-class Control;
-class Window;
-class SubWindow;
-
 /**********************************************************************************
-* ⮟⮟ Struct base window
+* ⮟⮟ Class name: ControlBase - Created: 15/03/2023
 * Base class for window handle inheritance
 ***********************************************************************************/
-typedef struct tagWndStatus
+class Dllexport ControlBase : public XControl
 {
-	std::wstring	m_title;
-	int				m_x;
-	int				m_y;
-	int				m_width;
-	int				m_height;
-	int				m_RelState;
-
-	tagWndStatus()
-	{
-		m_title		= L"None";
-		m_x			= 0;
-		m_y			= 0;
-		m_width		= 640;
-		m_height	= 480;
-		m_RelState	= 0;    // Trạng thái mặc định
-	}
-} WindowStatus;
-
-
-typedef struct tagControlRect
-{
-	float     m_x;
-	float     m_y;
-	UINT      m_width;
-	UINT      m_height;
-
 public:
-	tagControlRect(): m_x(0.f), m_y(0.f),
-		m_width(0), m_height(0)
+	ControlBase(): XControl()
 	{
 
-	}
-
-	void Set(float x, float y, UINT w, UINT h)
-	{
-		this->SetPos(x, y);
-		this->SetSize(w, h);
-	}
-
-	void Set(int x, int y, UINT w, UINT h)
-	{
-		this->SetPos((float)x, (float)y);
-		this->SetSize(w, h);
-	}
-
-	void SetPos(float x, float y)
-	{
-		m_x = x;
-		m_y = y;
-	}
-
-	void SetSize(UINT w, UINT h)
-	{
-		m_width = w;
-		m_height = h;
-	}
-} ControlRect;
-
-/**********************************************************************************
-* ⮟⮟ Class name: WindowBase
-* Base class for window handle inheritance
-***********************************************************************************/
-class Dllexport Control
-{
-protected:
-	UINT         m_ID;			 // ID control
-	HWND         m_hwnd;		 // win handle control
-	HWND         m_hwndPar;		 // parent control
-	ControlRect  m_rect;		 // rect control information
-
-	bool         m_bEnable;		 // enable control
-	bool         m_bVisble;		 // is visible
-
-public:
-	Control(): m_hwnd(NULL), m_ID(0),
-		m_hwndPar(NULL)
-	{
-		m_bEnable = true;
-		m_bVisble = true;
 	}
 
 protected:
-
 	/***************************************************************************
 	*! @brief  : Get current cursor position [Center]
 	*! @return : true : ok | false : not ok
 	*! @author : thuong.nv          - [Date] : 05/03/2023
 	***************************************************************************/
 	virtual ControlType GetType() = 0;
-
-	virtual int IsCreated() { return m_hwnd ? TRUE : FALSE; }
 
 	/***************************************************************************
 	*! @brief  : Base function destroy window
@@ -188,17 +55,16 @@ protected:
 	*! @return : true : ok | false : not ok
 	*! @author : thuong.nv          - [Date] : 05/03/2023
 	***************************************************************************/
-	virtual void Event(WindowBase* window, WORD _id, WORD _event){};
+	virtual void OnCommand(WindowBase* window, WORD _id, WORD _event){};
+
+	/***************************************************************************
+	*! @brief  : Active when user use BS_OWNERDRAW control
+	*! @return : true : ok | false : not ok
+	*! @author : thuong.nv          - [Date] : 05/03/2023
+	***************************************************************************/
 	virtual bool ContainID(INT ID){ return false; };
 
-protected:
-	void SetParent(HWND hwnd) { m_hwndPar = hwnd; }
-	void SetID(UINT uiID)	  { m_ID      = uiID; }
-
 public:
-	HWND  GetHwnd()  { return m_hwnd; }
-	UINT  GetID()    { return m_ID;	  }
-
 	/***************************************************************************
 	*! @brief  : Function design pattern init control
 	*! @return : Number of control created
@@ -208,89 +74,657 @@ public:
 
 	/***************************************************************************
 	*! @brief  : function design pattern inti control
-	*! @return : 0 : ok | 1 : init control failed
+	*! @return : next id
 	*! @author : thuong.nv          - [Date] : 05/03/2023
+	*! @note   : auto define id 
 	***************************************************************************/
-	int InitControl(HWND parrent, UINT& uiID)
+	int Create(HWND hwndParent, UINT uiID)
 	{
-		this->SetParent(parrent);
+		this->SetParent(hwndParent);
 		this->SetID(uiID);
 
-		int iCreatedCtrl = this->OnInitControl();
+		int nControlCreated = OnInitControl();
 
 		// Init control done -> Ok
-		if (iCreatedCtrl > 0 && IsCreated())
+		if (nControlCreated > 0 && IsCreated())
 		{
-			uiID += iCreatedCtrl;
-			SetWindowLongPtr(m_hwnd, GWLP_USERDATA, (LONG_PTR)this);
+			uiID += nControlCreated;
+			SetWindowLongPtr(m_hWnd, GWLP_USERDATA, (LONG_PTR)this);
 		}
 		else
 		{
-			m_hwnd = NULL;
+			m_hWnd = NULL;
 			this->SetParent(NULL);
 			this->SetID(0);
-			return 1;
 		}
 
-		return 0;
+		return uiID;
 	}
 
-	/***************************************************************************
-	*! @brief  : Get current cursor position [Center]
-	*! @return : true : ok | false : not ok
-	*! @author : thuong.nv          - [Date] : 05/03/2023
-	***************************************************************************/
-	void Enable(bool bEnable)
-	{
-		m_bEnable = bEnable;
-		::EnableWindow(m_hwnd, m_bEnable ? TRUE : FALSE);
-	}
-
-	/***************************************************************************
-	*! @brief  : Get current cursor position [Center]
-	*! @return : true : ok | false : not ok
-	*! @author : thuong.nv          - [Date] : 05/03/2023
-	***************************************************************************/
-	void Visible(bool bVisible)
-	{
-		m_bVisble = bVisible;
-		::ShowWindow(m_hwnd, m_bVisble ? TRUE : FALSE);
-	}
-
-	/***************************************************************************
-	*! @brief  : Get current cursor position [Center]
-	*! @return : true : ok | false : not ok
-	*! @author : thuong.nv          - [Date] : 05/03/2023
-	***************************************************************************/
-	void SetPosition(int x, int y)
-	{
-		m_rect.SetPos(x, y);
-	}
-
-	/***************************************************************************
-	*! @brief  : Get current cursor position [Center]
-	*! @return : true : ok | false : not ok
-	*! @author : thuong.nv          - [Date] : 05/03/2023
-	***************************************************************************/
-	void SetSize(int width, int height)
-	{
-		m_rect.SetSize(width, height);
-	}
-
-	friend class Window;
 	friend class WindowBase;
-	friend class SubWindow;
 };
 
+/**********************************************************************************
+* ⮟⮟ Class name: WindowEvent
+* Base class for window handle inheritance
+***********************************************************************************/
+class Dllexport WindowEvent
+{
+protected:
+	typedef void(*typeFunOnDraw)         (WindowBase* win);
+	typedef void(*typeFunOnCreated)      (WindowBase* win);
+	typedef void(*typeFunOnDestroy)      (WindowBase* win);
+	typedef void(*typeFunOnPaint)        (WindowBase* win);
+	typedef void(*typeFunOnMouse)        (WindowBase* win, int button, int action);
+	typedef void(*typeFunOnMouseRealt)   (WindowBase* win);
+	typedef void(*typeFunOnMouseMove)    (WindowBase* win);
+	typedef void(*typeFunOnKeyboard)     (WindowBase* win);
+	typedef void(*typeFunOnProcess)      (WindowBase* win);
+	typedef void(*typeFunOnResize)       (WindowBase* win);
+	typedef void(*typeFunOnMouseScroll)  (WindowBase* win);
+
+protected:
+	typeFunOnDraw				m_funOnDraw        = NULL;
+	typeFunOnCreated			m_funOnCreated     = NULL;
+	typeFunOnDestroy			m_funOnDestroy     = NULL;
+	typeFunOnPaint				m_funOnPaint       = NULL;
+	typeFunOnMouse				m_funOnMouse       = NULL;
+	typeFunOnMouseRealt			m_funOnMouseRealt  = NULL;
+	typeFunOnMouseMove			m_funOnMouseMove   = NULL;
+	typeFunOnKeyboard			m_funOnKeyboard    = NULL;
+	typeFunOnProcess			m_funOnProcess     = NULL;
+	typeFunOnResize				m_funOnResize      = NULL;
+	typeFunOnMouseScroll		m_funOnMouseScroll = NULL;
+
+public:
+	void SetOnDrawfunc			  (typeFunOnDraw			funOnDraw)		{ m_funOnDraw		 = funOnDraw;	  }
+	void SetOnCreatedfunc		  (typeFunOnCreated			funOnCreate)	{ m_funOnCreated	 = funOnCreate;   }
+	void SetOnDestroyfunc		  (typeFunOnDestroy			funOnDestroy)	{ m_funOnDestroy	 = funOnDestroy;  }
+	void SetOnPaintfunc			  (typeFunOnPaint			funOnPaint)		{ m_funOnPaint		 = funOnPaint;	  }
+	void SetOnMouseButtonfunc	  (typeFunOnMouse			funOnMouse)		{ m_funOnMouse		 = funOnMouse;	  }
+	void SetOnMouseButtonRealtfunc(typeFunOnMouseRealt		funOnMouse)		{ m_funOnMouseRealt  = funOnMouse;	  }
+	void SetOnMouseMovefunc		  (typeFunOnMouseMove		funOnMouseMove)	{ m_funOnMouseMove	 = funOnMouseMove;}
+	void SetOnKeyboardfunc		  (typeFunOnKeyboard		funOnKeyboard)	{ m_funOnKeyboard	 = funOnKeyboard; }
+	void SetProcessfunc			  (typeFunOnProcess			funProcess)		{ m_funOnProcess	 = funProcess;	  }
+	void SetOnResizefunc		  (typeFunOnResize			funOnResize)	{ m_funOnResize		 = funOnResize;	  }
+	void SetOnMouseScrollfunc	  (typeFunOnMouseScroll		funOnScroll)	{ m_funOnMouseScroll = funOnScroll;   }
+
+protected:
+	virtual void OnCreated(WindowBase* base)							{ ON_FUNCTION_WINDOW(m_funOnCreated		, base)}
+	virtual void OnCommand(WindowBase* base, int type)					{ }
+	virtual void OnKeyBoard(WindowBase* base)							{ ON_FUNCTION_WINDOW(m_funOnKeyboard	, base)}
+	virtual void OnMouseButton(WindowBase* base, int button, int action){ ON_FUNCTION_WINDOW(m_funOnMouse		, base, button, action)}
+	virtual void OnMouseMove(WindowBase* base)							{ ON_FUNCTION_WINDOW(m_funOnMouseMove	, base)}
+	virtual void OnProcess(WindowBase* base)							{ ON_FUNCTION_WINDOW(m_funOnProcess		, base)}
+	virtual void OnMouseRealtime(WindowBase* base)						{ ON_FUNCTION_WINDOW(m_funOnMouseRealt	, base)}
+	virtual void OnResize(WindowBase* base)								{ ON_FUNCTION_WINDOW(m_funOnResize		, base)}
+	virtual void OnMouseScroll(WindowBase* base)						{ ON_FUNCTION_WINDOW(m_funOnMouseScroll	, base)}
+	virtual void OnPaint(WindowBase* base)								{ ON_FUNCTION_WINDOW(m_funOnPaint		, base)}
+};
+
+/**********************************************************************************
+* ⮟⮟ Class name: WindowBase - Created: 15/03/2023
+* Base class for window handle inheritance
+***********************************************************************************/
+class Dllexport WindowBase : public XControl
+{
+public:
+	// Define struct data
+	//*****************************************************
+	typedef struct tagWndStatus
+	{
+		enum class PushType
+		{
+			ALL		,
+			SIZE	,
+			POSITION,
+		};
+
+		std::wstring	m_title;
+		CRect			m_rect;
+		PushType		m_iPushType;
+
+		tagWndStatus()
+		{
+			m_title			= L"";
+			m_rect.x		= 0;
+			m_rect.y		= 0;
+			m_rect.width	= 640;
+			m_rect.height	= 480;
+		}
+
+	} WindowStatus;
+
+	typedef std::stack<WindowStatus>	WindowStatusLog;
+	typedef std::vector<ControlBase*>	ControlList;
+	typedef std::vector<WindowBase*>	ChildWindowList;
+	typedef std::map<int, bool>			MapStatus;
+
+	//*****************************************************
+
+protected:
+	WindowStatus				m_CurStatus;
+	WindowStatusLog				m_StatusLog;
+
+	GdiplusToken				m_GdiPlusToken;
+	int							m_zDeltaScroll;
+
+	// children control list 
+	ControlList					m_ControlList;	// control in window : button | label |..
+	unsigned int				m_uiControlIDs; // last id control
+	ChildWindowList				m_ChildWindowList;
+
+	// process event
+	MapStatus					m_MouseStatus;
+	MapStatus					m_KeyboardStatus;
+
+	bool						m_bClosed;
+
+public:
+	WindowBase(): XControl(), 
+		m_uiControlIDs(1000), m_zDeltaScroll(0), m_bClosed(false)
+	{
+
+	}
+//==============================================================================
+//⮟⮟ Triển khai cập nhật trạng thái của window                                 
+//==============================================================================
+protected:
+	/***************************************************************************
+	*! @brief  : Check list status window
+	*! @return : void
+	*! @author : thuong.nv          - [Date] : 05/03/2023
+	***************************************************************************/
+	virtual bool IsEmptyStackWindowStatus()
+	{
+		return m_StatusLog.empty();
+	}
+
+	/***************************************************************************
+	*! @brief  : Save current window status information
+	*! @return : int : index in stack
+	*! @author : thuong.nv          - [Date] : 05/03/2023
+	***************************************************************************/
+	virtual int PushWindowStatus(WindowStatus::PushType type = WindowStatus::PushType::ALL)
+	{
+		WindowStatus status;
+
+		switch (type)
+		{
+		case tagWndStatus::PushType::SIZE:
+		{
+			status.m_rect = m_CurStatus.m_rect;
+			break;
+		}
+		case tagWndStatus::PushType::POSITION:
+		{
+			status.m_rect = m_CurStatus.m_rect;
+			break;
+		}
+		default:
+		{
+			status.m_title = m_CurStatus.m_title;
+			status.m_rect = m_CurStatus.m_rect;
+		}
+			break;
+		}
+
+		m_StatusLog.push(status);
+
+		return (int)m_StatusLog.size();
+	}
+
+	/***************************************************************************
+	*! @brief  : Get and drop window status information
+	*! @return : WindowStatus
+	*! @author : thuong.nv          - [Date] : 05/03/2023
+	***************************************************************************/
+	virtual WindowStatus PopWindowStatus()
+	{
+		WindowStatus status;
+		if (!m_StatusLog.empty())
+		{
+			status = m_StatusLog.top();
+			m_StatusLog.pop();
+		}
+		return status;
+	}
+
+//==============================================================================
+//⮟⮟ Triển khai hàm xử lý GDI của window                                       
+//==============================================================================
+protected:
+	/***************************************************************************
+	*! @brief  : Init GDI plus
+	*! @return : void
+	*! @author : thuong.nv          - [Date] : 05/03/2023
+	***************************************************************************/
+	void CreateGDIplus()
+	{
+		Gdiplus::GdiplusStartupInput gdiplusStartupInput;
+		ULONG_PTR           gdiplusToken;
+
+		Gdiplus::Status status = Gdiplus::GdiplusStartup(&gdiplusToken, &gdiplusStartupInput, NULL);
+
+		m_GdiPlusToken = GdiplusToken{ (status == Gdiplus::Status::Ok) ? gdiplusToken : NULL,
+									(status == Gdiplus::Status::Ok) ? true : false };
+	}
+
+	/***************************************************************************
+	*! @brief  : Destroy init GDIplus
+	*! @return : void
+	*! @author : thuong.nv          - [Date] : 05/03/2023
+	***************************************************************************/
+	void DeleteGDIplus()
+	{
+		m_GdiPlusToken.Shutdown();
+	}
+
+//==============================================================================
+//⮟⮟ Hàm xử lý chung cho window                                                
+//==============================================================================
+public:
+	/***************************************************************************
+	*! @brief  : Get current cursor position [Center]
+	*! @return : true : ok | false : not ok
+	*! @author : thuong.nv          - [Date] : 05/03/2023
+	***************************************************************************/
+	void SetTitle(std::wstring title)
+	{
+		m_CurStatus.m_title = title;
+
+		NULL_CHECK_RETURN(m_hWnd, );
+		::SetWindowText(m_hWnd, m_CurStatus.m_title.c_str());
+	}
+
+	/***************************************************************************
+	*! @brief  : Get current cursor position [Center]
+	*! @return : true : ok | false : not ok
+	*! @author : thuong.nv          - [Date] : 05/03/2023
+	***************************************************************************/
+	std::wstring GetTitle()
+	{
+		return m_CurStatus.m_title.c_str();
+	}
+
+	/***************************************************************************
+	*! @brief  : Show window -> update status
+	*! @return : void
+	*! @author : thuong.nv          - [Date] : 05/03/2023
+	***************************************************************************/
+	virtual void Show()
+	{
+		this->Visible(true);
+	}
+
+	/***************************************************************************
+	*! @brief  : Hide window -> update status
+	*! @return : void
+	*! @author : thuong.nv          - [Date] : 05/03/2023
+	***************************************************************************/
+	virtual void Hide()
+	{
+		this->Visible(true);
+	}
+
+	/***************************************************************************
+	*! @brief  : Close window
+	*! @return : void
+	*! @author : thuong.nv          - [Date] : 05/03/2023
+	***************************************************************************/
+	virtual void Close()
+	{
+		Send_Message(WM_CLOSE, 0, 0);
+	}
+
+	/***************************************************************************
+	*! @brief  : Get current cursor position [left - top]
+	*! @return : void
+	*! @author : thuong.nv          - [Date] : 05/03/2023
+	***************************************************************************/
+	bool GetCursorPos(long& xpos, long& ypos)
+	{
+		POINT cursor_pos = get_cursor_in_screen();
+		if (ScreenToClient(m_hWnd, &cursor_pos) == TRUE)
+		{
+			xpos = cursor_pos.x;
+			ypos = cursor_pos.y;
+			return true;
+		}
+		else
+		{
+			xpos = 0;
+			ypos = 0;
+			return false;
+		}
+	}
+
+	/***************************************************************************
+	*! @brief  : Get current cursor position [left - top]
+	*! @return : void
+	*! @author : thuong.nv          - [Date] : 05/03/2023
+	***************************************************************************/
+	static POINT get_cursor_in_screen()
+	{
+		POINT cursor_pos = {0, 0};
+		if (::GetCursorPos(&cursor_pos) == TRUE)
+		{
+			return cursor_pos;
+		}
+		else
+		{
+			return { 0,0 };
+		}
+	}
+
+	/***************************************************************************
+	*! @brief  : Get current cursor position [Center]
+	*! @return : true : ok | false : not ok
+	*! @author : thuong.nv          - [Date] : 05/03/2023
+	***************************************************************************/
+	bool GetCursorPosCenter(long& xpos, long& ypos)
+	{
+		POINT cursor_pos = {0, 0};
+		if (GetCursorPos(cursor_pos.x, cursor_pos.y))
+		{
+			xpos = -(GetWidth() / 2 - cursor_pos.x);
+			ypos =  (GetHeight()/ 2 - cursor_pos.y);
+		}
+
+		return true;
+	}
+
+	/***************************************************************************
+	*! @brief  : Last scroll value
+	*! @return : int : 
+	*! @author : thuong.nv          - [Date] : 05/03/2023
+	***************************************************************************/
+	virtual int GetMouseScroll() { return (int)m_zDeltaScroll; }
+
+	/***************************************************************************
+	*! @brief  : set parent window
+	*! @return : true : ok | false : not ok
+	*! @author : thuong.nv          - [Date] : 05/03/2023
+	***************************************************************************/
+	void SetParent(WindowBase* win)
+	{
+		HWND hwnd = win ? win->GetHwnd() : NULL;
+
+		NULL_CHECK_RETURN(hwnd,);
+		XControl::SetParent(hwnd);
+	}
+
+//==============================================================================
+//⮟⮟ Hàm xử lý control	                                                        
+//==============================================================================
+public:
+	/***************************************************************************
+	*! @brief  : Get current cursor position [Center]
+	*! @return : true : ok | false : not ok
+	*! @author : thuong.nv          - [Date] : 05/03/2023
+	***************************************************************************/
+	virtual bool Create(HWND hwndParent, const wchar_t* strClassname)
+	{
+		return true;
+	}
+
+	/***************************************************************************
+	*! @brief  : Destroy window
+	*! @return : void
+	*! @author : thuong.nv          - [Date] : 05/03/2023
+	***************************************************************************/
+	virtual void Destroy()
+	{
+		return;
+	}
+
+	/***************************************************************************
+	*! @brief  : Get current cursor position [Center]
+	*! @return : true : ok | false : not ok
+	*! @author : thuong.nv          - [Date] : 05/03/2023
+	***************************************************************************/
+	virtual int AddControl(ControlBase* control)
+	{
+		NULL_CHECK_RETURN(control, 0);
+
+		// it will initialize later
+		if (m_hWnd == NULL)
+		{
+			m_ControlList.push_back(control);
+		}
+		// if existed window handle then initiation control
+		else
+		{
+			if (!control->Create(m_hWnd, m_uiControlIDs))
+			{
+				m_ControlList.push_back(control);
+			}
+			else
+			{
+				return 0;
+			}
+		}
+		return 1;
+	}
+
+	/***************************************************************************
+	*! @brief  : Get current cursor position [Center]
+	*! @return : true : ok | false : not ok
+	*! @author : thuong.nv          - [Date] : 05/03/2023
+	***************************************************************************/
+	int AddSubWindow(WindowBase* subwindow)
+	{
+		NULL_CHECK_RETURN(subwindow, 0);
+
+		// it will initialize later
+		if (m_hWnd == NULL)
+		{
+			m_ChildWindowList.push_back(subwindow);
+		}
+		// if existed window handle then initiation control
+		else
+		{
+			if (subwindow->Create(m_hWnd, GL_SUBWIN_CLASS))
+			{
+				m_ChildWindowList.push_back(subwindow);
+			}
+			else
+			{
+				return 0;
+			}
+		}
+		return 1;
+	}
+
+//==============================================================================
+//⮟⮟ Hàm xử lý control	- internal                                              
+//==============================================================================
+protected:
+
+	/***************************************************************************
+	*! @brief  : Update status window show - hide
+	*! @return : void
+	*! @author : thuong.nv          - [Date] : 05/03/2023
+	***************************************************************************/
+	virtual WindowType GetType()
+	{
+		return WindowType::NoDefine;
+	}
+
+	/***************************************************************************
+	*! @brief  : Create subwindow
+	*! @return : true : ok | false : not ok
+	*! @author : thuong.nv          - [Date] : 05/03/2023
+	***************************************************************************/
+	virtual void OnCreateSubWindow()
+	{
+		for (int i = 0; i < m_ChildWindowList.size(); i++)
+		{
+			if (!m_ChildWindowList[i]->IsCreated())
+			{
+				if (!m_ChildWindowList[i]->Create(m_hWnd, GL_SUBWIN_CLASS))
+				{
+					std::cerr << "[!] Init subwindow failed : " <<
+						m_ChildWindowList[i]->GetTitle().c_str() << " ." << std::endl;
+				}
+			}
+		}
+	}
+
+	/***************************************************************************
+	*! @brief  : Khởi tạo toàn bộ control đã được thêm
+	*! @return : true : ok | false : not ok
+	*! @author : thuong.nv          - [Date] : 05/03/2023
+	***************************************************************************/
+	virtual void OnInitControl()
+	{
+		for (int i = 0; i < m_ControlList.size(); i++)
+		{
+			if (!m_ControlList[i]->IsCreated())
+			{
+				int iNextControlID = m_ControlList[i]->Create(m_hWnd, m_uiControlIDs);
+
+				if (iNextControlID == m_uiControlIDs)
+				{
+					std::cerr << "[!] Init control failed !" << std::endl;
+				}
+
+				m_uiControlIDs = iNextControlID;
+			}
+		}
+	}
+
+	/***************************************************************************
+	*! @brief  : Xóa và hủy tòa bộ control được quản lý bởi window
+	*! @return : true : ok | false : not ok
+	*! @author : thuong.nv          - [Date] : 05/03/2023
+	***************************************************************************/
+	void DestroyControl()
+	{
+		for (int i = 0; i < m_ControlList.size(); i++)
+		{
+			m_ControlList[i]->OnDestroy();
+			SAFE_DELETE(m_ControlList[i]);
+		}
+		m_ControlList.clear();
+	}
+
+	/***************************************************************************
+	*! @brief  : Xóa và hủy tòa bộ subwindow được quản lý bởi window
+	*! @return : true : ok | false : not ok
+	*! @author : thuong.nv          - [Date] : 05/03/2023
+	***************************************************************************/
+	void DestroySubWindow()
+	{
+		//for (int i = 0; i < m_subwindows.size(); i++)
+		//{
+		//	m_subwindows[i]->Destroy();
+		//	SAFE_DELETE(m_subwindows[i]);
+		//}
+		//m_subwindows.clear();
+	}
+
+//==============================================================================
+//⮟⮟ Hàm xử lý opengl- internal                                                
+//==============================================================================
+protected:
+
+	/***************************************************************************
+	*! @brief  : Xóa và hủy tòa bộ subwindow được quản lý bởi window
+	*! @return : true : ok | false : not ok
+	*! @author : thuong.nv          - [Date] : 05/03/2023
+	***************************************************************************/
+	virtual bool CreateOpenGLContext(bool bUseOpenGLEx = false)
+	{
+		return false;
+	}
+
+	/***************************************************************************
+	*! @brief  : Xóa và hủy tòa bộ subwindow được quản lý bởi window
+	*! @return : true : ok | false : not ok
+	*! @author : thuong.nv          - [Date] : 05/03/2023
+	***************************************************************************/
+	virtual void DestroyOpenGLContext()
+	{
+		return;
+	}
+
+//==============================================================================
+//⮟⮟ Hàm xử lý sự kiên liên quan đến ngoại vi                                  
+//==============================================================================
+public:
+
+	/***************************************************************************
+	*! @brief  : Get keyboard state
+	*! @return : true : ok | false : not ok
+	*! @author : thuong.nv          - [Date] : 05/03/2023
+	***************************************************************************/
+	bool GetKeyboardStatus(int keyboard)
+	{
+		return m_KeyboardStatus[keyboard];
+	}
+
+	/***************************************************************************
+	*! @brief  : Get button state
+	*! @return : true : ok | false : not ok
+	*! @author : thuong.nv          - [Date] : 05/03/2023
+	***************************************************************************/
+	bool GetMouseButtonStatus(int btn)
+	{
+		return m_MouseStatus[btn];
+	}
+
+protected:
+	/***************************************************************************
+	*! @brief  : Get mouse state
+	*! @return : true : ok | false : not ok
+	*! @author : thuong.nv          - [Date] : 05/03/2023
+	***************************************************************************/
+	void SetMouseButtonStatus(int btn, bool status)
+	{
+		m_MouseStatus[btn] = status;
+	}
+
+	/***************************************************************************
+	*! @brief  : Get keyboard state
+	*! @return : true : ok | false : not ok
+	*! @author : thuong.nv          - [Date] : 05/03/2023
+	***************************************************************************/
+	void SetKeyboardStatus(int key, bool status)
+	{
+		m_KeyboardStatus[key] = status;
+	}
+};
 
 /**********************************************************************************
 * ⮟⮟ Class name: WindowBase
 * Base class for window handle inheritance
 ***********************************************************************************/
-class Dllexport WindowOpenGLContext
+class Dllexport WindowOpenGLContext : public WindowContext
 {
 protected:
+	HWND				m_hWnd;
+	bool				m_bUseOpenGLEx;
+
 	WindowRender		m_pRender;
+
+public:
+	WindowOpenGLContext() : m_hWnd(NULL),
+		m_bUseOpenGLEx(false)
+	{
+
+	}
+
+	/***************************************************************************
+	*! @brief  : Get keyboard state
+	*! @return : true : ok | false : not ok
+	*! @author : thuong.nv          - [Date] : 05/03/2023
+	***************************************************************************/
+	void Init(HWND hwnd, bool bUse)
+	{
+		m_hWnd = hwnd;
+		m_bUseOpenGLEx = bUse;
+	}
 
 protected:
 	/***************************************************************************
@@ -405,9 +839,15 @@ protected:
 	*! @author : thuong.nv          - [Date] : 05/03/2023
 	*! @note   : use openGL extension previously established
 	***************************************************************************/
-	static WindowRender make_opengl_context(HWND hWnd, bool bUseOpenGLEx, int iAntialiasing = 0)
+	WindowRender make_opengl_context(int iAntialiasing = 0)
 	{
-		HDC   hDC   = GetDC(hWnd);
+		WindowRender winRender;
+		winRender.m_bCreated = false;
+		winRender.m_hWnd = NULL;
+
+		NULL_CHECK_RETURN(m_hWnd, winRender);
+
+		HDC   hDC   = GetDC(m_hWnd);
 		HGLRC hglrc = NULL;
 
 		int iPixelFormat; unsigned int num_formats = 0;
@@ -417,25 +857,26 @@ protected:
 		{
 			int attribCount = 0;
 
-			addAtribute(attribs, WGL_DRAW_TO_WINDOW_ARB, GL_TRUE);
-			addAtribute(attribs, WGL_SUPPORT_OPENGL_ARB, GL_TRUE);
-			addAtribute(attribs, WGL_DOUBLE_BUFFER_ARB, GL_TRUE);
-			addAtribute(attribs, WGL_ACCELERATION_ARB, WGL_FULL_ACCELERATION_ARB);
-			addAtribute(attribs, WGL_PIXEL_TYPE_ARB, WGL_TYPE_RGBA_ARB);
-			addAtribute(attribs, WGL_COLOR_BITS_ARB, 32);
-			addAtribute(attribs, WGL_DEPTH_BITS_ARB, 24);
-			addAtribute(attribs, WGL_STENCIL_BITS_ARB, 8);
+			ADD_ATRIBUTE(attribs, WGL_DRAW_TO_WINDOW_ARB, GL_TRUE);
+			ADD_ATRIBUTE(attribs, WGL_SUPPORT_OPENGL_ARB, GL_TRUE);
+			ADD_ATRIBUTE(attribs, WGL_DOUBLE_BUFFER_ARB, GL_TRUE);
+			ADD_ATRIBUTE(attribs, WGL_ACCELERATION_ARB, WGL_FULL_ACCELERATION_ARB);
+			ADD_ATRIBUTE(attribs, WGL_PIXEL_TYPE_ARB, WGL_TYPE_RGBA_ARB);
+			ADD_ATRIBUTE(attribs, WGL_COLOR_BITS_ARB, 32);
+			ADD_ATRIBUTE(attribs, WGL_DEPTH_BITS_ARB, 24);
+			ADD_ATRIBUTE(attribs, WGL_STENCIL_BITS_ARB, 8);
 
 			if (iAntialiasing > 0)
 			{
-				addAtribute(attribs, WGL_SAMPLE_BUFFERS_ARB, GL_TRUE); // Enable multisampling
-				addAtribute(attribs, WGL_SAMPLES_ARB, iAntialiasing);  // Number of samples
+				ADD_ATRIBUTE(attribs, WGL_SAMPLE_BUFFERS_ARB, GL_TRUE); // Enable multisampling
+				ADD_ATRIBUTE(attribs, WGL_SAMPLES_ARB, iAntialiasing);  // Number of samples
 			}
-			addAtributeEnd(attribs);
+
+			END_ATRIBUTE(attribs);
 		};
 
 		// Get pixel format attributes through "modern" extension
-		if (bUseOpenGLEx)
+		if (m_bUseOpenGLEx)
 		{
 			int pixelAttribs[47];
 			funGetFixelFormatAttribute(pixelAttribs, sizeof(pixelAttribs) / sizeof(pixelAttribs[0]));
@@ -482,7 +923,7 @@ protected:
 			hglrc = wglCreateContext(hDC);
 		}
 
-		WindowRender winRender = { hWnd, hDC, hglrc };
+		WindowRender winRender = { m_hWnd, hDC, hglrc };
 
 		if (!make_current_context(winRender))
 		{
@@ -536,16 +977,31 @@ protected:
 	}
 
 protected:
-	virtual HDC  GetRenderHDC() { return m_pRender.m_hDc; }
 
-	virtual bool MakeOpenGLContext(HWND hWnd, bool bUseOpenGLEx, int iAntialiasing = 0)
+	/***************************************************************************
+	*! @brief  : Get render device
+	*! @return : void 
+	*! @author : thuong.nv          - [Date] : 05/03/2023
+	***************************************************************************/
+	virtual void*  Render() { return &m_pRender.m_hDc; }
+
+	/***************************************************************************
+	*! @brief  : Create opengl context
+	*! @return : void 
+	*! @author : thuong.nv          - [Date] : 05/03/2023
+	***************************************************************************/
+	virtual bool Create(int iAntialiasing = 0)
 	{
-		m_pRender = make_opengl_context(hWnd, bUseOpenGLEx, iAntialiasing);
-		
+		m_pRender = make_opengl_context( iAntialiasing);
 		return m_pRender.m_bCreated;
 	}
 
-	void DeleteOpenGLContext()
+	/***************************************************************************
+	*! @brief  : Delete OpenGL context
+	*! @return : void 
+	*! @author : thuong.nv          - [Date] : 05/03/2023
+	***************************************************************************/
+	virtual void Delete()
 	{
 		delete_opengl_context(m_pRender);
 	}
@@ -555,7 +1011,7 @@ protected:
 	*! @return : void 
 	*! @author : thuong.nv          - [Date] : 05/03/2023
 	***************************************************************************/
-	bool MakeContext()
+	virtual bool Make()
 	{
 		if (is_opengl_ok(m_pRender))
 		{
@@ -573,685 +1029,6 @@ protected:
 	{
 		::SwapBuffers(m_pRender.m_hDc);
 	}
-};
-
-/**********************************************************************************
-* ⮟⮟ Class name: WindowEvent
-* Base class for window handle inheritance
-***********************************************************************************/
-class Dllexport WindowEvent
-{
-protected:
-	typedef void(*typeFunOnDraw)         (WindowBase* win);
-	typedef void(*typeFunOnCreated)      (WindowBase* win);
-	typedef void(*typeFunOnDestroy)      (WindowBase* win);
-	typedef void(*typeFunOnPaint)        (WindowBase* win);
-	typedef void(*typeFunOnMouse)        (WindowBase* win, int button, int action);
-	typedef void(*typeFunOnMouseRealt)   (WindowBase* win);
-	typedef void(*typeFunOnMouseMove)    (WindowBase* win);
-	typedef void(*typeFunOnKeyboard)     (WindowBase* win);
-	typedef void(*typeFunOnProcess)      (WindowBase* win);
-	typedef void(*typeFunOnResize)       (WindowBase* win);
-	typedef void(*typeFunOnMouseScroll)  (WindowBase* win);
-
-protected:
-	typeFunOnDraw				m_funOnDraw        = NULL;
-	typeFunOnCreated			m_funOnCreated     = NULL;
-	typeFunOnDestroy			m_funOnDestroy     = NULL;
-	typeFunOnPaint				m_funOnPaint       = NULL;
-	typeFunOnMouse				m_funOnMouse       = NULL;
-	typeFunOnMouseRealt			m_funOnMouseRealt  = NULL;
-	typeFunOnMouseMove			m_funOnMouseMove   = NULL;
-	typeFunOnKeyboard			m_funOnKeyboard    = NULL;
-	typeFunOnProcess			m_funOnProcess     = NULL;
-	typeFunOnResize				m_funOnResize      = NULL;
-	typeFunOnMouseScroll		m_funOnMouseScroll = NULL;
-
-public:
-	void SetOnDrawfunc			  (typeFunOnDraw			funOnDraw)		{ m_funOnDraw		 = funOnDraw;	  }
-	void SetOnCreatedfunc		  (typeFunOnCreated			funOnCreate)	{ m_funOnCreated	 = funOnCreate;   }
-	void SetOnDestroyfunc		  (typeFunOnDestroy			funOnDestroy)	{ m_funOnDestroy	 = funOnDestroy;  }
-	void SetOnPaintfunc			  (typeFunOnPaint			funOnPaint)		{ m_funOnPaint		 = funOnPaint;	  }
-	void SetOnMouseButtonfunc	  (typeFunOnMouse			funOnMouse)		{ m_funOnMouse		 = funOnMouse;	  }
-	void SetOnMouseButtonRealtfunc(typeFunOnMouseRealt		funOnMouse)		{ m_funOnMouseRealt  = funOnMouse;	  }
-	void SetOnMouseMovefunc		  (typeFunOnMouseMove		funOnMouseMove)	{ m_funOnMouseMove	 = funOnMouseMove;}
-	void SetOnKeyboardfunc		  (typeFunOnKeyboard		funOnKeyboard)	{ m_funOnKeyboard	 = funOnKeyboard; }
-	void SetProcessfunc			  (typeFunOnProcess			funProcess)		{ m_funOnProcess	 = funProcess;	  }
-	void SetOnResizefunc		  (typeFunOnResize			funOnResize)	{ m_funOnResize		 = funOnResize;	  }
-	void SetOnMouseScrollfunc	  (typeFunOnMouseScroll		funOnScroll)	{ m_funOnMouseScroll = funOnScroll;   }
-
-protected:
-	virtual void OnCreated(WindowBase* base)							{ ON_FUNCTION_WINDOW(m_funOnCreated		, base)}
-	virtual void OnCommand(WindowBase* base, int type)					{ }
-	virtual void OnKeyBoard(WindowBase* base)							{ ON_FUNCTION_WINDOW(m_funOnKeyboard	, base)}
-	virtual void OnMouseButton(WindowBase* base, int button, int action){ ON_FUNCTION_WINDOW(m_funOnMouse		, base, button, action)}
-	virtual void OnMouseMove(WindowBase* base)							{ ON_FUNCTION_WINDOW(m_funOnMouseMove	, base)}
-	virtual void OnProcess(WindowBase* base)							{ ON_FUNCTION_WINDOW(m_funOnProcess		, base)}
-	virtual void OnMouseRealtime(WindowBase* base)						{ ON_FUNCTION_WINDOW(m_funOnMouseRealt	, base)}
-	virtual void OnResize(WindowBase* base)								{ ON_FUNCTION_WINDOW(m_funOnResize		, base)}
-	virtual void OnMouseScroll(WindowBase* base)						{ ON_FUNCTION_WINDOW(m_funOnMouseScroll	, base)}
-	virtual void OnPaint(WindowBase* base)								{ ON_FUNCTION_WINDOW(m_funOnPaint		, base)}
-};
-
-
-/**********************************************************************************
-* ⮟⮟ Class name: WindowBase
-* Base class for window handle inheritance
-***********************************************************************************/
-class Dllexport WindowBase
-{
-protected:
-	enum MESSAGE_SUBWIN
-	{
-		SUB_PROCESS_MSG   = -100000,
-		SUB_MESSAGE_START =  100002,
-		SUB_MOVE_WIN      = SUB_MESSAGE_START + 0x0001,
-		SUB_MINI_WIN      = SUB_MESSAGE_START + 0x0002,
-		SUB_CLOSE_WIN     = SUB_MESSAGE_START + 0x0003,
-	};
-
-protected:
-	HWND						m_hWnd;
-	HWND						m_hWndParent;
-	GdiplusToken				m_gdiToken;
-	std::stack<WindowStatus>	m_stackStatus;
-
-	std::wstring				m_title;
-	int							m_x;
-	int							m_y;
-	int							m_width;	// The drawable width
-	int							m_height;	// The drawable height
-
-	bool						m_bClosed;
-
-	int							m_iShow;	// window show status;
-	int							m_zDeltaScroll;
-
-	std::map<int, bool>			m_mouse;
-	std::map<int, bool>			m_keyboard;
-
-	std::vector<Control*>		m_controls;		// control in window : button | label |..
-	unsigned int				m_uiControlIDs; // last id control
-
-	std::vector<WindowBase*>	m_subwindows;
-
-
-
-protected:
-	WindowBase() : m_hWnd(NULL), m_hWndParent(NULL), m_x(0), m_y(0),
-		m_width(0), m_height(0), m_title(L""), m_iShow(SW_SHOW),
-		m_uiControlIDs(1), m_zDeltaScroll(0), m_bClosed(false)
-	{
-
-	}
-
-//==============================================================================
-//⮟⮟ Triển khai cập nhật trạng thái của window                                 
-//==============================================================================
-private:
-
-	/***************************************************************************
-	*! @brief  : Check list status window
-	*! @return : void
-	*! @author : thuong.nv          - [Date] : 05/03/2023
-	***************************************************************************/
-	virtual bool IsEmptyStackWindowStatus()
-	{
-		return m_stackStatus.empty();
-	}
-
-	/***************************************************************************
-	*! @brief  : Save current window status information
-	*! @return : void
-	*! @author : thuong.nv          - [Date] : 05/03/2023
-	***************************************************************************/
-	virtual void PushWindowStatus()
-	{
-		WindowStatus status;
-		status.m_title	= m_title;
-		status.m_x		= m_x;
-		status.m_y		= m_y;
-		status.m_width	= m_width;
-		status.m_height = m_height;
-		status.m_RelState = 1;
-
-		m_stackStatus.push(status);
-	}
-
-	/***************************************************************************
-	*! @brief  : Get and drop window status information
-	*! @return : WindowStatus
-	*! @author : thuong.nv          - [Date] : 05/03/2023
-	***************************************************************************/
-	virtual WindowStatus PopWindowStatus()
-	{
-		WindowStatus status;
-		if (!m_stackStatus.empty())
-		{
-			status = m_stackStatus.top();
-			m_stackStatus.pop();
-		}
-		return status;
-	}
-
-//==============================================================================
-//⮟⮟ Triển khai hàm xử lý GDI của window                                       
-//==============================================================================
-protected:
-	/***************************************************************************
-	*! @brief  : Init GDI plus
-	*! @return : void
-	*! @author : thuong.nv          - [Date] : 05/03/2023
-	***************************************************************************/
-	void CreateGDIplus()
-	{
-		Gdiplus::GdiplusStartupInput gdiplusStartupInput;
-		ULONG_PTR           gdiplusToken;
-
-		Gdiplus::Status status = Gdiplus::GdiplusStartup(&gdiplusToken, &gdiplusStartupInput, NULL);
-
-		m_gdiToken = GdiplusToken{ (status == Gdiplus::Status::Ok) ? gdiplusToken : NULL,
-									(status == Gdiplus::Status::Ok) ? true : false };
-	}
-
-	/***************************************************************************
-	*! @brief  : Destroy init GDIplus
-	*! @return : void
-	*! @author : thuong.nv          - [Date] : 05/03/2023
-	***************************************************************************/
-	void DeleteGDIplus()
-	{
-		m_gdiToken.Shutdown();
-	}
-
-//==============================================================================
-//⮟⮟ Triển khai hàm xử lý nội bộ trong window                                  
-//==============================================================================
-protected:
-
-	/***************************************************************************
-	*! @brief  : Check window control is created
-	*! @return : true : created | false : not create
-	*! @author : thuong.nv          - [Date] : 05/03/2023
-	***************************************************************************/
-	bool IsCreated()
-	{
-		return m_hWnd ? true : false;
-	}
-
-	virtual bool Create(const wchar_t* strClassname)
-	{
-		return true;
-	}
-
-	/***************************************************************************
-	*! @brief  : Check window control is created
-	*! @return : true : created | false : not create
-	*! @author : thuong.nv          - [Date] : 05/03/2023
-	***************************************************************************/
-	virtual void Destroy()
-	{
-		return;
-	}
-
-	virtual bool CreateOpenGLContext(bool bUseOpenGLEx = false)
-	{
-		return false;
-	}
-
-	virtual void DestroyOpenGLContext()
-	{
-		return;
-	}
-
-	/***************************************************************************
-	*! @brief  : Update status window show - hide
-	*! @return : void
-	*! @author : thuong.nv          - [Date] : 05/03/2023
-	***************************************************************************/
-	virtual WindowType GetType()
-	{
-		return WindowType::NoDefine;
-	}
-
-	/***************************************************************************
-	*! @brief  : Update status window show - hide
-	*! @return : void
-	*! @author : thuong.nv          - [Date] : 05/03/2023
-	***************************************************************************/
-	virtual void UpdateStatus(int iShow)
-	{
-		NULL_CHECK_RETURN(m_hWnd, );
-
-		if (iShow)
-			::ShowWindow(this->m_hWnd, SW_SHOW);
-		else
-			::ShowWindow(this->m_hWnd, SW_HIDE);
-	}
-
-	/***************************************************************************
-	*! @brief  : Update title window
-	*! @return : void
-	*! @author : thuong.nv          - [Date] : 05/03/2023
-	***************************************************************************/
-	virtual void UpdateTitle()
-	{
-		NULL_CHECK_RETURN(m_hWnd, );
-		::SetWindowText(m_hWnd, m_title.c_str());
-	}
-
-	/***************************************************************************
-	*! @brief  : Update window position
-	*! @return : void
-	*! @author : thuong.nv          - [Date] : 05/03/2023
-	***************************************************************************/
-	virtual void UpdateLocation()
-	{
-		NULL_CHECK_RETURN(m_hWnd, );
-		::SetWindowPos(m_hWnd, NULL, m_x, m_y, 0, 0, SWP_NOZORDER | SWP_NOSIZE);
-	}
-
-	/***************************************************************************
-	*! @brief  : Update window position
-	*! @return : void
-	*! @author : thuong.nv          - [Date] : 05/03/2023
-	***************************************************************************/
-	virtual void UpdateSize()
-	{
-		NULL_CHECK_RETURN(m_hWnd, );
-		::SetWindowPos(m_hWnd, NULL, m_x, m_y, m_width, m_height, SWP_NOMOVE | SWP_NOZORDER);
-	}
-
-	virtual void UpdateParent()
-	{
-		NULL_CHECK_RETURN(m_hWnd, );
-		::SetParent(m_hWnd, m_hWndParent);
-	}
-
-//==============================================================================
-//⮟⮟ Hàm thao tác chung cho mọi window	                                        
-//==============================================================================
-public:
-	/***************************************************************************
-	*! @brief  : Get window handle base
-	*! @return : HWND
-	*! @author : thuong.nv          - [Date] : 05/03/2023
-	***************************************************************************/
-	HWND  GetHwnd() { return m_hWnd; }
-
-	/***************************************************************************
-	*! @brief  : Set status window -> update status
-	*! @return : void
-	*! @author : thuong.nv          - [Date] : 05/03/2023
-	***************************************************************************/
-	virtual void Visible(bool bShow)
-	{
-		m_iShow = bShow ? SW_SHOW : SW_HIDE;
-		this->UpdateStatus(m_iShow);
-	}
-
-	/***************************************************************************
-	*! @brief  : Show window -> update status
-	*! @return : void
-	*! @author : thuong.nv          - [Date] : 05/03/2023
-	***************************************************************************/
-	virtual void Show()
-	{
-		this->Visible(true);
-	}
-
-	/***************************************************************************
-	*! @brief  : Hide window -> update status
-	*! @return : void
-	*! @author : thuong.nv          - [Date] : 05/03/2023
-	***************************************************************************/
-	virtual void Hide()
-	{
-		this->Visible(true);
-	}
-
-	/***************************************************************************
-	*! @brief  : Hide window -> update status
-	*! @return : void
-	*! @author : thuong.nv          - [Date] : 05/03/2023
-	***************************************************************************/
-	virtual int GetWidth()  { return m_width; }
-
-	/***************************************************************************
-	*! @brief  : Hide window -> update status
-	*! @return : void
-	*! @author : thuong.nv          - [Date] : 05/03/2023
-	***************************************************************************/
-	virtual int GetHeight() { return m_height; }
-
-	/***************************************************************************
-	*! @brief  : Last scroll value
-	*! @return : int : 
-	*! @author : thuong.nv          - [Date] : 05/03/2023
-	***************************************************************************/
-	virtual int GetMouseScroll() { return (int)m_zDeltaScroll; }
-
-	/***************************************************************************
-	*! @brief  : Get current cursor position [left - top]
-	*! @return : void
-	*! @author : thuong.nv          - [Date] : 05/03/2023
-	***************************************************************************/
-	bool GetCursorPos(long& xpos, long& ypos)
-	{
-		POINT cursor_pos;
-		if (::GetCursorPos(&cursor_pos) && ScreenToClient(m_hWnd, &cursor_pos))
-		{
-			xpos = cursor_pos.x;
-			ypos = cursor_pos.y;
-			return true;
-		}
-		else
-		{
-			xpos = 0;
-			ypos = 0;
-			return false;
-		}
-	}
-
-	/***************************************************************************
-	*! @brief  : Get current cursor position [left - top]
-	*! @return : void
-	*! @author : thuong.nv          - [Date] : 05/03/2023
-	***************************************************************************/
-	static POINT GetCursorInScreen()
-	{
-		POINT cursor_pos = {0, 0};
-		if (::GetCursorPos(&cursor_pos))
-		{
-			return cursor_pos;
-		}
-		else
-		{
-			return { 0,0 };
-		}
-	}
-
-	/***************************************************************************
-	*! @brief  : Get current cursor position [Center]
-	*! @return : true : ok | false : not ok
-	*! @author : thuong.nv          - [Date] : 05/03/2023
-	***************************************************************************/
-	bool GetCursorPosCenter(long& xpos, long& ypos)
-	{
-		POINT cursor_pos;
-		if (::GetCursorPos(&cursor_pos) && ScreenToClient(m_hWnd, &cursor_pos))
-		{
-			xpos = -(m_width  / 2 - cursor_pos.x);
-			ypos =  (m_height / 2 - cursor_pos.y);
-			return true;
-		}
-		else
-		{
-			xpos = 0;
-			ypos = 0;
-			return false;
-		}
-	}
-
-	/***************************************************************************
-	*! @brief  : Get keyboard state
-	*! @return : true : ok | false : not ok
-	*! @author : thuong.nv          - [Date] : 05/03/2023
-	***************************************************************************/
-	bool GetKeyboardStatus(int keyboard)
-	{
-		return m_keyboard[keyboard];
-	}
-
-	/***************************************************************************
-	*! @brief  : Get button state
-	*! @return : true : ok | false : not ok
-	*! @author : thuong.nv          - [Date] : 05/03/2023
-	***************************************************************************/
-	bool GetMouseButtonStatus(int btn)
-	{
-		return m_mouse[btn];
-	}
-
-	/*********************************SETTER************************************/
-
-	/***************************************************************************
-	*! @brief  : Get current cursor position [Center]
-	*! @return : true : ok | false : not ok
-	*! @author : thuong.nv          - [Date] : 05/03/2023
-	***************************************************************************/
-	void SetTitle(std::wstring title)
-	{
-		m_title = title;
-		this->UpdateTitle();
-	}
-
-	/***************************************************************************
-	*! @brief  : set window position
-	*! @return : true : ok | false : not ok
-	*! @author : thuong.nv          - [Date] : 05/03/2023
-	***************************************************************************/
-	void SetPosition(const int x, const int y)
-	{
-		m_x = x;
-		m_y = y;
-		this->UpdateLocation();
-	}
-
-	/***************************************************************************
-	*! @brief  : set window position
-	*! @return : true : ok | false : not ok
-	*! @author : thuong.nv          - [Date] : 05/03/2023
-	***************************************************************************/
-	void MovePosition(const int x, const int y)
-	{
-		m_x += x;
-		m_y += y;
-		this->UpdateLocation();
-	}
-
-	/***************************************************************************
-	*! @brief  : Set size window
-	*! @return : true : ok | false : not ok
-	*! @author : thuong.nv          - [Date] : 05/03/2023
-	***************************************************************************/
-	void SetSize(const int width, const int height)
-	{
-		m_width = width;
-		m_height = height;
-		this->UpdateSize();
-	}
-
-	/***************************************************************************
-	*! @brief  : set parent window
-	*! @return : true : ok | false : not ok
-	*! @author : thuong.nv          - [Date] : 05/03/2023
-	***************************************************************************/
-	void SetParent(WindowBase* win)
-	{
-		NULL_CHECK_RETURN(win->GetHwnd(),);
-
-		m_hWndParent = win->GetHwnd();
-		this->UpdateParent();
-	}
-
-	void SetParent(HWND parent)
-	{
-		NULL_CHECK_RETURN(parent, );
-
-		m_hWndParent = parent;
-		this->UpdateParent();
-	}
-
-	/***************************************************************************
-	*! @brief  : send message window
-	*! @return : true : ok | false : not ok
-	*! @author : thuong.nv          - [Date] : 05/03/2023
-	***************************************************************************/
-	void PushMessage(UINT message, WPARAM wParam, LPARAM lParam)
-	{
-		NULL_CHECK_RETURN(m_hWnd, );
-		::SendMessage(m_hWnd, message, wParam, lParam);
-	}
-
-//==============================================================================
-//⮟⮟ Hàm xử lý control	                                                        
-//==============================================================================
-public:
-	void SetStartIDControl(unsigned int id)
-	{
-		m_uiControlIDs = id;
-	}
-
-	/***************************************************************************
-	*! @brief  : Get current cursor position [Center]
-	*! @return : true : ok | false : not ok
-	*! @author : thuong.nv          - [Date] : 05/03/2023
-	***************************************************************************/
-	int AddControl(Control* control)
-	{
-		NULL_CHECK_RETURN(control, 0);
-
-		// it will initialize later
-		if (m_hWnd == NULL)
-		{
-			m_controls.push_back(control);
-		}
-		// if existed window handle then initiation control
-		else
-		{
-			if (!control->InitControl(m_hWnd, m_uiControlIDs))
-			{
-				m_controls.push_back(control);
-			}
-			else
-			{
-				return 0;
-			}
-		}
-		return 1;
-	}
-
-	/***************************************************************************
-	*! @brief  : Get current cursor position [Center]
-	*! @return : true : ok | false : not ok
-	*! @author : thuong.nv          - [Date] : 05/03/2023
-	***************************************************************************/
-	int AddSubWindow(WindowBase* subwindow)
-	{
-		NULL_CHECK_RETURN(subwindow, 0);
-
-		// it will initialize later
-		if (m_hWnd == NULL)
-		{
-			m_subwindows.push_back(subwindow);
-		}
-		// if existed window handle then initiation control
-		else
-		{
-			subwindow->SetParent(m_hWnd);
-			if (subwindow->Create(GL_SUBWIN_CLASS))
-			{
-				m_subwindows.push_back(subwindow);
-			}
-			else
-			{
-				return 0;
-			}
-		}
-		return 1;
-	}
-
-protected:
-	/***************************************************************************
-	*! @brief  : Create subwindow
-	*! @return : true : ok | false : not ok
-	*! @author : thuong.nv          - [Date] : 05/03/2023
-	***************************************************************************/
-	void OnCreateSubWindow()
-	{
-		int err = 0;
-
-		for (int i = 0; i < m_subwindows.size(); i++)
-		{
-			if (!m_subwindows[i]->IsCreated())
-			{
-				m_subwindows[i]->SetParent(this);
-				err += m_subwindows[i]->Create(GL_SUBWIN_CLASS) ? 0 : 1;
-			}
-		}
-
-		std::cerr << "[+] Init subwindow done !. " << err << " error." << std::endl;
-	}
-
-	/***************************************************************************
-	*! @brief  : Khởi tạo toàn bộ control đã được thêm
-	*! @return : true : ok | false : not ok
-	*! @author : thuong.nv          - [Date] : 05/03/2023
-	***************************************************************************/
-	void OnInitControl()
-	{
-		int err = 0;
-
-		for (int i = 0; i < m_controls.size(); i++)
-		{
-			if (!m_controls[i]->IsCreated())
-			{
-				err += (m_controls[i]->InitControl(m_hWnd, m_uiControlIDs) != 0)
-					? 1: 0;
-			}
-		}
-
-		std::cerr << "[+] Init control done !. " << err << " error." << std::endl;
-	}
-
-	/***************************************************************************
-	*! @brief  : Xóa và hủy tòa bộ control được quản lý bởi window
-	*! @return : true : ok | false : not ok
-	*! @author : thuong.nv          - [Date] : 05/03/2023
-	***************************************************************************/
-	void DestroyControl()
-	{
-		for (int i = 0; i < m_controls.size(); i++)
-		{
-			m_controls[i]->OnDestroy();
-			SAFE_DELETE(m_controls[i]);
-		}
-		m_controls.clear();
-	}
-
-
-	/***************************************************************************
-	*! @brief  : Xóa và hủy tòa bộ subwindow được quản lý bởi window
-	*! @return : true : ok | false : not ok
-	*! @author : thuong.nv          - [Date] : 05/03/2023
-	***************************************************************************/
-	void DestroySubWindow()
-	{
-		//for (int i = 0; i < m_subwindows.size(); i++)
-		//{
-		//	m_subwindows[i]->Destroy();
-		//	SAFE_DELETE(m_subwindows[i]);
-		//}
-		//m_subwindows.clear();
-	}
-
-//==============================================================================
-//⮟⮟ Hàm xử lý nội bộ                                                          
-//==============================================================================
-protected:
-	void SetMouseButtonStatus(int btn, bool status)
-	{
-		m_mouse[btn] = status;
-	}
-
-	void SetKeyboardStatus(int key, bool status)
-	{
-		m_keyboard[key] = status;
-	}
-
-	friend class Window;
-	friend class SubWindow;
 };
 
 ____END_NAMESPACE____
