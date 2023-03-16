@@ -77,7 +77,7 @@
     <ClInclude Include="..\include\controls\xcombobox.h">
       <Filter>Header Files\ui\controls</Filter>
     </ClInclude>
-    <ClInclude Include="..\include\controls\xcontextmenu.h">
+    <ClInclude Include="..\include\controls\xmenucontext.h">
       <Filter>Header Files\ui\controls</Filter>
     </ClInclude>
     <ClInclude Include="..\include\whandle.h">
@@ -91,6 +91,9 @@
     </ClInclude>
     <ClInclude Include="..\include\wctrl.h">
       <Filter>Header Files\ui</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\graphics\wtext_render.h">
+      <Filter>Header Files\graphics</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

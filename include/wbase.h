@@ -12,9 +12,21 @@
 #define WBASE_H
 
 #include "wctrl.h"
+
 #include <string>
+#include <vector>
+#include <map>
+#include <stack>
+#include <thread>
+
+#include <iostream>
+
+#include <GL/glew.h>
+#include <GL/wglew.h>
 
 ___BEGIN_NAMESPACE___
+
+class WindowBase;
 
 /**********************************************************************************
 * ⮟⮟ Class name: ControlBase - Created: 15/03/2023
@@ -102,6 +114,7 @@ public:
 	}
 
 	friend class WindowBase;
+	friend class Window;
 };
 
 /**********************************************************************************
@@ -333,7 +346,7 @@ public:
 	{
 		m_CurStatus.m_title = title;
 
-		NULL_CHECK_RETURN(m_hWnd, );
+		NULL_RETURN(m_hWnd, );
 		::SetWindowText(m_hWnd, m_CurStatus.m_title.c_str());
 	}
 
@@ -450,7 +463,7 @@ public:
 	{
 		HWND hwnd = win ? win->GetHwnd() : NULL;
 
-		NULL_CHECK_RETURN(hwnd,);
+		NULL_RETURN(hwnd,);
 		XControl::SetParent(hwnd);
 	}
 
@@ -485,7 +498,7 @@ public:
 	***************************************************************************/
 	virtual int AddControl(ControlBase* control)
 	{
-		NULL_CHECK_RETURN(control, 0);
+		NULL_RETURN(control, 0);
 
 		// it will initialize later
 		if (m_hWnd == NULL)
@@ -514,7 +527,7 @@ public:
 	***************************************************************************/
 	int AddSubWindow(WindowBase* subwindow)
 	{
-		NULL_CHECK_RETURN(subwindow, 0);
+		NULL_RETURN(subwindow, 0);
 
 		// it will initialize later
 		if (m_hWnd == NULL)
@@ -702,15 +715,17 @@ protected:
 ***********************************************************************************/
 class Dllexport WindowOpenGLContext : public WindowContext
 {
+#pragma comment (lib,"Gdiplus.lib")
+#pragma comment (lib,"opengl32.lib")
+#pragma comment (lib,"glew32.lib")
+
 protected:
-	HWND				m_hWnd;
 	bool				m_bUseOpenGLEx;
 
 	WindowRender		m_pRender;
 
 public:
-	WindowOpenGLContext() : m_hWnd(NULL),
-		m_bUseOpenGLEx(false)
+	WindowOpenGLContext() : m_bUseOpenGLEx(false)
 	{
 
 	}
@@ -720,10 +735,12 @@ public:
 	*! @return : true : ok | false : not ok
 	*! @author : thuong.nv          - [Date] : 05/03/2023
 	***************************************************************************/
-	void Init(HWND hwnd, bool bUse)
+	bool InitContext(HWND hwnd, bool bUse)
 	{
-		m_hWnd = hwnd;
+		m_pRender.m_hWnd = hwnd;
 		m_bUseOpenGLEx = bUse;
+
+		return true;
 	}
 
 protected:
@@ -839,15 +856,13 @@ protected:
 	*! @author : thuong.nv          - [Date] : 05/03/2023
 	*! @note   : use openGL extension previously established
 	***************************************************************************/
-	WindowRender make_opengl_context(int iAntialiasing = 0)
+	bool make_opengl_context(int iAntialiasing = 0)
 	{
-		WindowRender winRender;
-		winRender.m_bCreated = false;
-		winRender.m_hWnd = NULL;
+		m_pRender.m_bCreated = false;
 
-		NULL_CHECK_RETURN(m_hWnd, winRender);
+		NULL_RETURN(m_pRender.m_hWnd, false);
 
-		HDC   hDC   = GetDC(m_hWnd);
+		HDC hDC = GetDC(m_pRender.m_hWnd);
 		HGLRC hglrc = NULL;
 
 		int iPixelFormat; unsigned int num_formats = 0;
@@ -923,14 +938,16 @@ protected:
 			hglrc = wglCreateContext(hDC);
 		}
 
-		WindowRender winRender = { m_hWnd, hDC, hglrc };
+		m_pRender.m_hDc = hDC;
+		m_pRender.m_hGLRC = hglrc;
 
-		if (!make_current_context(winRender))
+		if (!make_current_context())
 		{
-			delete_opengl_context(winRender);
+			delete_opengl_context();
+			return false;
 		}
 
-		return winRender;
+		return true;
 	}
 
 	/***************************************************************************
@@ -939,9 +956,9 @@ protected:
 	*! @author : thuong.nv          - [Date] : 05/03/2023
 	*! @note   : use openGL extension previously established
 	***************************************************************************/
-	static bool is_opengl_ok(WindowRender& pRender)
+	bool is_opengl_ok()
 	{
-		return (pRender.m_hGLRC && pRender.m_bCreated);
+		return (m_pRender.m_hGLRC && m_pRender.m_bCreated);
 	}
 
 	/***************************************************************************
@@ -950,15 +967,17 @@ protected:
 	*! @author : thuong.nv          - [Date] : 05/03/2023
 	*! @note   : use openGL extension previously established
 	***************************************************************************/
-	static bool make_current_context(WindowRender& pRender)
+	bool make_current_context()
 	{
-		if (wglMakeCurrent(pRender.m_hDc, pRender.m_hGLRC))
+		if (wglMakeCurrent(m_pRender.m_hDc, m_pRender.m_hGLRC))
 		{
-			pRender.m_bCreated = true;
-			return true;
+			m_pRender.m_bCreated = true;
 		}
-		pRender.m_bCreated = false;
-		return false;
+		else
+		{
+			m_pRender.m_bCreated = false;
+		}
+		return m_pRender.m_bCreated;
 	}
 
 	/***************************************************************************
@@ -967,13 +986,13 @@ protected:
 	*! @author : thuong.nv          - [Date] : 05/03/2023
 	*! @note   : use openGL extension previously established
 	***************************************************************************/
-	static void delete_opengl_context(WindowRender& pRender)
+	void delete_opengl_context()
 	{
-		ReleaseDC(pRender.m_hWnd, pRender.m_hDc);	// release device context
-		wglDeleteContext(pRender.m_hGLRC);			// delete the rendering context
-		pRender.m_bCreated = false;
-		pRender.m_hDc	= NULL;
-		pRender.m_hGLRC = NULL;
+		ReleaseDC(m_pRender.m_hWnd, m_pRender.m_hDc);	// release device context
+		wglDeleteContext(m_pRender.m_hGLRC);			// delete the rendering context
+		m_pRender.m_bCreated = false;
+		m_pRender.m_hDc	 = NULL;
+		m_pRender.m_hGLRC = NULL;
 	}
 
 protected:
@@ -990,10 +1009,13 @@ protected:
 	*! @return : void 
 	*! @author : thuong.nv          - [Date] : 05/03/2023
 	***************************************************************************/
-	virtual bool Create(int iAntialiasing = 0)
+	virtual bool CreateContext(int iAntialiasing = 0)
 	{
-		m_pRender = make_opengl_context( iAntialiasing);
-		return m_pRender.m_bCreated;
+		if (make_opengl_context(iAntialiasing))
+		{
+			return m_pRender.m_bCreated;
+		}
+		return false;
 	}
 
 	/***************************************************************************
@@ -1001,9 +1023,9 @@ protected:
 	*! @return : void 
 	*! @author : thuong.nv          - [Date] : 05/03/2023
 	***************************************************************************/
-	virtual void Delete()
+	virtual void DeleteContext()
 	{
-		delete_opengl_context(m_pRender);
+		delete_opengl_context();
 	}
 
 	/***************************************************************************
@@ -1011,9 +1033,9 @@ protected:
 	*! @return : void 
 	*! @author : thuong.nv          - [Date] : 05/03/2023
 	***************************************************************************/
-	virtual bool Make()
+	virtual bool MakeContext()
 	{
-		if (is_opengl_ok(m_pRender))
+		if (is_opengl_ok())
 		{
 			return wglMakeCurrent(m_pRender.m_hDc, m_pRender.m_hGLRC)== TRUE ? true : false;
 		}
@@ -1030,6 +1052,92 @@ protected:
 		::SwapBuffers(m_pRender.m_hDc);
 	}
 };
+
+/**********************************************************************************
+* ⮟⮟ Class name: SafeThread
+* Base class for window handle inheritance
+***********************************************************************************/
+class Dllexport SafeThread
+{
+private:
+	std::thread		m_thread;
+	std::string		m_thread_name;
+
+	bool			m_bCreated;
+	bool			m_bDetach;
+
+public:
+	
+	explicit SafeThread() : m_thread(),
+		m_thread_name("none"), m_bCreated(false),
+		m_bDetach(false)
+	{
+
+	}
+
+	template<class ...Args>
+	void Create(Args &&...args)
+	{
+		m_thread =  std::move(std::thread(std::forward<Args>(args)...));
+		m_bCreated = true;
+	}
+
+	SafeThread(SafeThread&&other) noexcept
+	{
+		m_thread = std::move(other.m_thread);
+	}
+
+	~SafeThread()
+	{
+		this->Join();
+	}
+
+	bool IsCreated()
+	{
+		return m_bCreated;
+	}
+
+	/***************************************************************************
+	*! @brief  : Get keyboard state
+	*! @return : true : ok | false : not ok
+	*! @author : thuong.nv          - [Date] : 05/03/2023
+	***************************************************************************/
+	void SetName(const std::string& name)
+	{
+		m_thread_name = name;
+	}
+
+	/***************************************************************************
+	*! @brief  : Get keyboard state
+	*! @return : true : ok | false : not ok
+	*! @author : thuong.nv          - [Date] : 05/03/2023
+	***************************************************************************/
+	void Join()
+	{
+		if (m_thread.joinable())
+			m_thread.join();
+	}
+
+	bool IsDetach()
+	{
+		return m_bDetach;
+	}
+
+	/***************************************************************************
+	*! @brief  : Get keyboard state
+	*! @return : true : ok | false : not ok
+	*! @author : thuong.nv          - [Date] : 05/03/2023
+	***************************************************************************/
+	void Detach()
+	{
+		if (m_thread.joinable())
+		{
+			m_thread.detach();
+			m_bDetach = true;
+		}
+	}
+};
+
 
 ____END_NAMESPACE____
 

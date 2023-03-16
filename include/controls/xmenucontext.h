@@ -12,7 +12,7 @@
 #define XMENU_CONTEXT_H
 
 #include "wbase.h"
-#include <map>
+#include <unordered_map>
 #include <memory>
 
 ___BEGIN_NAMESPACE___
@@ -20,7 +20,7 @@ class WindowBase;
 class ControlBase;
 
 /**********************************************************************************
-* ⮟⮟ Class name: MenuContext control
+* ⮟⮟ Class name: MenuItemBase
 * MenuContext control for window
 ***********************************************************************************/
 
@@ -30,51 +30,88 @@ protected:
 	typedef void(*typeEventFun)(ControlBase* ctrl);
 
 public:
-	virtual int Type() = 0;
+	virtual int GetItemType() = 0;
 };
 
-class MenuItem : public MenuItemBase
+/**********************************************************************************
+* ⮟⮟ Class name: MenuItemBase
+* MenuContext control for window
+***********************************************************************************/
+class Dllexport MenuItem : public MenuItemBase
 {
 public:
-	int Type() { return 1; }
+	int GetItemType() { return 1; }
 
 public:
-	UINT			m_type;
-	std::wstring	m_label;
-
+	UINT			m_iType	= 0;
+	std::wstring	m_sLabel	= L"";
 	typeEventFun	m_EventFun = NULL;
 };
 
+/**********************************************************************************
+* ⮟⮟ Class name: MenuContext control
+* MenuContext control for window
+***********************************************************************************/
 class Dllexport MenuContext : public ControlBase , public MenuItemBase
 {
 	enum { MAX_MENU_ITEM  = 10};
-	typedef MenuItemBase*		ItemPtr;
-	typedef std::map<UINT, MenuItemBase*>	MapMenuItemID;
+	typedef	 MenuItemBase* ItemPtr;
+	typedef std::unordered_map<INT, MenuItemBase*> MapMenuItemID;
 
 public:
-	int Type() { return 2; }
+	int GetItemType() { return 2; }
 
 protected:
 	HMENU			m_hMenu;
-	MapMenuItemID	m_items;
+	MapMenuItemID	m_Items;
+	std::wstring	m_sLabel;
 
 public:
-	MenuContext() : ControlBase(), m_hMenu(NULL)
+	MenuContext(const wchar_t* label = L"") : ControlBase(),
+		m_hMenu(NULL)
 	{
+		m_sLabel = label;
+	}
 
+	~MenuContext()
+	{
+		this->ClearItem();
 	}
 
 private:
-	bool CreateMenuItem(UINT ID, MenuItem& item)
+
+	/***************************************************************************
+	*! @brief  : Win API add MenuItem
+	*! @return : bool
+	*! @author : thuong.nv          - [Date] : 05/03/2023
+	***************************************************************************/
+	bool WIN32_AppendMenuItem(UINT ID, MenuItem& item)
 	{
-		if (item.m_type == MF_SEPARATOR)
+		if (item.m_iType == MF_SEPARATOR)
 		{
 			AppendMenu(m_hMenu, MF_SEPARATOR, ID, NULL);
 		}
 		else
 		{
-			AppendMenu(m_hMenu, item.m_type, ID, item.m_label.c_str());
+			AppendMenu(m_hMenu, item.m_iType, ID, item.m_sLabel.c_str());
 		}
+
+		return true;
+	}
+
+	/***************************************************************************
+	*! @brief  : Win API add MenuContext
+	*! @return : bool
+	*! @author : thuong.nv          - [Date] : 05/03/2023
+	***************************************************************************/
+	bool WIN32_AppendMenuContext(MenuContext* menu)
+	{
+		if (!menu || !menu->IsCreated())
+			return false;
+
+		AppendMenu(m_hMenu, MF_POPUP, (UINT_PTR)menu->m_hMenu, menu->m_sLabel.c_str());
+
+		return true;
 	}
 
 	bool DeleteMenuItem(UINT ID)
@@ -82,21 +119,34 @@ private:
 		::DeleteMenu(m_hMenu, ID, MF_BYPOSITION);
 	}
 
+	/***************************************************************************
+	*! @brief  : Clear data menucontext
+	*! @return : void
+	*! @author : thuong.nv          - [Date] : 05/03/2023
+	***************************************************************************/
 	void ClearItem()
 	{
-		for (auto it = m_items.begin(); it != m_items.end(); it++)
+		for (auto it = m_Items.begin(); it != m_Items.end(); it++)
 		{
 			ItemPtr item = it->second;
 
-			if (item->Type() == 1)
+			int iType = item->GetItemType();
+
+			if (iType == 1) // menu item
 			{
 				delete it->second;
 			}
-			else if (item->Type())
+			else if (iType == 2) // menu context
 			{
 				((MenuContext*)item)->ClearItem();
 			}
 		}
+	}
+
+protected:
+	virtual bool IsCreated()
+	{
+		return m_hMenu ? true : false;
 	}
 
 public:
@@ -113,20 +163,27 @@ public:
 		
 		UINT uiStartID = m_ID + 1;
 
-		for (auto it = m_items.begin(); it != m_items.end(); it++)
+		for (auto it = m_Items.begin(); it != m_Items.end(); it++)
 		{
-			if (it->first <= 0)
+			if (it->first > 0)
 				continue;
 
 			ItemPtr item = it->second;
-			if (item->Type() == 1)
+
+			int iItem = item->GetItemType();
+
+			if (iItem == 1)
 			{
-				CreateMenuItem(uiStartID++, *(MenuItem*)item);
+				WIN32_AppendMenuItem(uiStartID++, *(MenuItem*)item);
 			}
-			else if (item->Type())
+			else if (iItem == 2)
 			{
-				((MenuContext*)item)->SetID(uiStartID);
-				uiStartID += ((MenuContext*)item)->OnInitControl();
+				MenuContext* menu_item = (MenuContext*)item;
+				NULL_CONTINUE(menu_item);
+
+				menu_item->SetID(uiStartID);
+				uiStartID += menu_item->OnInitControl();
+				WIN32_AppendMenuContext(menu_item);
 			}
 		}
 
@@ -140,10 +197,14 @@ public:
 	***************************************************************************/
 	virtual void OnCommand(WORD _id, WORD _event)
 	{
-		auto itItem = m_items.find(_id);
-		if (itItem != m_items.end() )
+		auto itItem = m_Items.find(_id);
+		if (itItem != m_Items.end() )
 		{
-			//itItem->second->m_EventFun(this);
+			if (itItem->second->GetItemType() == 1)
+			{
+				MenuItem* item =  (MenuItem*)itItem->second;
+				item->m_EventFun(this);
+			}
 		}
 	}
 
@@ -154,22 +215,35 @@ public:
 	*! @return : number of control created
 	*! @author : thuong.nv          - [Date] : 05/03/2023
 	***************************************************************************/
+	void SetLable(const wchar_t* label)
+	{
+		m_sLabel = label;
+	}
+
+	/***************************************************************************
+	*! @brief  : Init Menubar control
+	*! @return : number of control created
+	*! @author : thuong.nv          - [Date] : 05/03/2023
+	***************************************************************************/
 	void AddItem(const wchar_t* label, LONG type, typeEventFun fun_event)
 	{
-		int tempID = -m_items.size();
+		int tempID = int(-1* m_Items.size());
 
 		MenuItem* item = new MenuItem();
-		item->m_label = label;
-		item->m_type = type;
+		item->m_sLabel = label;
+		item->m_iType = type;
 
 		if (m_hMenu != NULL)
 		{
-			if (CreateMenuItem(m_ID + m_items.size(), *item));
+			tempID = (int)(m_ID + m_Items.size());
+
+			if (!WIN32_AppendMenuItem(tempID, *item))
 			{
-				tempID = m_ID + m_items.size();
+				std::cerr << "AddItem failed" << std::endl;
+				return;
 			}
 		}
-		m_items.insert({ tempID, item });
+		m_Items.insert({ tempID, item });
 	}
 
 	/***************************************************************************
@@ -189,16 +263,23 @@ public:
 	***************************************************************************/
 	void Insert(MenuContext* menu)
 	{
-		int tempID = -m_items.size();
+		int tempID = (int)(-1* m_Items.size());
 
 		if (m_hMenu != NULL)
 		{
-			menu->SetID(m_ID + m_items.size());
+			tempID = (int)(m_ID + m_Items.size());
+
+			menu->SetID(tempID);
 			menu->OnInitControl();
-			tempID = m_ID + m_items.size();
+
+			if (!WIN32_AppendMenuContext(menu))
+			{
+				std::cerr << "WIN32_AppendMenuContext  failed" << std::endl;
+				return;
+			}
 		}
 
-		m_items.insert({ tempID, menu });
+		m_Items.insert({ tempID, menu });
 	}
 
 	/***************************************************************************
@@ -208,7 +289,7 @@ public:
 	***************************************************************************/
 	void Show(POINT point)
 	{
-		NULL_CHECK_RETURN(m_hWndPar, );
+		NULL_RETURN(m_hWndPar, );
 
 		ClientToScreen(m_hWndPar, &point);
 		TrackPopupMenu(m_hMenu, TPM_RIGHTBUTTON, point.x, point.y, 0, m_hWndPar, NULL);

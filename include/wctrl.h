@@ -62,6 +62,8 @@ protected:
 			y		=  sed.y;
 			width	=  sed.width;
 			height	=  sed.height;
+
+			return *this;
 		}
 	} CRect;
 
@@ -92,7 +94,7 @@ protected:
 	void SetParent(HWND hwnd)
 	{ 
 		m_hWndPar = hwnd;
-		NULL_CHECK_RETURN(m_hWnd, );
+		NULL_RETURN(m_hWnd, );
 		::SetParent(m_hWnd, m_hWndPar);
 	}
 
@@ -108,7 +110,7 @@ protected:
 	*! @return : Number of control created
 	*! @author : thuong.nv          - [Date] : 05/03/2023
 	***************************************************************************/
-	bool IsCreated() { m_hWnd ? true : false; }
+	virtual bool IsCreated() { return m_hWnd ? true : false; }
 
 public:
 	/***************************************************************************
@@ -134,7 +136,7 @@ public:
 	{
 		m_bEnable = bEnable;
 
-		NULL_CHECK_RETURN(m_hWnd, );
+		NULL_RETURN(m_hWnd, );
 		::EnableWindow(m_hWnd, m_bEnable ? TRUE : FALSE);
 	}
 
@@ -147,7 +149,7 @@ public:
 	{
 		m_bVisble = bVisible;
 
-		NULL_CHECK_RETURN(m_hWnd, );
+		NULL_RETURN(m_hWnd, );
 		::ShowWindow(m_hWnd, m_bVisble ? TRUE : FALSE);
 	}
 
@@ -160,7 +162,7 @@ public:
 	{
 		m_rect.x = x;
 		m_rect.y = y;
-		NULL_CHECK_RETURN(m_hWnd, );
+		NULL_RETURN(m_hWnd, );
 		::SetWindowPos(m_hWnd, NULL, m_rect.x, m_rect.y, 0, 0, SWP_NOZORDER | SWP_NOSIZE);
 	}
 
@@ -186,7 +188,7 @@ public:
 		m_rect.width = width;
 		m_rect.height = height;
 
-		NULL_CHECK_RETURN(m_hWnd, );
+		NULL_RETURN(m_hWnd, );
 		::SetWindowPos(m_hWnd, NULL, m_rect.x, m_rect.y, m_rect.width, m_rect.height, SWP_NOMOVE | SWP_NOZORDER);
 	}
 
@@ -204,7 +206,7 @@ public:
 	***************************************************************************/
 	virtual int GetHeight() { return m_rect.height; }
 
-protected:
+public:
 	/***************************************************************************
 	*! @brief  : send message window
 	*! @return : true : ok | false : not ok
@@ -212,7 +214,7 @@ protected:
 	***************************************************************************/
 	void Send_Message(UINT message, WPARAM wParam, LPARAM lParam)
 	{
-		NULL_CHECK_RETURN(m_hWnd, );
+		NULL_RETURN(m_hWnd, );
 		::SendMessage(m_hWnd, message, wParam, lParam);
 	}
 
@@ -227,10 +229,10 @@ protected:
 interface Dllexport WindowContext
 {
 public:
-	virtual void* Renderer() = 0;
-	virtual bool  Create(int iAntialiasing = 0) = 0;
-	virtual void  Delete() = 0;
-	virtual bool  Make() = 0;
+	virtual void* Render() = 0;
+	virtual bool  CreateContext(int iAntialiasing = 0) = 0;
+	virtual void  DeleteContext() = 0;
+	virtual bool  MakeContext() = 0;
 	virtual void  SwapBuffer() = 0;
 };
 
@@ -293,6 +295,50 @@ public:
 	}
 
 	friend class WindowBase;
+};
+
+/**********************************************************************************
+* ⮟⮟ Class name: WindowSetting
+* Base class for inherited window controls
+***********************************************************************************/
+struct WindowSetting
+{
+	bool				m_bFullScreen;
+	bool				m_bGDIplus;
+	bool				m_bOpenGL;       // State OpenGL
+	int					m_iAntialiasing; // Antialiasing level = 8
+	int					m_iModeDraw;	 // 1 : use thread draw opengl | 0 :use pipe main thread
+	bool				m_bWriteInfo;
+	int					m_iAphaTrans = -1;
+
+	void set_default()
+	{
+		m_bFullScreen   = false;
+		m_bGDIplus	    = false;
+		m_bOpenGL	    = false;
+		m_iAntialiasing = -1;
+		m_iModeDraw		= 0;
+		m_bWriteInfo	= false;
+	}
+
+	WindowSetting()
+	{
+		this->set_default();
+	}
+
+	WindowSetting(	const char* title,
+					const int	xpos,
+					const int	ypos, 
+					const int	width = 640,
+					const int	height = 480)
+	{
+		m_bFullScreen	= false;
+		m_bGDIplus		= false;
+		m_bOpenGL		= true;
+		m_iAntialiasing = -1;
+		m_iModeDraw		= 0;
+		m_bWriteInfo	= false;
+	}
 };
 
 ____END_NAMESPACE____

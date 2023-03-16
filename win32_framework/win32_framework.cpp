@@ -1,12 +1,15 @@
 ﻿#include "wapi.h"
+#include "controls/xmenucontext.h"
+#include <window/xwindow.h>
+
 
 ____USE_NAMESPACE____
 
 
 using namespace fox;
 
-Button* btn;
-
+//Button* btn;
+MenuContext* menu = NULL;
 void Create(WindowBase* win)
 {
     //btn = new Button();
@@ -42,17 +45,17 @@ void Create(WindowBase* win)
 
     //win->AddControl(btn);
 
-    Checkbox* chk = new Checkbox();
+    //Checkbox* chk = new Checkbox();
 
-    chk->SetText(L"Check box");
-    chk->SetPosition(10, 40);
-    chk->SetSize(100, 20);
+    //chk->SetText(L"Check box");
+    //chk->SetPosition(10, 40);
+    //chk->SetSize(100, 20);
 
-    SubWindow* sub = new SubWindow();
-    sub->SetTitle(L"sub window");
-    sub->SetPosition(20, 20);
-    sub->SetSize(200, 200);
-    sub->Visible(true);
+    //SubWindow* sub = new SubWindow();
+    //sub->SetTitle(L"sub window");
+    //sub->SetPosition(20, 20);
+    //sub->SetSize(200, 200);
+    //sub->Visible(true);
 
     //btn = new Button();
     //btn->SetLabel(L"Resize");
@@ -63,18 +66,30 @@ void Create(WindowBase* win)
     //btn->Visible(true);
 
     //sub->AddControl(btn);
-    sub->AddControl(chk);
+    //sub->AddControl(chk);
 
-    win->AddSubWindow(sub);
+    //win->AddSubWindow(sub);
     //win->AddControl(chk);
 
+    menu = new MenuContext();
+    menu->AddItem(L"Item 1", MF_STRING , NULL);
+    menu->AddItem(L"Item 2", MF_STRING , NULL);
+
+    MenuContext* mn2 = new MenuContext(L"Item 3");
+
+    mn2->AddItem(L"Item 3.1", MF_STRING, NULL);
+    mn2->AddItem(L"Item 3.2", MF_STRING, NULL);
+
+    menu->Insert(mn2);
+
+    win->AddControl(menu);
 }
 
-void MouseButton(WindowBase* win)
+void MouseButton(WindowBase* win, int button, int action)
 {
-    if (win->GetMouseButtonStatus(GLMouse::LeftButton))
+    if (button == GLMouse::RightButton && action == GL_PRESSED)
     {
-
+        menu->Show({ 10 ,10 });
     }
 }
 
@@ -109,12 +124,16 @@ void Process(WindowBase* pWin)
 
 int main()
 {
-    Window *window = new Window(L"OpenGL", 100 ,100, 640, 480);
+    WindowSetting setting;
+    setting.m_bWriteInfo = true;
+
+    Window *window = new Window(L"OpenGL", 100 ,100, 640, 480, &setting);
     window->SetOnDrawfunc(Draw);
     window->SetOnCreatedfunc(Create);
     window->SetProcessfunc(Process);
     window->SetOnKeyboardfunc(Keyboard);
     window->SetOnResizefunc(Resize);
+    window->SetOnMouseButtonfunc(MouseButton);
 
     window = create_window(window);
 
@@ -122,7 +141,7 @@ int main()
     {
         window->process();
         window->draw();
-        window->wait_event();
+        window->poll_event();
     }
 
 

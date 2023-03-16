@@ -11,10 +11,13 @@
 #ifndef WDEF_H
 #define WDEF_H
 
+#include "xsysdef.h"
+
 #include <Windows.h>
 #include <gdiplus.h>
-
-#include "xsysdef.h"
+#include <wingdi.h>
+#include <winuser.h>
+#include <assert.h>
 
 
 // disable waring visual studio c++14
@@ -175,6 +178,7 @@ typedef enum tagGLKeyboard
     F22             = 0x85,      // (133)
     F23             = 0x86,      // (134)
     F24             = 0x87,      // (135)
+
 } GLKeyboard;
 
 typedef enum tagGLMouse
@@ -182,7 +186,18 @@ typedef enum tagGLMouse
     LeftButton      = 0x01,      // (1)
     RightButton     = 0x02,      // (2)
     MidButton       = 0x04,      // (4)
+
 } GLMouse;
+
+typedef enum tagMESSAGE_WIN
+{
+	PROCESS_MSG		= -100000,
+	MESSAGE_START	=  100002,
+	MOVE_WIN		=  MESSAGE_START + 0x0001,
+	MINI_WIN		=  MESSAGE_START + 0x0002,
+	CLOSE_WIN		=  MESSAGE_START + 0x0003,
+
+} MESSAGE_WIN;
 
 class Dllexport GdiplusToken
 {
@@ -649,7 +664,7 @@ private:
 public:
 	void DrawRectangle(const Gdiplus::Rect& rect, const Gdiplus::Pen* pen, const Gdiplus::Brush* brush, int radius)
 	{
-		NULL_CHECK_RETURN(m_pRender->render, );
+		NULL_RETURN(m_pRender->render, );
 
 		if (brush)
 			funcFillRoundRectangle(m_pRender->render, brush, rect, radius);
@@ -659,7 +674,7 @@ public:
 
 	void DrawRectangleFull(const Gdiplus::Pen* pen, const Gdiplus::Brush* brush, int radius)
 	{
-		NULL_CHECK_RETURN(m_pRender->render, );
+		NULL_RETURN(m_pRender->render, );
 
 		if(brush)
 			funcFillRoundRectangle(m_pRender->render, brush, m_pRender->rect, radius);

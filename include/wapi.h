@@ -8,7 +8,7 @@
 * @brief    Create and handle event control the window
 * @note     For conditions of distribution and use, see copyright notice in readme.txt
 ************************************************************************************/
-#include "whandle.h"
+#include "window/xwindow.h"
 
 ___BEGIN_NAMESPACE___
 
@@ -27,7 +27,7 @@ int Dllexport init_window()
 	if (!Window::register_class())
 	{
 		bool bOk = Window::register_window_class(GL_WIN_CLASS, Window::WndMainProc, GetModuleHandle(NULL));
-		bOk &= Window::register_window_class(GL_SUBWIN_CLASS, SubWindow::WndSubProc, GetModuleHandle(NULL));
+		//bOk &= Window::register_window_class(GL_SUBWIN_CLASS, SubWindow::WndSubProc, GetModuleHandle(NULL));
 		Window::register_class(true, bOk);
 	}
 	
@@ -62,12 +62,12 @@ Window* Dllexport create_window(const wchar_t*	title,
 								const int		ypos,
 								const int		width  = 640,
 								const int		height = 480,
-								const WndProp* prop = NULL)
+								const WindowSetting* setting = NULL)
 {
 	if (init_window() != 0)
 		return NULL;
 
-	Window* win = new Window(title, xpos, ypos, width, height, prop);
+	Window* win = new Window(title, xpos, ypos, width, height, setting);
 	if(!win->Create(GL_WIN_CLASS))
 	{
 		delete win;
@@ -75,7 +75,7 @@ Window* Dllexport create_window(const wchar_t*	title,
 	}
 	
 	// create opengl context 
-	if (!win->CreateOpenGLContext(true))
+	if (!win->CreateOpenGLContext())
 	{
 		win->close();
 		delete win;
@@ -99,7 +99,7 @@ Window* Dllexport create_window(Window* win)
 	}
 
 	// create opengl context 
-	if (!win->CreateOpenGLContext(true))
+	if (!win->CreateOpenGLContext())
 	{
 		win->close();
 		delete win;

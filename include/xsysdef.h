@@ -42,7 +42,9 @@
 
 #define SAFE_DELETE(p)			{delete   p; p = NULL;}
 #define SAFE_DELETE_ARRAY(p)	{delete[] p; p = NULL;}
-#define NULL_CHECK_RETURN(p, r) if(p == NULL) return r;
+#define NULL_RETURN(p, r)		if(p == NULL) return r;
+#define NULL_BREAK(p)			if(p == NULL) break;
+#define NULL_CONTINUE(p)		if(p == NULL) continue;
 
 #define MAX_DEVICENAME			32
 
