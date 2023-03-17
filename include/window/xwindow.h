@@ -17,12 +17,14 @@
 #include <vector>
 #include <stack>
 #include <mutex>
+#include <chrono>
+#include <thread>
 
 ___BEGIN_NAMESPACE___
 
-//==================================================================================
-// Class Window : Thông tin và ngữ cảnh của một handle                              
-//==================================================================================
+//===================================================================================
+// Class Window : Thông tin và ngữ cảnh của một handle                               
+//===================================================================================
 class Dllexport Window : public WindowBase, public WindowOpenGLContext, public WindowEvent
 {
 protected:
@@ -30,7 +32,7 @@ protected:
 	static bool register_class(bool bSet = false, bool value = false)
 	{
 		static bool m_bRegisterClass = false;
-		if (bSet == true) // set
+		if (bSet == true)
 		{
 			m_bRegisterClass = value;
 		}
@@ -41,7 +43,7 @@ protected:
 	static bool opengl_extension(bool bSet = false, bool value = false)
 	{
 		static bool m_bLoadOpenGLEx = false;
-		if (bSet == true) // set
+		if (bSet == true)
 		{
 			m_bLoadOpenGLEx = value;
 		}
@@ -51,10 +53,11 @@ protected:
 
 private:
 	WindowSetting			m_Setting;
+
+	std::wstring			m_title;
 	DWORD					m_dwStyle;
 	DWORD					m_dwStyleEx;
 
-	std::wstring			m_title;
 	MSG						m_msg;
 
 private:
@@ -67,24 +70,24 @@ private:
 	unsigned int			m_fontSizeTextRender;
 
 	// System draw infor
-	bool					m_bUpdateRenderInfo; // update view , text render info :
+	bool					m_bOpenGLCreated; // update view , text render info :
 
-	std::mutex					m_renderinfo_mutex;
+	std::mutex				m_renderinfo_mutex;
 	std::condition_variable		m_sycn_renderinfo;
 
-	std::wstring		   m_gpu_device_name;
+	SafeThread				m_drawthread;
 
-	SafeThread			   m_drawthread;
-	SafeThread			   m_processthread;
+	int						m_iDrawMode; // 0 : normal | 1 : use draw thread
+	std::wstring			m_gpu_device_name;
 
 	// Font information
 	std::wstring			m_fontName;
 	unsigned int			m_fontSize;
 
 private:
-//======================================================================================
-//⮟⮟ Triển khai xử lý thông điệp cho window                                            
-//======================================================================================
+//==================================================================================
+//⮟⮟ Triển khai xử lý thông điệp cho window                                        
+//==================================================================================
 	static LRESULT CALLBACK WndMainProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 	{
 		Window* win = (Window*)(GetWindowLongPtr(hWnd, GWLP_USERDATA));
@@ -157,21 +160,24 @@ private:
 		{
 			win->m_CurStatus.m_rect.width  = LOWORD(lParam); // width
 			win->m_CurStatus.m_rect.height = HIWORD(lParam); // height
-			win->UpdateRenderInfo();
+
+			win->m_text_render.UpdateView(win->m_CurStatus.m_rect.width, win->m_CurStatus.m_rect.height);
 
 			win->UpdateTitle();
-			// cannot use opengl context in this tunnel
+
+			// Cannot use OpenGL context in this tunnel
 			win->OnResize(win);
 			
 			// Refresh screen when resize window in case one thread
-			if (win->GetDrawMode() == 0)
+			if (win->m_iDrawMode == 0)
+			{
 				win->OnDraw();
+			}
 
 			break;
 		}
 		case WM_SIZING:
 		{
-			//win->UpdateTitle();
 			break;
 		}
 		case WM_MOUSEWHEEL:
@@ -239,9 +245,16 @@ private:
 	}
 
 private:
-	// get gpu name use opengl 
-	virtual std::wstring GetGPUDevice()
+	/*******************************************************************************
+	*! @brief  : Get name gpu device - only use when created opengl context
+	*! @return : std::wstring : device name
+	*! @author : thuong.nv          - [Date] : 05/03/2023
+	*******************************************************************************/
+	virtual std::wstring GetNameGPUDevice()
 	{
+		if (m_bOpenGLCreated == false)
+			return L"OpenGL context not created";
+
 		std::string gpu_device = "No Device";
 		if ((char*)glGetString(GL_RENDERER))
 		{
@@ -250,53 +263,60 @@ private:
 
 		std::wstring utf16_gpu_device;
 		utf16_gpu_device.resize(gpu_device.size() + 1, 0);
-		int nWide = MultiByteToWideChar(CP_UTF8, MB_ERR_INVALID_CHARS, gpu_device.c_str(),
-				(int)gpu_device.length(), (LPWSTR)utf16_gpu_device.c_str(), (int)utf16_gpu_device.size());
+
+		int nWide = MultiByteToWideChar(CP_UTF8, MB_ERR_INVALID_CHARS,
+			gpu_device.c_str(), (int)gpu_device.length(),
+			(LPWSTR)utf16_gpu_device.c_str(), (int)utf16_gpu_device.size());
+
 		utf16_gpu_device.resize(nWide);
 
 		return utf16_gpu_device;
 	}
 
+	/*******************************************************************************
+	*! @brief  : update title follow format
+	*! @return : void
+	*! @author : thuong.nv          - [Date] : 05/03/2023
+	*******************************************************************************/
 	void UpdateTitle()
 	{
-		this->SetTitle(GetTitleInfo());
+		std::wstring title = GetTitleInfo();
+		SetTitle(title.c_str());
 	}
 
-private:
-	virtual void OnDraw()
+	/*******************************************************************************
+	*! @brief  : update title follow format
+	*! @return : void
+	*! @author : thuong.nv          - [Date] : 05/03/2023
+	*******************************************************************************/
+	void UpdateWindowDraw()
 	{
-		if (!MakeContext()) return;
-
-		if (m_Setting.m_iModeDraw == 1)
-		{
-			if (m_bUpdateRenderInfo)
-			{
-				glViewport(0, 0, GetWidth(), GetHeight());
-				UpdateTextRender();
-
-				m_gpu_device_name = this->GetGPUDevice();
-
-				m_bUpdateRenderInfo = false;
-				m_sycn_renderinfo.notify_all();
-			}
-		}
-		else
-		{
-			glViewport(0, 0, m_CurStatus.m_rect.width, m_CurStatus.m_rect.height);
-			UpdateTextRender();
-		}
-
-		this->UpdateInfo();
-
-		CHECK_RUN_FUNCTION(m_funOnDraw, this);
-
 		// Hiển thị thông tin fps - frametime và thông tin hệ thống nếu cần
 		if (m_Setting.m_bWriteInfo == true)
 		{
 			char strsys[80];
 			sprintf_s(strsys, "fps: %d - frametime : %f ms", GetFPS(), GetFrameTime());
-			this->WriteText(strsys, 200, 200);
+			WriteText(strsys, 10, 20);
 		}
+	}
+
+private:
+	/*******************************************************************************
+	*! @brief  : draw function window
+	*! @return : void
+	*! @author : thuong.nv          - [Date] : 05/03/2023
+	*******************************************************************************/
+	virtual void OnDraw()
+	{
+		if (!MakeContext()) return;
+
+		glViewport(0, 0, m_CurStatus.m_rect.width, m_CurStatus.m_rect.height);
+
+		this->UpdateInfo();
+
+		CHECK_RUN_FUNCTION(m_funOnDraw, this);
+
+		this->UpdateWindowDraw();
 
 		this->SwapBuffer();
 	}
@@ -305,28 +325,23 @@ protected:
 
 	virtual WindowType GetType() { return WindowType::MainWin; }
 
-//======================================================================================
-//⮟⮟ Triển khai chính tạo và xử lý ngữ cảnh window  - important                        
-//======================================================================================
+//==================================================================================
+//⮟⮟ Triển khai chính tạo và xử lý ngữ cảnh window  - important                    
+//==================================================================================
 private:
-	/***************************************************************************
-	*! @brief  : setup flag load OpenGL Extension
-	*! @param  : [In] bUse : use OpenGL extension
-	*! @return : void
-	*! @author : thuong.nv          - [Date] : 05/03/2023
-	***************************************************************************/
-	void UseOpenGLExtension(const bool bUse = true)
-	{
-		this->m_bUseOpenGLEx = bUse;
-	}
 
-//======================================================================================
-//⮟⮟ Triển khai khởi tạo liên quan đến window                                          
-//======================================================================================
+
+
+//==================================================================================
+//⮟⮟ Triển khai khởi tạo liên quan đến window                                      
+//==================================================================================
 private:
-	//==================================================================================
-	// Hàm tạo handle và thông số                                                       
-	//==================================================================================
+	/*******************************************************************************
+	*! @brief  : Hàm tạo window handle và thông số
+	*! @param  : [In] strWndClassName : tên class register
+	*! @return : bool 
+	*! @author : thuong.nv          - [Date] : 05/03/2023
+	*******************************************************************************/
 	bool CreateHandle(const wchar_t* strWndClassName)
 	{
 		// Create GDI+ startup incantation
@@ -372,14 +387,17 @@ private:
 		return true;
 	}
 
-
-//======================================================================================
-//⮟⮟ Triển hàm thao tác từ bên ngoài tác động vào Window class                         
-//======================================================================================
+//==================================================================================
+//⮟⮟ Triển hàm thao tác từ bên ngoài tác động vào Window class                     
+//==================================================================================
 protected:
-	//==================================================================================
-	// Khởi tạo window và thiết lập thông số                                            
-	//==================================================================================
+
+	/*******************************************************************************
+	*! @brief  : Khởi tạo window và thiết lập thông số   
+	*! @param  : [In] strClassname : tên class register
+	*! @return : bool
+	*! @author : thuong.nv          - [Date] : 05/03/2023
+	*******************************************************************************/
 	bool Create(const wchar_t* strClassname)
 	{
 		//this->SetStartIDControl(1000);
@@ -417,120 +435,124 @@ protected:
 		return ret;
 	}
 
-	//==================================================================================
-	// Khởi tạo window và thiết lập thông số                                            
-	//==================================================================================
+	/*******************************************************************************
+	*! @brief  : Khởi tạo ngữ cảnh OpenGL - sử dụng cho one hoặc nhiều thread
+	*! @param  : void
+	*! @return : bool - true :ok | false : failed
+	*! @author : thuong.nv          - [Date] : 05/03/2023
+	*******************************************************************************/
 	bool CreateOpenGLContext()
 	{
+		m_iDrawMode = m_Setting.m_iModeDraw;
+
 		// Any given OpenGL rendering context can be active at only one thread at a time.
 		// if I create opengl context in main thread then this thread not active
-		if (m_Setting.m_iModeDraw == 1)
+		if (m_iDrawMode == 1)
 		{
 			if (!m_drawthread.IsCreated())
 			{
-				m_drawthread.Create(&Window::ThreadDrawOpenGL, this);
+				// Context not created in main thread, so draw not main thread
+				std::unique_lock< std::mutex> lock(m_renderinfo_mutex);
+				m_drawthread.Create(&Window::CreateOpenGLContextThread, this);
 				m_drawthread.Detach();
-			}
 
-			if (!m_processthread.IsCreated())
-			{
-				m_processthread.Create(&Window::ThreadProcessOpenGL, this);
+				// wait for create OpenGL ok
+				while (!m_bOpenGLCreated)
+				{
+					m_sycn_renderinfo.wait(lock);
+					break;
+				}
 			}
 		}
 		// Create OpenGL main thread
 		else
 		{
+			m_bOpenGLCreated = false;
+
 			bool bUseOpenGLEx = opengl_extension();
 
-			if (!InitContext(m_hWnd, bUseOpenGLEx) ||
-				!CreateContext(m_Setting.m_iAntialiasing))
+			if (InitContext(m_hWnd, bUseOpenGLEx) && CreateContext(m_Setting.m_iAntialiasing))
 			{
-				return false;
+				m_bOpenGLCreated = true;
+				m_gpu_device_name = GetNameGPUDevice();
+				this->ReloadTextRender();
 			}
+		}
 
+		return m_bOpenGLCreated;
+	}
+
+	/*******************************************************************************
+	*! @brief  : Khởi tạo OpenGL context trong một thread
+	*! @param  : void
+	*! @return : void
+	*! @author : thuong.nv          - [Date] : 05/03/2023
+	*******************************************************************************/
+	virtual void CreateOpenGLContextThread()
+	{
+		m_bOpenGLCreated = false;
+
+		bool bUseOpenGLEx = opengl_extension();
+
+		if (InitContext(m_hWnd, bUseOpenGLEx) && CreateContext(m_Setting.m_iAntialiasing))
+		{
+			m_bOpenGLCreated = true;
+			m_gpu_device_name = GetNameGPUDevice();
 			this->ReloadTextRender();
 		}
 
-		return true;
+		m_sycn_renderinfo.notify_all();
+
+		// Draw not main thread
+		while (!this->closed())
+		{
+			this->OnDraw();
+			std::this_thread::sleep_for(std::chrono::milliseconds(5));
+		}
 	}
 
-//=======================================================================================
-//⮟⮟ Triển khai cập nhật trạng thái của window                                          
-//=======================================================================================
+//==================================================================================
+//⮟⮟ Triển khai cập nhật trạng thái của window                                     
+//==================================================================================
 private:
-	//===================================================================================
+	//=======================================================================================
 	// Cập nhật trạng thái thời gian mỗi khi một frame trôi qua                          
-	//===================================================================================
+	//=======================================================================================
 	void UpdateInfo()
 	{
 		m_fpscounter.update();
 	}
 
-	//===================================================================================
+	//=======================================================================================
 	// Khởi tạo trạng thái và thông tin thuộc tính khi đã tạo windows xong               
-	//===================================================================================
+	//=======================================================================================
 	void InitProperties()
 	{
 		m_fpscounter.start();
 	}
 
-	//===================================================================================
-	// send notify to draw thread and update render info
-	//===================================================================================
-	void UpdateRenderInfo()
-	{
-		if (m_Setting.m_iModeDraw == 1)
-		{
-			// update information draw in thread draw and notify ok to main thread
-			m_bUpdateRenderInfo = true;
-			std::unique_lock< std::mutex> lock(m_renderinfo_mutex);
-
-			// wait for : draw thread update draw info ok
-			while (m_bUpdateRenderInfo && m_drawthread.IsDetach())
-			{
-				m_sycn_renderinfo.wait(lock);
-			}
-		}
-		else
-		{
-			
-		}
-	}
-
-	//===================================================================================
-	// Cập nhật lại title window                                                         
-	//===================================================================================
+	/*******************************************************************************
+	*! @brief  : Cập nhật lại title window
+	*! @param  : void
+	*! @return : bool - true :ok | false : failed
+	*! @author : thuong.nv          - [Date] : 05/03/2023
+	*******************************************************************************/
 	std::wstring GetTitleInfo()
 	{
 		NULL_RETURN(m_hWnd, L"");
 
 		wchar_t titlebuff[256];
 
-		std::wstring gpu_name = L"Unknown";
-
-		if (m_Setting.m_iModeDraw == 1)
-			gpu_name = m_gpu_device_name.c_str();
-		else
-			gpu_name = this->GetGPUDevice();
-
 		// m_gpu_deive_name updated in render thread
 		swprintf_s(titlebuff, L"%s - %d x %d - %s", m_title.c_str(), m_CurStatus.m_rect.width,
-			m_CurStatus.m_rect.height, gpu_name.c_str());
+			m_CurStatus.m_rect.height, m_gpu_device_name.c_str());
 
 		return titlebuff;
 	}
 
-	//===================================================================================
-	// Cập nhật lại thông số cho text render window                                      
-	//===================================================================================
-	void UpdateTextRender()
-	{
-		m_text_render.UpdateView(m_CurStatus.m_rect.width, m_CurStatus.m_rect.height);
-	}
-
-	//===================================================================================
+	//=======================================================================================
 	// Load và cập nhật lại text render trên window                                      
-	//===================================================================================
+	//=======================================================================================
 	void ReloadTextRender()
 	{
 		UINT width = m_CurStatus.m_rect.width;
@@ -541,14 +563,14 @@ private:
 	}
 
 
-//======================================================================================
+//==========================================================================================
 //⮟⮟ Triển khai chức năng hỗ trợ cho window                                            
-//======================================================================================
+//==========================================================================================
 public:
 
-	//===================================================================================
+	//=======================================================================================
 	// Hiển thị text ra window                                                           
-	//===================================================================================
+	//=======================================================================================
 	void WriteText(const char* text, int x, int y, float r = 1.0f, float g = 1.0f,
 		float b = 1.0f, float a = 1.0f)
 	{
@@ -571,7 +593,7 @@ public:
 		m_CurStatus.m_rect.height	= height;
 
 		// openGL information
-		this->m_bUpdateRenderInfo = false;
+		this->m_bOpenGLCreated = false;
 
 		// setup default text render
 		this->m_fontNameTextRender = "Consolas";
@@ -600,33 +622,31 @@ public:
 		this->UpdateHint();
 	}
 
-	int  GetDrawMode() { return m_Setting.m_iModeDraw; }
-
-	//==================================================================================
+	//======================================================================================
 	// Lấy thời gian trôi qua từ frame trước sang frame hiện tại                        
-	//==================================================================================
+	//======================================================================================
 	double GetFrameTime()
 	{
 		return m_fpscounter.frametime();
 	}
 
-	//==================================================================================
+	//======================================================================================
 	// Lấy FPS window                                                                   
-	//==================================================================================
+	//======================================================================================
 	unsigned int GetFPS()
 	{
 		return m_fpscounter.fps();
 	}
 
-//======================================================================================
-//⮟⮟ Triển khai chức cập nhật thông tin trạng thái window                              
-//======================================================================================
+//==================================================================================
+//⮟⮟ Triển khai chức cập nhật thông tin trạng thái window                          
+//==================================================================================
 private:
-	/***************************************************************************
+	/*******************************************************************************
 	*! @brief  : Cập nhật thông tin stype của window 
 	*! @return : true : ok | false : failed
 	*! @author : thuong.nv          - [Date] : 05/03/2023
-	***************************************************************************/
+	*******************************************************************************/
 	bool CreateStyleWindow()
 	{
 		m_dwStyleEx = WS_EX_APPWINDOW | WS_EX_WINDOWEDGE ;  // Window Extended Style
@@ -650,11 +670,11 @@ private:
 		return true;
 	}
 
-	/***************************************************************************
+	/*******************************************************************************
 	*! @brief  : Cập nhật thông tin stype của window 
 	*! @return : void
 	*! @author : thuong.nv          - [Date] : 05/03/2023
-	***************************************************************************/
+	*******************************************************************************/
 	void UpdateHint()
 	{
 		if (m_Setting.m_bFullScreen)
@@ -712,9 +732,9 @@ private:
 		this->CreateStyleWindow();
 	}
 
-	//==================================================================================
+	//======================================================================================
 	// Hàm hủy Window                                                                   
-	//==================================================================================
+	//======================================================================================
 	virtual void OnDestroy()
 	{
 		// Gọi hàm mở rộng trước
@@ -731,29 +751,6 @@ private:
 	}
 
 private:
-
-	virtual void ThreadDrawOpenGL()
-	{
-		// if I create opengl context in main thread then this thread not active
-		this->CreateOpenGLContext();
-
-		// Setup Text render;
-		this->ReloadTextRender();
-		
-		while (!this->closed())
-		{
-			this->OnDraw();
-			//std::this_thread::sleep_for(std::chrono::milliseconds(10));
-		}
-	}
-
-	virtual void ThreadProcessOpenGL()
-	{
-		while (!this->closed())
-		{
-			this->OnProcess(this);
-		}
-	}
 
 public:
 
@@ -775,17 +772,7 @@ public:
 
 	void process()
 	{
-		if (m_Setting.m_iModeDraw == 1)
-		{
-			if (!m_processthread.IsDetach())
-			{
-				m_processthread.Detach();
-			}
-		}
-		else
-		{
-			this->OnProcess(this);
-		}
+		this->OnProcess(this);
 	}
 
 	void poll_event()
@@ -817,7 +804,7 @@ public:
 
 	void close()
 	{
-		PostMessage(m_hWnd, WM_CLOSE, NULL, NULL);
+		Send_Message(WM_CLOSE, NULL, NULL);
 	}
 
 	friend int     init_window();

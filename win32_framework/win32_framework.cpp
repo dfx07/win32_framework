@@ -126,6 +126,7 @@ int main()
 {
     WindowSetting setting;
     setting.m_bWriteInfo = true;
+    setting.m_iModeDraw = 0;
 
     Window *window = new Window(L"OpenGL", 100 ,100, 640, 480, &setting);
     window->SetOnDrawfunc(Draw);
@@ -143,7 +144,6 @@ int main()
         window->draw();
         window->poll_event();
     }
-
 
     destroy_window(window);
 }

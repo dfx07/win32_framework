@@ -209,13 +209,24 @@ public:
 public:
 	/***************************************************************************
 	*! @brief  : send message window
-	*! @return : true : ok | false : not ok
+	*! @return : void
 	*! @author : thuong.nv          - [Date] : 05/03/2023
 	***************************************************************************/
 	void Send_Message(UINT message, WPARAM wParam, LPARAM lParam)
 	{
 		NULL_RETURN(m_hWnd, );
 		::SendMessage(m_hWnd, message, wParam, lParam);
+	}
+
+	/***************************************************************************
+	*! @brief  : post message window
+	*! @return : void
+	*! @author : thuong.nv          - [Date] : 05/03/2023
+	***************************************************************************/
+	void Post_Message(UINT message, WPARAM wParam, LPARAM lParam)
+	{
+		NULL_RETURN(m_hWnd, );
+		::PostMessage(m_hWnd, message, wParam, lParam);
 	}
 
 	friend class ControlBase;
