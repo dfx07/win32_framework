@@ -35,7 +35,7 @@ image text to the screen
 ====================================================================================*/
 #pragma comment (lib,"Glu32.lib")
 
-#ifdef _UNICODE
+#ifdef X_UNICODE
 #define RANGE_DATA 9000
 #else
 #define RANGE_DATA 128

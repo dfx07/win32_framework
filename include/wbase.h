@@ -93,7 +93,12 @@ public:
 	int Create(HWND hwndParent, UINT uiID)
 	{
 		this->SetParent(hwndParent);
-		this->SetID(uiID);
+
+		// If user set id then not set auto id
+		if (GetID() > 0)
+		{
+			this->SetID(uiID);
+		}
 
 		int nControlCreated = OnInitControl();
 
@@ -115,6 +120,7 @@ public:
 
 	friend class WindowBase;
 	friend class Window;
+	friend class SubWindow;
 };
 
 /**********************************************************************************
@@ -216,8 +222,12 @@ public:
 	//*****************************************************
 
 protected:
+	WindowSetting				m_Setting;
 	WindowStatus				m_CurStatus;
 	WindowStatusLog				m_StatusLog;
+
+	DWORD						m_dwStyle;
+	DWORD						m_dwStyleEx;
 
 	GdiplusToken				m_GdiPlusToken;
 	int							m_zDeltaScroll;
@@ -235,7 +245,8 @@ protected:
 
 public:
 	WindowBase(): XControl(), 
-		m_uiControlIDs(1000), m_zDeltaScroll(0), m_bClosed(false)
+		m_uiControlIDs(1000), m_zDeltaScroll(0), m_bClosed(false),
+		m_dwStyle(0), m_dwStyleEx(0)
 	{
 
 	}
@@ -348,6 +359,21 @@ public:
 
 		NULL_RETURN(m_hWnd, );
 		::SetWindowText(m_hWnd, m_CurStatus.m_title.c_str());
+	}
+
+	/***************************************************************************
+	*! @brief  : Get current cursor position [Center]
+	*! @return : true : ok | false : not ok
+	*! @author : thuong.nv          - [Date] : 05/03/2023
+	***************************************************************************/
+	virtual void SetSize(int width, int height)
+	{
+		m_CurStatus.m_rect.width = width;
+		m_CurStatus.m_rect.height = height;
+
+		NULL_RETURN(m_hWnd, );
+		::SetWindowPos(m_hWnd, NULL, m_rect.x, m_rect.y, width, height, 
+			SWP_NOMOVE | SWP_NOZORDER);
 	}
 
 	/***************************************************************************
@@ -472,13 +498,78 @@ public:
 //==============================================================================
 public:
 	/***************************************************************************
+	*! @brief  : Hàm khỏi tạo style window trước khi tạo
+	*! @return : true : ok | false : not ok
+	*! @author : thuong.nv          - [Date] : 05/03/2023
+	***************************************************************************/
+	virtual void UpdateStyle()
+	{
+		NULL_RETURN(m_hWnd, );
+
+		SetWindowLong(m_hWnd, GWL_STYLE, m_dwStyle);
+		SetWindowLong(m_hWnd, GWL_EXSTYLE, m_dwStyleEx);
+	}
+
+	/***************************************************************************
+	*! @brief  : Hàm khỏi tạo style window trước khi tạo
+	*! @return : true : ok | false : not ok
+	*! @author : thuong.nv          - [Date] : 05/03/2023
+	***************************************************************************/
+	virtual bool CreateStyleWindow() = 0;
+
+	/***************************************************************************
+	*! @brief  : Hàm ảo tạo và hủy cửa sổ
+	*! @return : true : ok | false : not ok
+	*! @author : thuong.nv          - [Date] : 05/03/2023
+	***************************************************************************/
+	virtual bool HandleBeforeCreateWindow()
+	{
+		return true;
+	}
+
+	virtual bool HandleAfterCreateWindow()
+	{
+		return true;
+	}
+
+	virtual void InitProperties()
+	{
+
+	}
+
+	/***************************************************************************
+	*! @brief  : Hàm ảo tạo và hủy cửa sổ
+	*! @return : true : ok | false : not ok
+	*! @author : thuong.nv          - [Date] : 05/03/2023
+	***************************************************************************/
+	virtual bool CreateHandle(const wchar_t* strWndClassName) = 0;
+	virtual void DestroyHandle() = 0;
+	virtual void DestroyCustom() { return; }
+
+	/***************************************************************************
 	*! @brief  : Get current cursor position [Center]
 	*! @return : true : ok | false : not ok
 	*! @author : thuong.nv          - [Date] : 05/03/2023
 	***************************************************************************/
 	virtual bool Create(HWND hwndParent, const wchar_t* strClassname)
 	{
-		return true;
+		bool bRet = true;
+
+		XControl::SetParent(hwndParent);
+
+		CHECK_EXE_UPDATE(bRet, CreateStyleWindow());
+		CHECK_EXE_UPDATE(bRet, HandleBeforeCreateWindow());
+		CHECK_EXE_UPDATE(bRet, CreateHandle(strClassname));
+		CHECK_EXE_UPDATE(bRet, HandleAfterCreateWindow());
+
+		if (bRet) // it OK
+		{
+			this->OnInitControl();
+			this->OnCreateSubWindow();
+			this->InitProperties();
+		}
+
+		return bRet;
 	}
 
 	/***************************************************************************
@@ -488,7 +579,13 @@ public:
 	***************************************************************************/
 	virtual void Destroy()
 	{
-		return;
+		// Người dùng định nghĩa
+		this->DestroyCustom();
+
+		// Hệ thống dọn dẹp
+		this->DestroyControl();
+		this->DestroySubWindow();
+		this->DestroyHandle();
 	}
 
 	/***************************************************************************
@@ -612,7 +709,7 @@ protected:
 	*! @return : true : ok | false : not ok
 	*! @author : thuong.nv          - [Date] : 05/03/2023
 	***************************************************************************/
-	void DestroyControl()
+	virtual void DestroyControl()
 	{
 		for (int i = 0; i < m_ControlList.size(); i++)
 		{
@@ -627,7 +724,7 @@ protected:
 	*! @return : true : ok | false : not ok
 	*! @author : thuong.nv          - [Date] : 05/03/2023
 	***************************************************************************/
-	void DestroySubWindow()
+	virtual void DestroySubWindow()
 	{
 		//for (int i = 0; i < m_subwindows.size(); i++)
 		//{
@@ -635,6 +732,11 @@ protected:
 		//	SAFE_DELETE(m_subwindows[i]);
 		//}
 		//m_subwindows.clear();
+	}
+
+	virtual void DestroyUserCustom()
+	{
+		return;
 	}
 
 //==============================================================================
@@ -1137,7 +1239,6 @@ public:
 		}
 	}
 };
-
 
 ____END_NAMESPACE____
 

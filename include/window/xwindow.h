@@ -7,7 +7,7 @@
 * @create   Nov 15, 2022
 * @brief    Create and handle event window handle
 * @note     For conditions of distribution and use, see copyright notice in readme.txt
-************************************************************************************/
+***********************************************************************************/
 #ifndef XWINDOW_H
 #define XWINDOW_H
 
@@ -22,9 +22,10 @@
 
 ___BEGIN_NAMESPACE___
 
-//===================================================================================
-// Class Window : Thông tin và ngữ cảnh của một handle                               
-//===================================================================================
+/***********************************************************************************
+* ⮟⮟ Class name: Window
+* Thông tin và ngữ cảnh của một handle
+***********************************************************************************/
 class Dllexport Window : public WindowBase, public WindowOpenGLContext, public WindowEvent
 {
 protected:
@@ -52,11 +53,7 @@ protected:
 	}
 
 private:
-	WindowSetting			m_Setting;
-
 	std::wstring			m_title;
-	DWORD					m_dwStyle;
-	DWORD					m_dwStyleEx;
 
 	MSG						m_msg;
 
@@ -336,13 +333,109 @@ private:
 //⮟⮟ Triển khai khởi tạo liên quan đến window                                      
 //==================================================================================
 private:
+
+	/*******************************************************************************
+	*! @brief  : Hàm khỏi tạo style window trước khi tạo
+	*! @return : bool
+	*! @author : thuong.nv          - [Date] : 05/03/2023
+	*******************************************************************************/
+	virtual bool CreateStyleWindow()
+	{
+		m_dwStyleEx = WS_EX_APPWINDOW | WS_EX_WINDOWEDGE ;  // Window Extended Style
+		m_dwStyle   = WS_OVERLAPPEDWINDOW | WS_CLIPCHILDREN | WS_EX_TRANSPARENT;  // Windows Style
+		//@@ WS_CLIPCHILDREN: Control của window sẽ không được vẽ khi SwapBuffer
+
+		if (m_Setting.m_bFullScreen)  // Are We Still In Fullscreen Mode?
+		{
+			m_dwStyleEx = m_dwStyleEx &~(WS_EX_DLGMODALFRAME | WS_EX_WINDOWEDGE // Window Extended Style
+				| WS_EX_CLIENTEDGE | WS_EX_STATICEDGE);
+			
+			m_dwStyle = m_dwStyle &~(WS_CAPTION | WS_THICKFRAME); // Windows Style
+		}
+
+		if (m_bVisble == false)
+		{
+			// dwMyFlags ^= dwSomeFlag; remove flag 
+			m_dwStyle &= ~WS_VISIBLE;
+		}
+
+		return true;
+	}
+
+	/*******************************************************************************
+	*! @brief  : Xử lý trước khi khởi tạo window
+	*! @return : bool
+	*! @author : thuong.nv          - [Date] : 05/03/2023
+	*******************************************************************************/
+	virtual bool HandleBeforeCreateWindow()
+	{
+		return true;
+	}
+
+	/*******************************************************************************
+	*! @brief  : Xử lý sau khi tạo window thành công
+	*! @return : void
+	*! @author : thuong.nv          - [Date] : 05/03/2023
+	*******************************************************************************/
+	virtual bool HandleAfterCreateWindow()
+	{
+		if (m_Setting.m_bFullScreen)
+		{
+			if (PushWindowStatus() > 0)
+			{
+				// Set new window style and size.
+				this->UpdateStyle();
+
+				// On expand, if we're given a window_rect, grow to it, otherwise do not resize.
+				xMonitorInfo monitor = std::move(GetMonitorInfoEx());
+				SetWindowPos(m_hWnd, NULL, 0, 0, monitor.WIDTH, monitor.HEIGHT,
+					SWP_NOZORDER | SWP_NOACTIVATE | SWP_FRAMECHANGED);
+
+				// Update width ,height screen
+				m_rect.width = monitor.WIDTH;
+				m_rect.height = monitor.HEIGHT;
+			}
+		}
+		else
+		{
+			if (!IsEmptyStackWindowStatus())
+			{
+				WindowStatus winState = PopWindowStatus();
+
+				CreateStyleWindow();
+
+				if (ChangeDisplaySettings(NULL, CDS_RESET) == DISP_CHANGE_SUCCESSFUL)
+				{
+					this->UpdateStyle();
+
+					m_CurStatus = winState;
+
+					// set the size, but not the position
+					RECT wr = { 0, 0, (LONG)m_CurStatus.m_rect.width, (LONG)m_CurStatus.m_rect.height };
+					AdjustWindowRect(&wr, m_dwStyle, FALSE); // adjust the size
+
+					SetWindowPos(m_hWnd, HWND_NOTOPMOST, m_CurStatus.m_rect.x, m_CurStatus.m_rect.y,
+						(wr.right - wr.left), (wr.bottom - wr.top), SWP_SHOWWINDOW);
+				}
+			}
+		}
+
+		if (m_Setting.m_iAphaTrans >= 0)
+		{
+			SetWindowLong(m_hWnd, GWL_EXSTYLE, GetWindowLong(m_hWnd, GWL_EXSTYLE) ^ WS_EX_LAYERED);
+			SetLayeredWindowAttributes(m_hWnd, RGB(0, 0, 0), m_Setting.m_iAphaTrans, LWA_ALPHA);
+		}
+
+		return true;
+	}
+
 	/*******************************************************************************
 	*! @brief  : Hàm tạo window handle và thông số
 	*! @param  : [In] strWndClassName : tên class register
 	*! @return : bool 
 	*! @author : thuong.nv          - [Date] : 05/03/2023
 	*******************************************************************************/
-	bool CreateHandle(const wchar_t* strWndClassName)
+	virtual bool CreateHandle(const wchar_t* strWndClassName)
 	{
 		// Create GDI+ startup incantation
 		if (m_Setting.m_bGDIplus)
@@ -351,7 +444,7 @@ private:
 		}
 
 		// Kích thức thực tế của vùng có thể vẽ
-		RECT wr = { 0, 0, (LONG)m_CurStatus.m_rect.width, (LONG)m_CurStatus.m_rect.height };     // set the size, but not the position
+		RECT wr = { 0, 0, (LONG)m_CurStatus.m_rect.width, (LONG)m_CurStatus.m_rect.height };
 		AdjustWindowRect(&wr, m_dwStyle, FALSE);// adjust the size
 
 		m_hWnd = CreateWindowEx( m_dwStyleEx,                //
@@ -362,7 +455,7 @@ private:
 								 m_CurStatus.m_rect.y,       // Postion 
 								 wr.right - wr.left,         // Actual width size
 								 wr.bottom - wr.top,         // Actual height size
-								 NULL,                       //
+								 m_hWndPar,                  //
 								 NULL,                       //
 								 NULL,                       //
 								 NULL                        //
@@ -372,7 +465,6 @@ private:
 		if (!m_hWnd)
 		{
 			this->DeleteGDIplus();
-			::DestroyWindow(m_hWnd);
 			return false;
 		}
 		SetWindowLongPtr(m_hWnd, GWLP_USERDATA, (LONG_PTR)this);
@@ -384,56 +476,41 @@ private:
 			m_CurStatus.m_rect.width  = rect.right - rect.left;
 			m_CurStatus.m_rect.height = rect.bottom - rect.top;
 		}
+
+		this->UpdateTitle();
+
+		// Khởi tạo người dùng định nghĩa - hãy để nó cuối cùng
+		this->OnCreated(this);
+
 		return true;
+	}
+
+	/*******************************************************************************
+	*! @brief  : Phá hủy window
+	*! @return : void
+	*! @author : thuong.nv          - [Date] : 05/03/2023
+	*******************************************************************************/
+	virtual void DestroyHandle()
+	{
+		// Xử lý hủy mặc định
+		DeleteGDIplus();
+
+	}
+
+	/*******************************************************************************
+	*! @brief  : Hàm hủy người dùng định nghĩa 
+	*! @return : void
+	*! @author : thuong.nv          - [Date] : 05/03/2023
+	*******************************************************************************/
+	virtual void DestroyCustom()
+	{
+		CHECK_RUN_FUNCTION(m_funOnDestroy, this);
 	}
 
 //==================================================================================
 //⮟⮟ Triển hàm thao tác từ bên ngoài tác động vào Window class                     
 //==================================================================================
 protected:
-
-	/*******************************************************************************
-	*! @brief  : Khởi tạo window và thiết lập thông số   
-	*! @param  : [In] strClassname : tên class register
-	*! @return : bool
-	*! @author : thuong.nv          - [Date] : 05/03/2023
-	*******************************************************************************/
-	bool Create(const wchar_t* strClassname)
-	{
-		//this->SetStartIDControl(1000);
-
-		bool ret = true;
-		// Update get style window
-		this->SetUpHint();
-
-		// Create a window HWND use class name
-		ret &= this->CreateHandle(strClassname);
-
-		this->SetTitle(GetTitleInfo());
-
-		if (ret) // it OK
-		{
-			// Update get style window
-			this->UpdateHint();
-
-			// Active function user custom
-			this->OnCreated(this);
-
-			// Update title after created ok
-			this->UpdateTitle();
-
-			// Initialization control
-			this->OnInitControl();
-
-			// Initialization sub window
-			this->OnCreateSubWindow();
-
-			// Update and setup properties when everything is done
-			this->InitProperties();
-		}
-
-		return ret;
-	}
 
 	/*******************************************************************************
 	*! @brief  : Khởi tạo ngữ cảnh OpenGL - sử dụng cho one hoặc nhiều thread
@@ -515,17 +592,17 @@ protected:
 //⮟⮟ Triển khai cập nhật trạng thái của window                                     
 //==================================================================================
 private:
-	//=======================================================================================
-	// Cập nhật trạng thái thời gian mỗi khi một frame trôi qua                          
-	//=======================================================================================
+	//==============================================================================
+	// Cập nhật trạng thái thời gian mỗi khi một frame trôi qua                     
+	//==============================================================================
 	void UpdateInfo()
 	{
 		m_fpscounter.update();
 	}
 
-	//=======================================================================================
-	// Khởi tạo trạng thái và thông tin thuộc tính khi đã tạo windows xong               
-	//=======================================================================================
+	//==============================================================================
+	// Khởi tạo trạng thái và thông tin thuộc tính khi đã tạo windows xong          
+	//==============================================================================
 	void InitProperties()
 	{
 		m_fpscounter.start();
@@ -550,9 +627,9 @@ private:
 		return titlebuff;
 	}
 
-	//=======================================================================================
-	// Load và cập nhật lại text render trên window                                      
-	//=======================================================================================
+	//==============================================================================
+	// Load và cập nhật lại text render trên window                                 
+	//==============================================================================
 	void ReloadTextRender()
 	{
 		UINT width = m_CurStatus.m_rect.width;
@@ -563,14 +640,14 @@ private:
 	}
 
 
-//==========================================================================================
-//⮟⮟ Triển khai chức năng hỗ trợ cho window                                            
-//==========================================================================================
+//==================================================================================
+//⮟⮟ Triển khai chức năng hỗ trợ cho window                                        
+//==================================================================================
 public:
 
-	//=======================================================================================
-	// Hiển thị text ra window                                                           
-	//=======================================================================================
+	//==============================================================================
+	// Hiển thị text ra window                                                      
+	//==============================================================================
 	void WriteText(const char* text, int x, int y, float r = 1.0f, float g = 1.0f,
 		float b = 1.0f, float a = 1.0f)
 	{
@@ -582,8 +659,10 @@ public:
 public:
 	const Window& operator=(const Window& win) = delete;
 
-	Window(	const wchar_t* title, const int& xpos, const int& ypos, const int& width = 640, const int height = 480,
-			const WindowSetting* setting = NULL) : WindowBase()
+	Window(	const wchar_t* title, const int& xpos, const int& ypos,
+								  const int& width = 640, const int height = 480,
+								  const WindowSetting* setting = NULL) 
+		: WindowBase()
 	{
 		m_title						= title;
 		m_CurStatus.m_title			= title;
@@ -614,12 +693,14 @@ public:
 
 	void ExitFullScreen()
 	{
-		this->UpdateHint();
+		this->CreateStyleWindow();
+		this->UpdateStyle();
 	}
 
 	void FullScreen()
 	{
-		this->UpdateHint();
+		this->CreateStyleWindow();
+		this->UpdateStyle();
 	}
 
 	//======================================================================================
@@ -642,89 +723,7 @@ public:
 //⮟⮟ Triển khai chức cập nhật thông tin trạng thái window                          
 //==================================================================================
 private:
-	/*******************************************************************************
-	*! @brief  : Cập nhật thông tin stype của window 
-	*! @return : true : ok | false : failed
-	*! @author : thuong.nv          - [Date] : 05/03/2023
-	*******************************************************************************/
-	bool CreateStyleWindow()
-	{
-		m_dwStyleEx = WS_EX_APPWINDOW | WS_EX_WINDOWEDGE ;  // Window Extended Style
-		m_dwStyle   = WS_OVERLAPPEDWINDOW | WS_CLIPCHILDREN | WS_EX_TRANSPARENT;  // Windows Style
-		//@@ WS_CLIPCHILDREN: Control của window sẽ không được vẽ khi SwapBuffer
 
-		if (m_Setting.m_bFullScreen)                           // Are We Still In Fullscreen Mode?
-		{
-			m_dwStyleEx = m_dwStyleEx &~(WS_EX_DLGMODALFRAME | WS_EX_WINDOWEDGE // Window Extended Style
-				| WS_EX_CLIENTEDGE | WS_EX_STATICEDGE);
-			
-			m_dwStyle = m_dwStyle &~(WS_CAPTION | WS_THICKFRAME); // Windows Style
-		}
-
-		if (m_bVisble == false)
-		{
-			// dwMyFlags ^= dwSomeFlag; remove flag 
-			m_dwStyle &= ~WS_VISIBLE;
-		}
-
-		return true;
-	}
-
-	/*******************************************************************************
-	*! @brief  : Cập nhật thông tin stype của window 
-	*! @return : void
-	*! @author : thuong.nv          - [Date] : 05/03/2023
-	*******************************************************************************/
-	void UpdateHint()
-	{
-		if (m_Setting.m_bFullScreen)
-		{
-			if (PushWindowStatus() > 0)
-			{
-				// Set new window style and size.
-				SetWindowLong(m_hWnd, GWL_STYLE, m_dwStyle);
-				SetWindowLong(m_hWnd, GWL_EXSTYLE, m_dwStyleEx);
-
-				// On expand, if we're given a window_rect, grow to it, otherwise do not resize.
-				xMonitorInfo monitor = std::move(GetMonitorInfoEx());
-				SetWindowPos(m_hWnd, NULL, 0, 0, monitor.WIDTH, monitor.HEIGHT,
-					SWP_NOZORDER | SWP_NOACTIVATE | SWP_FRAMECHANGED);
-
-				// Update width ,height screen
-				m_rect.width = monitor.WIDTH;
-				m_rect.height = monitor.HEIGHT;
-			}
-		}
-		else
-		{
-			if (!IsEmptyStackWindowStatus())
-			{
-				WindowStatus winState = PopWindowStatus();
-
-				CreateStyleWindow();
-
-				if (ChangeDisplaySettings(NULL, CDS_RESET) == DISP_CHANGE_SUCCESSFUL)
-				{
-					SetWindowLong(m_hWnd, GWL_STYLE, m_dwStyle);
-					SetWindowLong(m_hWnd, GWL_EXSTYLE, m_dwStyleEx);
-					m_CurStatus = winState;
-
-					// set the size, but not the position
-					RECT wr = { 0, 0, (LONG)m_CurStatus.m_rect.width, (LONG)m_CurStatus.m_rect.height };
-					AdjustWindowRect(&wr, m_dwStyle, FALSE); // adjust the size
-
-					SetWindowPos(m_hWnd, HWND_NOTOPMOST, m_CurStatus.m_rect.x, m_CurStatus.m_rect.y,
-						(wr.right - wr.left), (wr.bottom - wr.top), SWP_SHOWWINDOW);
-				}
-			}
-		}
-
-		if (m_Setting.m_iAphaTrans >= 0)
-		{
-			SetWindowLong(m_hWnd, GWL_EXSTYLE, GetWindowLong(m_hWnd, GWL_EXSTYLE) ^ WS_EX_LAYERED);
-			SetLayeredWindowAttributes(m_hWnd, RGB(0, 0, 0), m_Setting.m_iAphaTrans, LWA_ALPHA);
-		}
-	}
 
 private:
 	void SetUpHint()

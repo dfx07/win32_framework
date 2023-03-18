@@ -183,7 +183,7 @@ public:
 	*! @return : true : ok | false : not ok
 	*! @author : thuong.nv          - [Date] : 05/03/2023
 	***************************************************************************/
-	void SetSize(int width, int height)
+	virtual void SetSize(int width, int height)
 	{
 		m_rect.width = width;
 		m_rect.height = height;
@@ -251,7 +251,7 @@ public:
 * ⮟⮟ Class name: Control base
 * Base class for inherited window controls
 ***********************************************************************************/
-class Dllexport ControlRectPropertyUI
+class Dllexport ControlRectUI
 {
 protected:
 

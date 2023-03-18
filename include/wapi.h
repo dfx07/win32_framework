@@ -9,6 +9,7 @@
 * @note     For conditions of distribution and use, see copyright notice in readme.txt
 ************************************************************************************/
 #include "window/xwindow.h"
+#include "window/xsubwindow.h"
 
 ___BEGIN_NAMESPACE___
 
@@ -27,7 +28,7 @@ int Dllexport init_window()
 	if (!Window::register_class())
 	{
 		bool bOk = Window::register_window_class(GL_WIN_CLASS, Window::WndMainProc, GetModuleHandle(NULL));
-		//bOk &= Window::register_window_class(GL_SUBWIN_CLASS, SubWindow::WndSubProc, GetModuleHandle(NULL));
+		bOk &= Window::register_window_class(GL_SUBWIN_CLASS, SubWindow::WndMainProc, GetModuleHandle(NULL));
 		Window::register_class(true, bOk);
 	}
 	
@@ -68,7 +69,7 @@ Window* Dllexport create_window(const wchar_t*	title,
 		return NULL;
 
 	Window* win = new Window(title, xpos, ypos, width, height, setting);
-	if(!win->Create(GL_WIN_CLASS))
+	if(!win->Create(NULL, GL_WIN_CLASS))
 	{
 		delete win;
 		return NULL;
@@ -92,7 +93,7 @@ Window* Dllexport create_window(Window* win)
 	if (init_window() != 0)
 		return NULL;
 
-	if (!win->Create(GL_WIN_CLASS))
+	if (!win->Create(NULL, GL_WIN_CLASS))
 	{
 		delete win;
 		return NULL;

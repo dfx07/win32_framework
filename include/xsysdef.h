@@ -37,14 +37,17 @@
 	#define Dllexport
 #endif
 
-#define S2MS(s)					(s  * 1000)  /*Convert second -> millisecond*/
-#define MS2S(ms)				(ms / 1000)  /*Convert millisecond -> second*/
+#define S2MS(s)						(s  * 1000)  /*Convert second -> millisecond*/
+#define MS2S(ms)					(ms / 1000)  /*Convert millisecond -> second*/
 
-#define SAFE_DELETE(p)			{delete   p; p = NULL;}
-#define SAFE_DELETE_ARRAY(p)	{delete[] p; p = NULL;}
-#define NULL_RETURN(p, r)		if(p == NULL) return r;
-#define NULL_BREAK(p)			if(p == NULL) break;
-#define NULL_CONTINUE(p)		if(p == NULL) continue;
+#define SAFE_DELETE(p)				{delete   p; p = NULL;}
+#define SAFE_DELETE_ARRAY(p)		{delete[] p; p = NULL;}
+#define NULL_RETURN(p, r)			if(p == NULL) return r;
+#define NULL_BREAK(p)				if(p == NULL) break;
+#define NULL_CONTINUE(p)			if(p == NULL) continue;
+#define CHECK_AND_EXE(ck, exe)		(ck == true)? exe : false;
+
+#define CHECK_EXE_UPDATE(ck, exe)	if(ck == true){ ck = exe; };
 
 #define MAX_DEVICENAME			32
 
