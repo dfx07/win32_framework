@@ -27,8 +27,8 @@ int Dllexport init_window()
 {
 	if (!Window::register_class())
 	{
-		bool bOk = Window::register_window_class(GL_WIN_CLASS, Window::WndMainProc, GetModuleHandle(NULL));
-		bOk &= Window::register_window_class(GL_SUBWIN_CLASS, SubWindow::WndMainProc, GetModuleHandle(NULL));
+		bool bOk  = Window::register_window_class(GL_WIN_CLASS, Window::WndMainProc, GetModuleHandle(NULL)) ? true : false;
+			 bOk &= Window::register_window_class(GL_SUBWIN_CLASS, SubWindow::WndMainProc, GetModuleHandle(NULL)) ? true : false;
 		Window::register_class(true, bOk);
 	}
 	

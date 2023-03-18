@@ -8,8 +8,8 @@
 * @brief    Create and handle opengl render
 * @note     For conditions of distribution and use, see copyright notice in readme.txt
 ************************************************************************************/
-#ifndef XLABEL_H
-#define XLABEL_H
+#ifndef WTEXT_RENDER_H
+#define WTEXT_RENDER_H
 
 #include "xsysdef.h"
 
@@ -46,7 +46,7 @@ image text to the screen
 * ⮟⮟ Class name: MenuContext control
 * MenuContext control for window
 ***********************************************************************************/
-class GLWinFontRender
+class Dllexport GLWinFontRender
 {
 	enum { RANG_BASE_LIST = RANGE_DATA };
 	typedef std::unordered_map<short, unsigned int> MapCharacter;
@@ -376,4 +376,4 @@ public:
 
 ____END_NAMESPACE____
 
-#endif // !XLABEL_H
+#endif // !WTEXT_RENDER_H

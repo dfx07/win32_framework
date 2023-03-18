@@ -11,7 +11,7 @@
 #ifndef XBUTTON_H
 #define XBUTTON_H
 
-#include "wbase.h"
+#include "xcontrolbase.h"
 #include "xeasing.h"
 
 ___BEGIN_NAMESPACE___

@@ -59,9 +59,6 @@
     <ClInclude Include="..\include\wdef.h">
       <Filter>Header Files\ui</Filter>
     </ClInclude>
-    <ClInclude Include="..\include\wbase.h">
-      <Filter>Header Files\ui</Filter>
-    </ClInclude>
     <ClInclude Include="..\include\wapi.h">
       <Filter>Header Files\ui</Filter>
     </ClInclude>
@@ -80,9 +77,6 @@
     <ClInclude Include="..\include\controls\xmenucontext.h">
       <Filter>Header Files\ui\controls</Filter>
     </ClInclude>
-    <ClInclude Include="..\include\whandle.h">
-      <Filter>Header Files\ui\window</Filter>
-    </ClInclude>
     <ClInclude Include="..\include\window\xwindow.h">
       <Filter>Header Files\ui\window</Filter>
     </ClInclude>
@@ -94,6 +88,15 @@
     </ClInclude>
     <ClInclude Include="..\include\graphics\wtext_render.h">
       <Filter>Header Files\graphics</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\xcontrolbase.h">
+      <Filter>Header Files\ui</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\xwinbase.h">
+      <Filter>Header Files\ui</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\incl_control.h">
+      <Filter>Header Files\ui</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

@@ -1,7 +1,7 @@
-﻿#include "wapi.h"
-#include "controls/xmenucontext.h"
-#include <window/xwindow.h>
-#include <window/xsubwindow.h>
+﻿
+#include "incl_control.h"
+#include "wapi.h"
+
 
 
 ____USE_NAMESPACE____

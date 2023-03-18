@@ -11,11 +11,12 @@
 #ifndef XSYSTYPE_H
 #define XSYSTYPE_H
 
+#include "xsysdef.h"
+
 #include <iostream>
 #include <chrono>
 #include <vector>
-
-#include "xsysdef.h"
+#include <thread>
 
 ___BEGIN_NAMESPACE___
 
@@ -31,23 +32,23 @@ protected:
 
 protected:
 
-	/***********************************************************************************
+	/*******************************************************************************
 	*! @brief  : get current time
 	*! @return : time_pointer : time point
 	*! @author : thuong.nv - [CreateDate] : 18/02/2023
-	************************************************************************************/
+	*******************************************************************************/
 	static time_pointer now()
 	{
 		return std::chrono::high_resolution_clock::now();
 	}
 
-	/***********************************************************************************
+	/*******************************************************************************
 	*! @brief  : get current time follow the specified format
 	*! @return : string
 	*! @param  : [in] format : "%Y-%m-%d %X"
 	*! @author : thuong.nv - [CreateDate] : 18/02/2023
 	*! @note   : https://www.programiz.com/python-programming/datetime/strftime
-	************************************************************************************/
+	*******************************************************************************/
 	static std::string time_now(IN const char* format = "%Y-%m-%d %X")
 	{
 		auto now = std::chrono::system_clock::now();
@@ -64,29 +65,30 @@ protected:
 	}
 };
 
-/// ////////////////////////////////////////////////////////////////////////////////
-/// name  : xBuffer class
-/// brief : Provides a container byte data
-/// ////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////
+/***********************************************************************************
+* ⮟⮟ Class name: xBuffer class
+* Brief : Provides a container byte data
+***********************************************************************************/
 class Dllexport xBuffer
 {
 protected:
 
-	/***********************************************************************************
+	/******************************************************************************
 	*! @brief  : reserve memory data [use Buffer]
 	*! @author : thuong.nv - [CreateDate] : 18/02/2023
 	*! @note   : These functions only handle the inside and don't expose it to the outside
-	************************************************************************************/
+	*******************************************************************************/
 	void reserve(const size_t nsize)
 	{
 		alloc(nsize, true);
 	}
 
-	/***********************************************************************************
+	/******************************************************************************
 	*! @brief  : Clear information data (not free data) [Buffer + const Buffer]
 	*! @author : thuong.nv - [CreateDate] : 18/02/2023
 	*! @note   : These functions only handle the inside and don't expose it to the outside
-	************************************************************************************/
+	*******************************************************************************/
 	void clear_data()
 	{
 		m_data		= NULL;
@@ -94,22 +96,22 @@ protected:
 		m_length	= 0;
 	}
 
-	/***********************************************************************************
+	/*******************************************************************************
 	*! @brief  : delete memory and clear information data [Buffer]
 	*! @author : thuong.nv - [CreateDate] : 18/02/2023
 	*! @note   : These functions only handle the inside and don't expose it to the 
-	************************************************************************************/
+	********************************************************************************/
 	void free_data()
 	{
 		delete[] m_data;
 		this->clear_data();
 	}
 
-	/***********************************************************************************
+	/*******************************************************************************
 	*! @brief  : not delete and set null memory [Buffer]
 	*! @author : thuong.nv - [CreateDate] : 18/02/2023
 	*! @note   : These functions only handle the inside and don't expose it to the outside
-	************************************************************************************/
+	*******************************************************************************/
 	void reset_data(int val = 0)
 	{
 		if (!m_data) return;
@@ -117,13 +119,13 @@ protected:
 		m_length = 0;
 	}
 
-	/***********************************************************************************
+	/*******************************************************************************
 	*! @brief  : allocate memory data [Buffer]
 	*! @return : size_t : allocated memory size
 	*! @param  : [in]	cp : copy old data (false)
 	*! @author : thuong.nv - [CreateDate] : 18/02/2023
 	*! @note   : These functions only handle the inside and don't expose it to the outside
-	************************************************************************************/
+	*******************************************************************************/
 	size_t alloc(size_t nsize, bool cp = false)
 	{
 		// Trường hợp đã cấp phát và cấp phát nhỏ hơn
@@ -167,12 +169,12 @@ protected:
 		return nsize;
 	}
 
-	/***********************************************************************************
+	/*******************************************************************************
 	*! @brief  : append allocate memory data - use [Buffer]
 	*! @return : size_t : allocated memory size append
 	*! @author : thuong.nv - [CreateDate] : 18/02/2023
 	*! @note   : These functions only handle the inside and don't expose it to the outside
-	************************************************************************************/
+	*******************************************************************************/
 	size_t alloc_append(size_t nsize_append)
 	{
 		auto newsize = nsize_append + m_length;
@@ -184,12 +186,12 @@ protected:
 		return alloc(newsize, true);
 	}
 
-	/***********************************************************************************
+	/*******************************************************************************
 	*! @brief  : allocate and copy data form the source data [Buffer]
 	*! @return : void
 	*! @author : thuong.nv - [CreateDate] : 18/02/2023
 	*! @note   : These functions only handle the inside and don't expose it to the outside
-	************************************************************************************/
+	*******************************************************************************/
 	void copy_data(const void* data, const size_t nsize)
 	{
 		if (alloc(nsize) > 0)
@@ -199,12 +201,12 @@ protected:
 		}
 	}
 
-	/***********************************************************************************
+	/*******************************************************************************
 	*! @brief  : delete and move data from the source data [Buffer]
 	*! @return : void
 	*! @author : thuong.nv - [CreateDate] : 18/02/2023
 	*! @note   : These functions only handle the inside and don't expose it to the outside
-	************************************************************************************/
+	*******************************************************************************/
 	void move_data(void* data, const size_t capacity, const size_t length, bool bfree_old = true)
 	{
 		if (bfree_old)
@@ -215,12 +217,12 @@ protected:
 		m_capacity = capacity;
 	}
 
-	/***********************************************************************************
+	/*******************************************************************************
 	*! @brief  : append data from source data [Buffer]
 	*! @return : void
 	*! @author : thuong.nv - [CreateDate] : 18/02/2023
 	*! @note   : These functions only handle the inside and don't expose it to the outside
-	************************************************************************************/
+	*******************************************************************************/
 	void append_data(const void* data, const size_t nsize)
 	{
 		if (alloc_append(nsize) > 0)
@@ -229,12 +231,12 @@ protected:
 		}
 	}
 
-	/***********************************************************************************
+	/*******************************************************************************
 	*! @brief  : set data use offset [Buffer]
 	*! @return : void
 	*! @author : thuong.nv - [CreateDate] : 18/02/2023
 	*! @note   : These functions only handle the inside and don't expose it to the outside
-	************************************************************************************/
+	********************************************************************************/
 	void set_data(const void* data, const size_t nsize, size_t offset)
 	{
 		size_t newsize = offset + nsize;
@@ -266,10 +268,11 @@ protected:
 	size_t		 m_capacity;
 };
 
-/// ////////////////////////////////////////////////////////////////////////////////
-/// name  : CBuffer class
-/// Provides a container byte data
-/// ////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////
+/**********************************************************************************
+* ⮟⮟ Class name: CBuffer class
+* Brief : Provides a container byte data
+***********************************************************************************/
 class Dllexport CBuffer : public xBuffer
 {
 	// Disable : Function base class 
@@ -335,11 +338,12 @@ public:
 	}
 };
 
-/// ////////////////////////////////////////////////////////////////////////////////
-/// Name  : CBufferRef class
-/// Provides a container byte data not free data 
-/// Note  : Contains only information without changing data
-/// ////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////
+/**********************************************************************************
+* ⮟⮟ Class name:  CBufferRef class
+* Brief : Provides a container byte data not free data 
+* Note  : Contains only information without changing data
+***********************************************************************************/
 class Dllexport CBufferRef : public xBuffer
 {
 	// Disable : Function base class 
@@ -394,10 +398,11 @@ public:
 	}
 };
 
-/// ////////////////////////////////////////////////////////////////////////////////
-/// Name  : CBuffer class
-/// Provides a container byte data
-/// ////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////
+/**********************************************************************************
+* ⮟⮟ Class name:  CBuffer class
+* Provides a container byte data
+***********************************************************************************/
 class Dllexport CFileBuffer
 {
 public:
@@ -440,10 +445,11 @@ private:
 	std::vector<unsigned char> m_data;
 };
 
-/// ////////////////////////////////////////////////////////////////////////////////
-/// Name  : CTimer class
-/// Provides a container byte data
-/// ////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////
+/**********************************************************************************
+* ⮟⮟ Class name:  CTimer class
+* Provides timer user
+***********************************************************************************/
 class Dllexport CTimer : public xTime
 {
 public:
@@ -458,11 +464,11 @@ public:
 		m_tstart = xTime::now();
 	}
 	
-	/***********************************************************************************
+	/******************************************************************************
 	*! @brief  : get time from previous retrieval
 	*! @return : double (seconds)
 	*! @author : thuong.nv - [CreateDate] : 18/02/2023
-	************************************************************************************/
+	*******************************************************************************/
 	double seconds_elapsed()
 	{
 		time_pointer tend = xTime::now();
@@ -471,11 +477,11 @@ public:
 		return elapsed.count();
 	}
 
-	/***********************************************************************************
+	/******************************************************************************
 	*! @brief  : get time from previous retrieval
 	*! @return : double (millisecond)
 	*! @author : thuong.nv - [CreateDate] : 18/02/2023
-	************************************************************************************/
+	*******************************************************************************/
 	double mili_elapsed()
 	{
 		auto elp = seconds_elapsed();
@@ -486,10 +492,10 @@ private:
 	time_pointer		m_tstart;
 };
 
-/// ////////////////////////////////////////////////////////////////////////////////
-/// Name  : CStopwatch class
-/// Provides a container byte data
-/// ////////////////////////////////////////////////////////////////////////////////
+/**********************************************************************************
+* ⮟⮟ Class name: CStopwatch class
+* Provides count fps + frametime
+***********************************************************************************/
 class Dllexport CStopwatch : public xTime
 {
 public:
@@ -572,10 +578,11 @@ private:
 	bool			m_bstop;
 };
 
-/// ////////////////////////////////////////////////////////////////////////////////
-/// Name  : CFPSCounter class
-/// Provides a container byte data
-/// ////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////
+/**********************************************************************************
+* ⮟⮟ Class name: CFPSCounter class
+* Provides count fps + frametime
+***********************************************************************************/
 class Dllexport CFPSCounter : public xTime
 {
 public:
@@ -629,6 +636,92 @@ private:
 	time_pointer	m_last_frame;
 
 	double			m_reset;
+};
+
+////////////////////////////////////////////////////////////////////////////////////
+/**********************************************************************************
+* ⮟⮟ Class name: SafeThread
+* Base class for window handle inheritance
+***********************************************************************************/
+class Dllexport CSafeThread
+{
+private:
+	std::thread		m_thread;
+	std::string		m_thread_name;
+
+	bool			m_bCreated;
+	bool			m_bDetach;
+
+public:
+	
+	explicit CSafeThread() : m_thread(),
+		m_thread_name("none"), m_bCreated(false),
+		m_bDetach(false)
+	{
+
+	}
+
+	template<class ...Args>
+	void Create(Args &&...args)
+	{
+		m_thread =  std::move(std::thread(std::forward<Args>(args)...));
+		m_bCreated = true;
+	}
+
+	CSafeThread(CSafeThread&&other) noexcept
+	{
+		m_thread = std::move(other.m_thread);
+	}
+
+	~CSafeThread()
+	{
+		this->Join();
+	}
+
+	bool IsCreated()
+	{
+		return m_bCreated;
+	}
+
+	/***************************************************************************
+	*! @brief  : Get keyboard state
+	*! @return : true : ok | false : not ok
+	*! @author : thuong.nv          - [Date] : 05/03/2023
+	***************************************************************************/
+	void SetName(const std::string& name)
+	{
+		m_thread_name = name;
+	}
+
+	/***************************************************************************
+	*! @brief  : Get keyboard state
+	*! @return : true : ok | false : not ok
+	*! @author : thuong.nv          - [Date] : 05/03/2023
+	***************************************************************************/
+	void Join()
+	{
+		if (m_thread.joinable())
+			m_thread.join();
+	}
+
+	bool IsDetach()
+	{
+		return m_bDetach;
+	}
+
+	/***************************************************************************
+	*! @brief  : Get keyboard state
+	*! @return : true : ok | false : not ok
+	*! @author : thuong.nv          - [Date] : 05/03/2023
+	***************************************************************************/
+	void Detach()
+	{
+		if (m_thread.joinable())
+		{
+			m_thread.detach();
+			m_bDetach = true;
+		}
+	}
 };
 
 ____END_NAMESPACE____

@@ -12,7 +12,7 @@
 #define XSUBWINDOW_H
 
 #include "xsystype.h"
-#include "wbase.h"
+#include "xwinbase.h"
 #include "controls/xbutton.h"
 
 ___BEGIN_NAMESPACE___
@@ -267,7 +267,7 @@ protected:
 
 			case CLOSE_WIN:
 			{
-				Close();
+				this->Close();
 				break;
 			}
 

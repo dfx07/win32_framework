@@ -11,11 +11,12 @@
 #ifndef XMENU_CONTEXT_H
 #define XMENU_CONTEXT_H
 
-#include "wbase.h"
+#include "xcontrolbase.h"
 #include <unordered_map>
 #include <memory>
 
 ___BEGIN_NAMESPACE___
+
 class WindowBase;
 class ControlBase;
 
@@ -23,7 +24,6 @@ class ControlBase;
 * ⮟⮟ Class name: MenuItemBase
 * MenuContext control for window
 ***********************************************************************************/
-
 class Dllexport MenuItemBase
 {
 protected:

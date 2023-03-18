@@ -12,13 +12,12 @@
 #define XWINDOW_H
 
 #include "xsystype.h"
-#include "wbase.h"
+#include "xwinbase.h"
+
 #include "graphics/wtext_render.h"
 #include <vector>
 #include <stack>
 #include <mutex>
-#include <chrono>
-#include <thread>
 
 ___BEGIN_NAMESPACE___
 
@@ -72,7 +71,7 @@ private:
 	std::mutex				m_renderinfo_mutex;
 	std::condition_variable		m_sycn_renderinfo;
 
-	SafeThread				m_drawthread;
+	CSafeThread				m_drawthread;
 
 	int						m_iDrawMode; // 0 : normal | 1 : use draw thread
 	std::wstring			m_gpu_device_name;

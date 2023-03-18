@@ -308,50 +308,6 @@ public:
 	friend class WindowBase;
 };
 
-/**********************************************************************************
-* ⮟⮟ Class name: WindowSetting
-* Base class for inherited window controls
-***********************************************************************************/
-struct WindowSetting
-{
-	bool				m_bFullScreen;
-	bool				m_bGDIplus;
-	bool				m_bOpenGL;       // State OpenGL
-	int					m_iAntialiasing; // Antialiasing level = 8
-	int					m_iModeDraw;	 // 1 : use thread draw opengl | 0 :use pipe main thread
-	bool				m_bWriteInfo;
-	int					m_iAphaTrans = -1;
-
-	void set_default()
-	{
-		m_bFullScreen   = false;
-		m_bGDIplus	    = false;
-		m_bOpenGL	    = false;
-		m_iAntialiasing = -1;
-		m_iModeDraw		= 0;
-		m_bWriteInfo	= false;
-	}
-
-	WindowSetting()
-	{
-		this->set_default();
-	}
-
-	WindowSetting(	const char* title,
-					const int	xpos,
-					const int	ypos, 
-					const int	width = 640,
-					const int	height = 480)
-	{
-		m_bFullScreen	= false;
-		m_bGDIplus		= false;
-		m_bOpenGL		= true;
-		m_iAntialiasing = -1;
-		m_iModeDraw		= 0;
-		m_bWriteInfo	= false;
-	}
-};
-
 ____END_NAMESPACE____
 
 #endif // !WCTRL_H
