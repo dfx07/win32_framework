@@ -261,13 +261,19 @@ protected:
 		unsigned int border_width    = 0;
 		Color4		 text_color      = {255, 255, 255, 255};
 		Color4		 text_hover_color= {255, 255, 255, 255};
-		Color4		 background_color= {255, 255, 255, 255};
-		Color4		 background_hover_color = { 255, 0, 0, 255 };
-		Color4		 background_click_color = { 0, 255, 0, 255 };
+
+		Color4		 m_erase_color      = { 255, 255, 255, 255 };
+		Color4		 m_background_color = { 255, 255, 255, 255 };
+		Color4		 m_border_color     = { 255, 255, 255, 255 };
+		Color4		 m_hover_color      = { 255,   0,   0, 255 };
+		Color4		 m_click_color      = { 0  , 255,   0, 255 };
 
 	} PropertyControlUI;
 
-	PropertyControlUI	m_property;
+
+protected:
+
+	virtual void SetDefaultPropertyUI() = 0;
 
 public:
 	void SetBorderWidth(unsigned int iWidth)
@@ -282,30 +288,126 @@ public:
 
 	void SetBackgroundColor(const Color4 cl)
 	{
-		m_property.background_color = cl;
+		m_property.m_background_color = cl;
 	}
 
-	void SetBackgroundHoverColor(const Color4 cl)
+	void SetEraseBackgroundColor(const Color4& cl)
 	{
-		m_property.background_hover_color = cl;
+		m_property.m_erase_color = cl;
 	}
 
-	void SetBackgroundClickColor(const Color4 cl)
+	void SetBackgroundHoverColor(const Color4& cl)
 	{
-		m_property.background_hover_color = cl;
+		m_property.m_hover_color = cl;
 	}
 
-	void SetTextColor(const Color4 cl)
+	void SetBackgroundClickColor(const Color4& cl)
 	{
-		m_property.text_color = cl;
+		m_property.m_click_color = cl;
 	}
 
-	void SetTextHoverColor(const Color4 cl)
+	void SetTextColor(const Color4& cl)
+	{
+		m_property.m_hover_color = cl;
+	}
+
+	void SetTextHoverColor(const Color4& cl)
 	{
 		m_property.text_hover_color = cl;
 	}
 
+	void SetBorderColor(const Color4& col)
+	{
+		m_property.m_border_color = col;
+	}
+
+protected:
+
+	void DrawEraseBackground(GDIplusCtrlRender*	render, Gdiplus::Brush* brush = NULL)
+	{
+		// Fill erase background
+		Gdiplus::Rect rect = render->GetRect();
+		rect.X		-= 1;
+		rect.Y		-= 1;
+		rect.Width  += 1;
+		rect.Height += 1;
+
+		if (brush)
+		{
+			render->DrawRectangle(rect, NULL, brush , 0);
+		}
+		else
+		{
+			render->DrawRectangle(rect, NULL, m_property.m_erase_color.wrefcol, 0);
+		}
+	}
+
+	void DrawFillBackground(GDIplusCtrlRender*	render, Gdiplus::Brush* brush = NULL)
+	{
+		// Fill erase background
+		Gdiplus::Rect rect = render->GetRect();
+
+		int iBorderWidth = m_property.border_width;
+
+		if (iBorderWidth <= 0)
+		{
+			rect.X -= 1;
+			rect.Y -= 1;
+
+			rect.Width  -= iBorderWidth - 1;
+			rect.Height -= iBorderWidth - 1;
+		}
+		else
+		{
+			rect.X += 1;
+			rect.Y += 1;
+
+			rect.Width	-= iBorderWidth +1;
+			rect.Height -= iBorderWidth +1;
+		}
+
+		if (brush)
+		{
+			render->DrawRectangle(rect, NULL, brush, 0);
+		}
+		else
+		{
+			render->DrawRectangle(rect, NULL, m_property.m_background_color.wrefcol, 0);
+		}
+	}
+
+	void DrawBorderBackground(GDIplusCtrlRender* render, Gdiplus::Pen* pen = NULL)
+	{
+		// Draw rectangle background;
+		int iBorderWidth  = m_property.border_width;
+		int iBorderRadius = m_property.border_radius;;
+
+		if (iBorderWidth > 0)
+		{
+			Gdiplus::Rect rect = render->GetRect();
+
+			rect.X		+= 1;
+			rect.Y		+= 1;
+			rect.Width	-= iBorderWidth+1;
+			rect.Height -= iBorderWidth+1;
+
+			if (pen)
+			{
+				render->DrawRectangle(rect, pen, nullptr, iBorderRadius);
+			}
+			else
+			{
+				render->DrawRectangle(rect, m_property.m_border_color.wrefcol, nullptr, iBorderWidth, iBorderRadius);
+			}
+		}
+	}
+
 	friend class WindowBase;
+	friend class SubWindow;
+	friend class ControlBase;
+
+protected:
+	PropertyControlUI	m_property;
 };
 
 ____END_NAMESPACE____

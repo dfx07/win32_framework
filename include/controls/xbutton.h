@@ -39,65 +39,57 @@ private:
 	bool				m_track_leave;
 	bool				m_bUseEffect = false;
 
+	static WNDPROC		sfunButtonWndProc;
+
 protected:
 	std::wstring		m_sLabel;
 	BtnState			m_eState;
 	BtnState			m_eOldState;
-	Gdiplus::Brush*		m_background_normal;
-	Gdiplus::Brush*		m_backgroundclick;
-	Gdiplus::Brush*		m_backgroundhover;
 
 	Gdiplus::Bitmap*	m_image;
 
 	EasingEngine		m_easing;
+	Gdiplus::Color		m_cur_background_color;
 
 	GDIplusCtrlRender	m_render;
-
 
 	void(*m_EventFun)(WindowBase* window, Button* btn) = NULL;
 	void(*m_EventFunEnter)(WindowBase* window, Button* btn) = NULL;
 	void(*m_EventFunLeave)(WindowBase* window, Button* btn) = NULL;
 
-	static WNDPROC& getproc()
-	{
-		static WNDPROC prevWndProc;
-		return prevWndProc;
-	}
-
 public:
 	Button() : ControlBase(), m_eState(BtnState::Normal), m_sLabel(L""), m_image(NULL),
 		m_track_leave(false),
-		m_eOldState(BtnState::Normal),
-		m_background_normal(NULL),
-		m_backgroundclick(NULL),
-		m_backgroundhover(NULL)
+		m_eOldState(BtnState::Normal)
 	{
-		m_rect.x = 0;
-		m_rect.y = 0;
-		m_rect.width = WIDTH_DEF;
+		m_rect.x	  = 0;
+		m_rect.y	  = 0;
+		m_rect.width  = WIDTH_DEF;
 		m_rect.height = HEIGHT_DEF;
 
-		m_property.background_color		  = std::move(Color4(59, 91, 179));
-		m_property.background_hover_color = std::move(Color4(229, 241, 255));
-		m_property.background_click_color = std::move(Color4(201, 224, 247));
-
-		m_property.border_radius = 0;
-		m_property.border_width  = 0;
-		m_property.text_color = std::move(Color4(255, 255, 255));
-		m_property.text_hover_color = std::move(Color4(0, 0, 0));
+		this->SetDefaultPropertyUI();
 	}
 
 	~Button()
 	{
-		delete m_background_normal;
-		delete m_backgroundhover;
-		delete m_backgroundclick;
-
 		delete m_image;
 	}
 
 	virtual ControlType GetType() { return static_cast<ControlType>(ControlType::BUTTON); }
-	void	SetLabel(std::wstring lab) { m_sLabel = lab; }
+	void SetLabel(std::wstring lab) { m_sLabel = lab; }
+
+protected:
+
+	virtual void SetDefaultPropertyUI()
+	{
+		m_property.m_hover_color	= std::move(Color4(255, 255, 255));
+		m_property.m_click_color	= std::move(Color4(255, 255, 245));
+
+		m_property.border_radius	= 0;
+		m_property.border_width		= 0;
+		m_property.text_color		= std::move(Color4(255, 255, 255));
+		m_property.text_hover_color = std::move(Color4(0, 0, 0));
+	}
 
 private:
 
@@ -121,7 +113,14 @@ private:
 
 		NULL_RETURN(m_hWnd, 0);
 
-		getproc() = (WNDPROC)SetWindowLongPtr(m_hWnd, GWLP_WNDPROC, (LONG_PTR)&ButtonProcHandle);
+		sfunButtonWndProc = (WNDPROC)SetWindowLongPtr(m_hWnd, GWLP_WNDPROC, (LONG_PTR)&ButtonProcHandle);
+
+		m_cur_background_color = m_property.m_background_color.wrefcol;
+
+		m_easing.AddExec(EaseType::Sine, EaseMode::Out, S2MS(0.5), m_property.m_hover_color.r, m_property.m_background_color.r);
+		m_easing.AddExec(EaseType::Sine, EaseMode::Out, S2MS(0.5), m_property.m_hover_color.g, m_property.m_background_color.g);
+		m_easing.AddExec(EaseType::Sine, EaseMode::Out, S2MS(0.5), m_property.m_hover_color.b, m_property.m_background_color.b);
+
 		return 1;
 	}
 
@@ -143,6 +142,7 @@ private:
 	static LRESULT CALLBACK ButtonProcHandle(HWND hwndBtn, UINT uMsg, WPARAM wParam, LPARAM lParam)
 	{
 		Button* btn = (Button*)::GetWindowLongPtr(hwndBtn, GWLP_USERDATA);
+
 		NULL_RETURN(btn, 0);
 
 		switch (uMsg)
@@ -183,21 +183,23 @@ private:
 			btn->SetState(BtnState::Click);
 			break;
 		}
-		case WM_RBUTTONUP:
+		//case WM_RBUTTONUP:
 		case WM_LBUTTONUP:
 		{
 			btn->m_eState = btn->m_eOldState;
 			break;
 		}
 		case WM_ERASEBKGND:
-			return TRUE;
+			//return TRUE;
 			break;
 		case WM_CTLCOLORBTN:
 		{
+
 			break;
 		}
 		}
-		return CallWindowProc(getproc(), hwndBtn, uMsg, wParam, lParam);
+
+		return CallWindowProc(sfunButtonWndProc, hwndBtn, uMsg, wParam, lParam);
 	}
 
 private:
@@ -208,14 +210,10 @@ private:
 
 		::SetTimer(m_hWnd, IDC_EFFECT_X1, TIME_UPDATE_EFFECT, (TIMERPROC)NULL);
 
-		m_easing.AddExec(EaseType::Expo, EaseMode::In, S2MS(1),m_property.background_hover_color.r, m_property.background_color.r);
-		m_easing.AddExec(EaseType::Expo, EaseMode::In, S2MS(1),m_property.background_hover_color.g, m_property.background_color.g);
-		m_easing.AddExec(EaseType::Expo, EaseMode::In, S2MS(1),m_property.background_hover_color.b, m_property.background_color.b);
-
+		m_easing.Reset();
 		m_easing.Start();
 
-		delete m_background_normal;
-		m_background_normal = new Gdiplus::SolidBrush(m_property.background_hover_color.wrefcol);
+		m_cur_background_color = m_property.m_hover_color.wrefcol;
 	}
 
 	bool UpdateX1ThemeEffect()
@@ -229,8 +227,7 @@ private:
 		int g = static_cast<int>(m_easing.Value(1));
 		int b = static_cast<int>(m_easing.Value(2));
 
-		delete m_background_normal;
-		m_background_normal = new Gdiplus::SolidBrush(Gdiplus::Color(r, g, b));
+		m_cur_background_color = m_cur_background_color.MakeARGB(255, r, g, b);
 
 		return m_easing.IsActive();
 	}
@@ -242,8 +239,7 @@ private:
 
 		KillTimer(m_hWnd, IDC_EFFECT_X1);
 
-		delete m_background_normal;
-		m_background_normal = new Gdiplus::SolidBrush(m_property.background_color.wrefcol);
+		m_cur_background_color.SetValue(m_property.m_background_color.wrefcol);
 	}
 
 	virtual void OnTimer(DWORD wParam)
@@ -268,50 +264,47 @@ private:
 	}
 
 protected:
-	void CreateColorButton()
-	{
-		if (!m_background_normal)
-		{
-			m_background_normal = new Gdiplus::SolidBrush(Gdiplus::Color(m_property.background_color.wrefcol));
-		}
-		if (!m_backgroundclick)
-		{
-			m_backgroundclick = new Gdiplus::SolidBrush(Gdiplus::Color(m_property.background_click_color.wrefcol));
-		}
-		if (!m_backgroundhover)
-		{
-			m_backgroundhover = new Gdiplus::SolidBrush(Gdiplus::Color(m_property.background_hover_color.wrefcol));
-		}
-	}
 
 	void Draw(LPDRAWITEMSTRUCT& pdis)
 	{
 		//TODO : draw use swap buffer image (hdc) -> not draw each element (OK)
 		m_render.Init(pdis->hDC, pdis->rcItem);
 		m_render.LoadFont(L"Segoe UI");
-		
-		this->CreateColorButton();
-
-		std::cout << "draw" << std::endl;
 
 		// [2] Draw color button state
-		const unsigned int iRadius = m_property.border_radius;
+		const unsigned int iRadius      = m_property.border_radius;
 		const unsigned int iBorderWidth = m_property.border_width;
+
+		Gdiplus::Brush* background_color = NULL;
+		Gdiplus::Pen*	pen_color		 = NULL;
+
 		if (m_eState == BtnState::Click)
 		{
-			Gdiplus::Pen pen(Gdiplus::Color(255, 98, 162, 228), iBorderWidth);
-			m_render.DrawRectangleFull(iBorderWidth > 0 ? &pen : NULL, m_backgroundclick, iRadius);
+			background_color = new Gdiplus::SolidBrush(m_property.m_click_color.wrefcol);
+			pen_color = new Gdiplus::Pen(Gdiplus::Color(255, 98, 162, 228), iBorderWidth);
 		}
 		else if (m_eState == BtnState::Hover)
 		{
-			Gdiplus::Pen pen(m_property.background_color.wrefcol, iBorderWidth);
-			m_render.DrawRectangleFull(iBorderWidth > 0 ? &pen : NULL, m_backgroundhover, iRadius);
+			background_color = new Gdiplus::SolidBrush(m_property.m_hover_color.wrefcol);
+			pen_color = new Gdiplus::Pen(m_property.m_background_color.wrefcol, iBorderWidth);
 		}
 		else
 		{
-			Gdiplus::Pen pen(Gdiplus::Color(255, 255, 255, 255), iBorderWidth);
-			m_render.DrawRectangleFull(iBorderWidth > 0 ? &pen : NULL, m_background_normal, iRadius);
+			background_color = new Gdiplus::SolidBrush(m_cur_background_color);
+			pen_color = new Gdiplus::Pen(Gdiplus::Color(255, 255, 255, 253), iBorderWidth);
 		}
+
+		// Fill erase background
+		this->DrawEraseBackground(&m_render);
+
+		// Fill rectangle background;
+		this->DrawFillBackground(&m_render, background_color);
+
+		// Draw rectangle background;
+		this->DrawBorderBackground(&m_render, pen_color);
+
+		SAFE_DELETE(pen_color);
+		SAFE_DELETE(background_color);
 
 		// [2] Draw image
 		if (m_image)
@@ -329,12 +322,17 @@ protected:
 
 		if (m_eState == BtnState::Hover)
 		{
-			Gdiplus::SolidBrush hover_textcolor(Gdiplus::Color(m_property.text_hover_color.wrefcol)); // color text normal
+			Gdiplus::SolidBrush hover_textcolor(Gdiplus::Color(m_property.text_hover_color.wrefcol));
+			m_render.DrawTextFullRect(this->m_sLabel.c_str(), &hover_textcolor, &format);
+		}
+		else if (m_eState == BtnState::Click)
+		{
+			Gdiplus::SolidBrush hover_textcolor(Gdiplus::Color(255, 0, 0));
 			m_render.DrawTextFullRect(this->m_sLabel.c_str(), &hover_textcolor, &format);
 		}
 		else
 		{
-			Gdiplus::SolidBrush normal_textcolor(Gdiplus::Color(m_property.text_color.wrefcol)); // color text normal
+			Gdiplus::SolidBrush normal_textcolor(Gdiplus::Color(m_property.text_color.wrefcol));
 			m_render.DrawTextFullRect(this->m_sLabel.c_str(), &normal_textcolor, &format);
 		}
 
@@ -383,6 +381,8 @@ public:
 		m_bUseEffect = bUseEffect;
 	}
 };
+
+WNDPROC Button::sfunButtonWndProc = NULL;
 
 ____END_NAMESPACE____
 

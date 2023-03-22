@@ -14,6 +14,7 @@
 #include "xsystype.h"
 #include "xwinbase.h"
 #include "controls/xbutton.h"
+#include <controls/xcombobox.h>
 
 ___BEGIN_NAMESPACE___
 
@@ -34,6 +35,7 @@ protected:
 protected:
 	GDIplusCtrlRender	m_render;
 	HDC					m_hdc;
+
 
 	// Window control information
 	int					m_height_title_bar;
@@ -411,15 +413,28 @@ protected:
 			LPDRAWITEMSTRUCT pdis = (LPDRAWITEMSTRUCT)lParam;
 			auto pControl = (ControlBase*)(GetWindowLongPtr(pdis->hwndItem, GWLP_USERDATA));
 			if (pControl) pControl->Draw(pdis);
+			return TRUE;
+		}
+		case WM_MEASUREITEM:
+		{
+			LPMEASUREITEMSTRUCT DrawMenuSize = (LPMEASUREITEMSTRUCT)lParam;
+
+			for (int i = 0; i < subwin->m_ControlList.size(); i++)
+			{
+				if (subwin->m_ControlList[i]->GetID() == DrawMenuSize->CtlID)
+				{
+					Combobox* pControl = (Combobox*)subwin->m_ControlList[i];
+					return FALSE;
+				}
+			}
+			
+
 			break;
 		}
 		case WM_CTLCOLORSTATIC:
-		case WM_CTLCOLORBTN: //In order to make those edges invisble when we use RoundRect(),
+		case WM_CTLCOLORBTN:
 		{
-			SetBkColor((HDC)wParam, RGB(subwin->m_col_background.r, subwin->m_col_background.g, subwin->m_col_background.b));
-			SetBkMode((HDC)wParam, TRANSPARENT);
-			return(LRESULT)GetStockObject(HOLLOW_BRUSH);
-			break;
+			return TRUE;
 		}
 		case WM_PAINT:
 		{
@@ -440,7 +455,8 @@ protected:
 	}
 
 private:
-	fox::Color4			m_col_background;
+	fox::Color4			m_background_color;
+	fox::Color4			m_title_background_color;
 
 //==================================================================================
 //⮟⮟ Triển hàm thao tác từ bên ngoài tác động vào Window class                     
@@ -453,30 +469,33 @@ public:
 	*******************************************************************************/
 	void OnCreateControl()
 	{
-		m_col_background = { 14.f, 14.f, 13.f, 255.f };
+		m_background_color = { 24, 26, 27, 255.f };
+		m_title_background_color = { 14, 14, 13, 255 };
 
 		GDIPLUS_DRAW_INFO_PTR pRenderInfo = static_cast<GDIPLUS_DRAW_INFO_PTR>(m_render.RenderInfo());
 		NULL_RETURN(pRenderInfo, );
 
 		m_height_title_bar = 18;
 
-		m_rect_title = { 1, 1, pRenderInfo->rect.Width - 2, m_height_title_bar };
+		m_rect_title = { 1, 1, pRenderInfo->rect.Width -3, m_height_title_bar };
 
 		// Create minimize control
 		Button* btn_mini = new Button();
 		btn_mini->SetID(IDC_BTN_MINIMIZE);
 		btn_mini->SetLabel(L"▼");
-		btn_mini->SetPosition(1, 1);
-		btn_mini->SetSize(m_height_title_bar, m_height_title_bar);
-		this->AddControl(btn_mini);
+		btn_mini->SetPosition(2, 2);
+		btn_mini->SetBackgroundColor(m_title_background_color);
+		btn_mini->SetSize(m_height_title_bar , m_height_title_bar -1);
+		AddControl(btn_mini);
 
 		// Create button control
 		Button* btn_close = new Button();
 		btn_close->SetID(IDC_BTN_CLOSE);
 		btn_close->SetLabel(L"x");
-		btn_close->SetPosition(pRenderInfo->rect.Width - (m_height_title_bar), 1);
-		btn_close->SetSize(m_height_title_bar, m_height_title_bar);
-		this->AddControl(btn_close);
+		btn_close->SetBackgroundColor(m_title_background_color);
+		btn_close->SetPosition(pRenderInfo->rect.Width - (m_height_title_bar) -2, 2);
+		btn_close->SetSize(m_height_title_bar, m_height_title_bar -1);
+		AddControl(btn_close);
 	}
 
 	void OnPaintDefault()
@@ -485,14 +504,20 @@ public:
 		NULL_RETURN(pRenderInfo, );
 
 		// 0 > Draw background color
+		int iRadiusBorder = 0;
+		// Fill erase background
+		auto rect	 = pRenderInfo->rect;
+		m_render.DrawRectangle(rect, NULL, m_background_color.wrefcol, iRadiusBorder);
+
+		// Fill rectangle background;
+		rect.Width	-= 1;
+		rect.Height -= 1;
 		Gdiplus::Pen pen_back(Gdiplus::Color(255, 255, 255), 1);
-		Gdiplus::SolidBrush brush_back(Gdiplus::Color(255, 14, 14, 13));
-		m_render.DrawRectangleFull(&pen_back, &brush_back, 0);
+		m_render.DrawRectangle(rect, &pen_back, nullptr, iRadiusBorder);
 
 		// 1 > Draw title bar
-		Gdiplus::Pen pen_title(Gdiplus::Color(28, 27, 27), 1);
-		Gdiplus::SolidBrush brush_title(Gdiplus::Color(30, 255, 10, 9));
-		m_render.DrawRectangle(m_rect_title, &pen_title, &brush_title, 0);
+		Gdiplus::SolidBrush brush_title(m_title_background_color.wrefcol);
+		m_render.DrawRectangle(m_rect_title, NULL, &brush_title, 0);
 
 		Gdiplus::StringFormat format;
 		format.SetAlignment(Gdiplus::StringAlignmentNear);
@@ -502,6 +527,26 @@ public:
 		m_render.DrawTextRect(m_rect_title, m_CurStatus.m_title.c_str(), &text_normal_color, &format, Gdiplus::PointF(m_height_title_bar + 1, 0));
 
 		m_render.Flush();
+	}
+
+	/*******************************************************************************
+	*! @brief  : Khởi tạo màu cho button ảnh hưởng bởi subwwindow
+	*! @return : true : ok | false : not ok
+	*! @author : thuong.nv          - [Date] : 05/03/2023
+	*******************************************************************************/
+	void SetColorControl(ControlBase* pControl)
+	{
+		ControlRectUI* pControlRectUI = dynamic_cast<ControlRectUI*>(pControl);
+
+		if (pControlRectUI)
+		{
+			pControlRectUI->SetEraseBackgroundColor(m_background_color);
+		}
+
+		if (pControl->GetType() == ControlType::CHECKBOX)
+		{
+			pControlRectUI->SetBackgroundColor(m_background_color);
+		}
 	}
 
 //==================================================================================
@@ -528,15 +573,10 @@ public:
 				if (iNextControlID == m_uiControlIDs)
 				{
 					std::cerr << "[!] Init control failed !" << std::endl;
+					continue;
 				}
-				else
-				{
-					ControlRectUI* pControl = dynamic_cast<ControlRectUI*>(m_ControlList[i]);
-					if (pControl)
-					{
-						pControl->SetBackgroundColor(m_col_background);
-					}
-				}
+				
+				SetColorControl(m_ControlList[i]);
 
 				m_uiControlIDs = iNextControlID;
 			}
@@ -554,11 +594,7 @@ public:
 	{
 		NULL_RETURN(pControl, 0);
 
-		ControlRectUI* pPropertyUI = dynamic_cast<ControlRectUI*>(pControl);
-		if (pPropertyUI != NULL)
-		{
-			pPropertyUI->SetBackgroundColor(m_col_background);
-		}
+		this->SetColorControl(pControl);
 
 		return WindowBase::AddControl(pControl);
 	}

@@ -30,6 +30,19 @@ public:
 	}
 
 protected:
+	static Gdiplus::Rect ConvertToRect(RECT& _rect)
+	{
+		Gdiplus::Rect rect;
+
+		rect.X = _rect.left;
+		rect.Y = _rect.top;
+		rect.Width = _rect.right - _rect.left;
+		rect.Height = _rect.bottom - _rect.top;
+
+		return rect;
+	}
+
+protected:
 	/***************************************************************************
 	*! @brief  : Get current cursor position [Center]
 	*! @return : true : ok | false : not ok

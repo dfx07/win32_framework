@@ -11,7 +11,7 @@
 #ifndef XLABEL_H
 #define XLABEL_H
 
-#include "wbase.h"
+#include "xcontrolbase.h"
 
 ___BEGIN_NAMESPACE___
 

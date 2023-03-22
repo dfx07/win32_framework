@@ -65,6 +65,9 @@ enum class EaseType
     Quart  ,
     Bounce ,
     Expo   ,
+    Circ   ,
+    Quad   ,
+    Sine   ,
 };
 
 // Return : Giá trị trong khoảng [vfrom -> vto] tại thời điểm t
@@ -337,6 +340,81 @@ private:
     }
 };
 
+class EasingCirc : public EasingAction, EasingObject
+{
+public:
+    virtual EaseType GetType() { return EaseType::Circ; }
+
+private:
+    virtual double EaseIn(const double t, const double duration, const double from, const double to)
+    {
+        double value = easing::circ_in(t);
+        return value;
+    }
+
+    virtual double EaseOut(const double t, const double duration, const double from, const double to)
+    {
+        double value = easing::circ_out(t);
+        return value;
+    }
+
+    virtual double EaseInOut(const double t, const double duration, const double from, const double to)
+    {
+        double value = easing::circ_inout(t);
+        return value;
+    }
+};
+
+class EasingQuad : public EasingAction, EasingObject
+{
+public:
+    virtual EaseType GetType() { return EaseType::Quad; }
+
+private:
+    virtual double EaseIn(const double t, const double duration, const double from, const double to)
+    {
+        double value = easing::quad_in(t);
+        return value;
+    }
+
+    virtual double EaseOut(const double t, const double duration, const double from, const double to)
+    {
+        double value = easing::quad_out(t);
+        return value;
+    }
+
+    virtual double EaseInOut(const double t, const double duration, const double from, const double to)
+    {
+        double value = easing::quad_inout(t);
+        return value;
+    }
+};
+
+class EasingSine : public EasingAction, EasingObject
+{
+public:
+    virtual EaseType GetType() { return EaseType::Sine; }
+
+private:
+    virtual double EaseIn(const double t, const double duration, const double from, const double to)
+    {
+        double value = easing::sine_in(t);
+        return value;
+    }
+
+    virtual double EaseOut(const double t, const double duration, const double from, const double to)
+    {
+        double value = easing::sine_out(t);
+        return value;
+    }
+
+    virtual double EaseInOut(const double t, const double duration, const double from, const double to)
+    {
+        double value = easing::sine_inout(t);
+        return value;
+    }
+};
+
 //===================================================================================
 // Class EasingEngine : Implement execute easing                                     
 //===================================================================================
@@ -368,6 +446,12 @@ public:
         this->value  = value_begin;
         this->pause  = false;
 	}
+
+    void reset()
+    {
+        this->value = from;
+        this->pause = false;
+    }
 };
 
 class EasingEngine : EasingBase
@@ -387,9 +471,7 @@ public:
     }
 
 public:
-
-    virtual void Reset()    { m_dCumulativeTime = 0.f; }
-    virtual void Start()    { this->Reset(); m_bPause = false; }
+    virtual void Start()    { m_bPause = false; }
     virtual void Pause()    { m_bPause = true;  }
     virtual void Continue() { m_bPause = false; }
     virtual bool IsActive() { return !m_bPause; }
@@ -418,6 +500,15 @@ public:
         case EaseType::Expo:
             action = std::make_shared<EasingExpo>();
             break;
+        case EaseType::Circ:
+            action = std::make_shared<EasingCirc>();
+            break;
+        case EaseType::Quad:
+            action = std::make_shared<EasingQuad>();
+            break;
+        case EaseType::Sine:
+            action = std::make_shared<EasingSine>();
+            break;
         default:
             break;
         }
@@ -431,6 +522,23 @@ public:
         m_data_list.emplace_back(EasingDataBase(action, type, mode, _duration, _from, _to , _from));
 
         return true;
+    }
+
+    /***************************************************************************
+	*! @brief  : reset data list
+	*! @return : number of control created
+	*! @author : thuong.nv          - [Date] : 05/03/2023
+	***************************************************************************/
+    virtual void Reset()
+    {
+        m_bPause = false;
+
+        m_dCumulativeTime = 0.f;
+
+        for (int i = 0; i < m_data_list.size(); i++)
+        {
+            m_data_list[i].reset();
+        }
     }
 
     //==================================================================================

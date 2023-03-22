@@ -260,13 +260,29 @@ public:
 		this->set(r, g, b, a);
 	}
 
-public:
-	float	 r;
-	float	 g;
-	float	 b;
-	float	 a;
+	~Color4()
+	{
 
-	Gdiplus::ARGB wrefcol;
+	}
+
+	const Color4& operator=(const Color4& color)
+	{
+		this->r = color.r;
+		this->g = color.g;
+		this->b = color.b;
+		this->a = color.a;
+		this->wrefcol = color.wrefcol;
+
+		return *this;
+	}
+
+public:
+	float			r;
+	float			g;
+	float			b;
+	float			a;
+
+	Gdiplus::ARGB   wrefcol;
 };
 
 struct Color3
@@ -477,7 +493,7 @@ private:
 
 		m_pRender->render = Gdiplus::Graphics::FromHDC(m_DrawInfo.hDC);
 		m_pRender->render->SetSmoothingMode(Gdiplus::SmoothingModeHighQuality);
-		m_pRender->rect = ConvertToGdiplusRect(rect, -2, -2);
+		m_pRender->rect = ConvertToGdiplusRect(rect, 0, 0);
 	}
 
 	void DestroyRender()
@@ -528,6 +544,11 @@ public:
 	void Init(const HDC& hdc, const RECT& rect)
 	{
 		this->CreateRender(hdc, rect);
+	}
+
+	Gdiplus::Rect GetRect()
+	{
+		return m_pRender->rect;
 	}
 
 public:
@@ -662,6 +683,29 @@ private:
 
 // Draw function
 public:
+
+	void DrawRectangle(const Gdiplus::Rect& rect, const Gdiplus::Pen* pen, const Gdiplus::ARGB& brush, int radius)
+	{
+		NULL_RETURN(m_pRender->render, );
+
+		Gdiplus::Brush* pBrush = new Gdiplus::SolidBrush(brush);
+
+		DrawRectangle(rect, pen, pBrush, radius);
+
+		delete pBrush;
+	}
+
+	void DrawRectangle(const Gdiplus::Rect& rect, const Gdiplus::ARGB& pen, const Gdiplus::Brush* brush,int iborderwidth, int radius)
+	{
+		NULL_RETURN(m_pRender->render, );
+
+		Gdiplus::Pen* pPen = new Gdiplus::Pen(pen, iborderwidth);
+
+		DrawRectangle(rect, pPen, brush, radius);
+
+		delete pPen;
+	}
+
 	void DrawRectangle(const Gdiplus::Rect& rect, const Gdiplus::Pen* pen, const Gdiplus::Brush* brush, int radius)
 	{
 		NULL_RETURN(m_pRender->render, );

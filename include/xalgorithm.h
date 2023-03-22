@@ -257,12 +257,12 @@ static double bounce_inout(IN double t)
 ***********************************************************************************/
 static double expo_in(IN double t)
 {
-    return t == 1 ? 1 : 1 - std::pow(2, -10 * t);
+    return t == 0 ? 0 : std::pow(2, 10 * t - 10);
 }
 
 static double expo_out(IN double t)
 {
-    return t == 0 ? 0 : std::pow(2, 10 * t - 10);
+    return t == 1 ? 1 : 1 - std::pow(2, -10 * t);
 }
 
 static double expo_inout(IN double t)
@@ -273,6 +273,74 @@ static double expo_inout(IN double t)
         ? 1
         : t < 0.5 ? std::pow(2, 20 * t - 10) / 2
         : (2 - std::pow(2, -20 * t + 10)) / 2;
+}
+
+/***********************************************************************************
+*! @brief  : EASING Circ
+*! @param    [In] t : value in range [0 - 1]
+*! @return : double value in range [0, 1]
+*! @author : thuong.nv      - [Date] : 26/10/2022
+*! @note   : N/A
+***********************************************************************************/
+static double circ_in(IN double t)
+{
+    return 1. - std::sqrt(1 - std::pow(t, 2));
+}
+
+static double circ_out(IN double t)
+{
+    return sqrt(1 - std::pow(t - 1, 2));
+}
+
+static double circ_inout(IN double t)
+{
+    return t < 0.5
+        ? (1 - std::sqrt(1 - std::pow(2 * t, 2))) / 2
+        : (std::sqrt(1. - std::pow(-2 * t + 2., 2)) + 1.) / 2;
+}
+
+/***********************************************************************************
+*! @brief  : EASING Quad
+*! @param    [In] t : value in range [0 - 1]
+*! @return : double value in range [0, 1]
+*! @author : thuong.nv      - [Date] : 26/10/2022
+*! @note   : N/A
+***********************************************************************************/
+static double quad_in(IN double t)
+{
+    return t * t;
+}
+
+static double quad_out(IN double t)
+{
+    return 1 - (1 - t) * (1 - t);
+}
+
+static double quad_inout(IN double t)
+{
+    return t < 0.5 ? 2 * t * t : 1. - std::pow(-2 * t + 2., 2) / 2.;
+}
+
+/***********************************************************************************
+*! @brief  : EASING Sine
+*! @param    [In] t : value in range [0 - 1]
+*! @return : double value in range [0, 1]
+*! @author : thuong.nv      - [Date] : 26/10/2022
+*! @note   : N/A
+***********************************************************************************/
+static double sine_in(IN double t)
+{
+    return 1 - std::cos((t * PI) / 2);
+}
+
+static double sine_out(IN double t)
+{
+    return std::sin((t * PI) / 2);
+}
+
+static double sine_inout(IN double t)
+{
+    return -(std::cos(PI * t) - 1) / 2;
 }
 _____END_SECTION_____
 
