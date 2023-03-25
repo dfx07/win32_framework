@@ -78,6 +78,46 @@ protected:
 	***************************************************************************/
 	virtual bool ContainID(INT ID){ return false; };
 
+	/***************************************************************************
+	*! @brief  : Get current cursor position [left - top]
+	*! @return : void
+	*! @author : thuong.nv          - [Date] : 05/03/2023
+	***************************************************************************/
+	static POINT get_cursor_in_screen()
+	{
+		POINT cursor_pos = {0, 0};
+		if (::GetCursorPos(&cursor_pos) == TRUE)
+		{
+			return cursor_pos;
+		}
+		else
+		{
+			return { 0,0 };
+		}
+	}
+
+	/***************************************************************************
+	*! @brief  : Get current cursor position [left - top]
+	*! @return : void
+	*! @author : thuong.nv          - [Date] : 05/03/2023
+	***************************************************************************/
+	bool GetCursorPos(long& xpos, long& ypos)
+	{
+		POINT cursor_pos = get_cursor_in_screen();
+		if (ScreenToClient(m_hWnd, &cursor_pos) == TRUE)
+		{
+			xpos = cursor_pos.x;
+			ypos = cursor_pos.y;
+			return true;
+		}
+		else
+		{
+			xpos = 0;
+			ypos = 0;
+			return false;
+		}
+	}
+
 public:
 	/***************************************************************************
 	*! @brief  : Function design pattern init control

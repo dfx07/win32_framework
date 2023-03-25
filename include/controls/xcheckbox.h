@@ -186,7 +186,6 @@ protected:
 		}
 		case WM_ERASEBKGND:
 			return TRUE;
-			break;
 		case WM_CTLCOLORBTN:
 		{
 			break;

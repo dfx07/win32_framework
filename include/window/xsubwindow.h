@@ -442,15 +442,16 @@ protected:
 			subwin->OnPaint(subwin);
 			break;
 		}
-		case WM_ERASEBKGND:
-		{
-			//return TRUE;
-		}
+		//case WM_ERASEBKGND:
+		//{
+		//	return TRUE;
+		//}
 		default:
 		{
 			break;
 		}
 		}
+		
 		return DefWindowProc(hWnd, message, wParam, lParam);
 	}
 

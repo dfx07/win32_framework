@@ -114,7 +114,7 @@ void Create(WindowBase* win)
     cbb->SetSelect(0);
 
     cbb->SetPosition(90, 90);
-    cbb->SetSize(80, 15);
+    cbb->SetSize(85, 20);
 
     sub->AddControl(cbb);
 

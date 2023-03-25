@@ -191,7 +191,7 @@ typedef enum tagGLMouse
 
 typedef enum tagMESSAGE_WIN
 {
-	PROCESS_MSG		= -100000,
+	PROCESS_MSG		=  100000,
 	MESSAGE_START	=  100002,
 	MOVE_WIN		=  MESSAGE_START + 0x0001,
 	MINI_WIN		=  MESSAGE_START + 0x0002,
@@ -681,6 +681,12 @@ private:
 		g->DrawString(text, -1, font, *rect, stringFormat, brush);
 	}
 
+
+	void funDrawLine(Gdiplus::Graphics* g, Gdiplus::PointF* pStart, Gdiplus::PointF* pEnd, const Gdiplus::Pen* pen = NULL)
+	{
+		g->DrawLine(pen, *pStart, *pEnd);
+	}
+
 // Draw function
 public:
 
@@ -754,9 +760,17 @@ public:
 
 	void DrawImageFullRect(Gdiplus::Image* img, const GdiplusEx::ImageFormat* imageFormat = NULL, const Gdiplus::PointF& offset = Gdiplus::PointF(0, 0))
 	{
-		if (!m_pRender) return;
+		NULL_RETURN(m_pRender, );
 
 		funDrawImage(m_pRender->render, img, imageFormat, offset);
+	}
+
+	void DrawLineFull(Gdiplus::PointF& ptStart , Gdiplus::PointF& ptEnd, const Gdiplus::Pen* pen= NULL)
+	{
+		NULL_RETURN(m_pRender, );
+		NULL_RETURN(pen, );
+
+		funDrawLine(m_pRender->render, &ptStart, &ptEnd, pen);
 	}
 
 private:

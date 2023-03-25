@@ -45,6 +45,8 @@
 #define NULL_RETURN(p, r)			if(p == NULL) return r;
 #define NULL_BREAK(p)				if(p == NULL) break;
 #define NULL_CONTINUE(p)			if(p == NULL) continue;
+#define CHECK_RETURN(ck, r)			if(ck)		  return r;
+
 #define CHECK_AND_EXE(ck, exe)		(ck == true)? exe : false;
 
 #define CHECK_EXE_UPDATE(ck, exe)	if(ck == true){ ck = exe; };

@@ -190,14 +190,16 @@ private:
 			break;
 		}
 		case WM_ERASEBKGND:
-			//return TRUE;
-			break;
+		{
+			return TRUE;
+		}
 		case WM_CTLCOLORBTN:
 		{
 
 			break;
 		}
 		}
+		std::cout << "BTN :: " << uMsg << std::endl;
 
 		return CallWindowProc(sfunButtonWndProc, hwndBtn, uMsg, wParam, lParam);
 	}
@@ -380,6 +382,8 @@ public:
 	{
 		m_bUseEffect = bUseEffect;
 	}
+
+	friend class Combobox;
 };
 
 WNDPROC Button::sfunButtonWndProc = NULL;
