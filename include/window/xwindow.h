@@ -203,7 +203,7 @@ private:
 			auto pControl = (ControlBase*)(GetWindowLongPtr(pdis->hwndItem, GWLP_USERDATA));
 			NULL_BREAK(pControl);
 
-			pControl->Draw(pdis);
+			//pControl->Draw(win->m);
 
 			break;
 		}

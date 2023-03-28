@@ -51,8 +51,6 @@ protected:
 	EasingEngine		m_easing;
 	Gdiplus::Color		m_cur_background_color;
 
-	GDIplusCtrlRender	m_render;
-
 	void(*m_EventFun)(WindowBase* window, Button* btn) = NULL;
 	void(*m_EventFunEnter)(WindowBase* window, Button* btn) = NULL;
 	void(*m_EventFunLeave)(WindowBase* window, Button* btn) = NULL;
@@ -267,11 +265,13 @@ private:
 
 protected:
 
-	void Draw(LPDRAWITEMSTRUCT& pdis)
+	virtual void Draw(bool bDraw = false)
 	{
-		//TODO : draw use swap buffer image (hdc) -> not draw each element (OK)
-		m_render.Init(pdis->hDC, pdis->rcItem);
-		m_render.LoadFont(L"Segoe UI");
+		NULL_RETURN(m_pRender, );
+
+		m_pRender->BeginDrawRect(this->GetRect(true));
+
+		Gdiplus::Rect rect = m_pRender->GetDrawRect();
 
 		// [2] Draw color button state
 		const unsigned int iRadius      = m_property.border_radius;
@@ -297,13 +297,13 @@ protected:
 		}
 
 		// Fill erase background
-		this->DrawEraseBackground(&m_render);
+		this->DrawEraseBackground(m_pRender);
 
 		// Fill rectangle background;
-		this->DrawFillBackground(&m_render, background_color);
+		this->DrawFillBackground(m_pRender, background_color);
 
 		// Draw rectangle background;
-		this->DrawBorderBackground(&m_render, pen_color);
+		this->DrawBorderBackground(m_pRender, pen_color);
 
 		SAFE_DELETE(pen_color);
 		SAFE_DELETE(background_color);
@@ -314,7 +314,7 @@ protected:
 			GdiplusEx::ImageFormat imgformat;
 			imgformat.SetVerticalAlignment(GdiplusEx::ImageAlignment::ImageAlignmentNear);
 			imgformat.SetHorizontalAlignment(GdiplusEx::ImageAlignment::ImageAlignmentCenter);
-			m_render.DrawImageFullRect(m_image, &imgformat);
+			m_pRender->DrawImageFullRect(m_image, &imgformat);
 		}
 
 		// [3] Draw text for button
@@ -325,20 +325,25 @@ protected:
 		if (m_eState == BtnState::Hover)
 		{
 			Gdiplus::SolidBrush hover_textcolor(Gdiplus::Color(m_property.text_hover_color.wrefcol));
-			m_render.DrawTextFullRect(this->m_sLabel.c_str(), &hover_textcolor, &format);
+			m_pRender->DrawTextFullRect(this->m_sLabel.c_str(), &hover_textcolor, &format);
 		}
 		else if (m_eState == BtnState::Click)
 		{
 			Gdiplus::SolidBrush hover_textcolor(Gdiplus::Color(255, 0, 0));
-			m_render.DrawTextFullRect(this->m_sLabel.c_str(), &hover_textcolor, &format);
+			m_pRender->DrawTextFullRect(this->m_sLabel.c_str(), &hover_textcolor, &format);
 		}
 		else
 		{
 			Gdiplus::SolidBrush normal_textcolor(Gdiplus::Color(m_property.text_color.wrefcol));
-			m_render.DrawTextFullRect(this->m_sLabel.c_str(), &normal_textcolor, &format);
+			m_pRender->DrawTextFullRect(this->m_sLabel.c_str(), &normal_textcolor, &format);
 		}
 
-		m_render.Flush(true);
+		m_pRender->EndDrawRect();
+
+		if (bDraw)
+		{
+			m_pRender->Flush();
+		}
 	}
 
 public:

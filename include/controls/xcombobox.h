@@ -28,6 +28,7 @@ class Dllexport Combobox : public ControlBase , public ControlRectUI
 	{
 		CBB_EVT_DROPDOWN		= 1002,
 		CBB_EVT_HOVER_DROPDOWN	= 1003,
+		CBB_EVT_CLICK_DROPDOWN	= 1004,
 	};
 
 	enum { WIDTH_DEF = 100 };
@@ -60,7 +61,6 @@ private:
 	int					m_iItemHover;
 
 	ItemList			m_items;
-	GDIplusCtrlRender	m_render;
 
 	CBB_State			m_eState;
 
@@ -74,7 +74,7 @@ private:
 	static WNDPROC		sfunComboboxWndProc;
 	static WNDPROC		sfunDropDownProc;
 
-	void(*m_EventSelectedChangedFun)(Window*, Combobox*) = NULL;
+	void(*m_EventSelectedChangedFun)(Combobox*) = NULL;
 
 public:
 	Combobox(int _x = 0, int _y = 0, int _width = WIDTH_DEF,
@@ -112,14 +112,19 @@ private:
 		NULL_RETURN(m_hWnd, );
 
 		this->RecalRectItems();
-
 	}
 
-	void UpdateSelect()
+	void UpdateSelect(int iSelect)
 	{
-		if (!m_hWnd) return;
-		SendMessage(m_hWnd, CB_SETCURSEL, (WPARAM)m_iSelected, (LPARAM)0);
-		m_iSelected = GetSelectIndexItem();
+		NULL_RETURN(m_hWnd, );
+		if (iSelect >= 0 && iSelect < m_items.size())
+		{
+			m_iSelected = iSelect;
+		}
+		else
+		{
+			assert(0);
+		}
 	}
 
 	//===================================================================================
@@ -139,7 +144,7 @@ private:
 	}
 
 public:
-	void SetEventSelectedChange(void(*fun)(Window*, Combobox*))
+	void SetEventSelectedChange(void(*fun)(Combobox*))
 	{
 		m_EventSelectedChangedFun = fun;
 	}
@@ -223,11 +228,7 @@ public:
 	//===================================================================================
 	void SelectItem(int sel)
 	{
-		if (sel < 0 || sel >= m_items.size())
-		{
-			sel = -1;
-		}
-		UpdateSelect();
+		UpdateSelect(sel);
 	}
 
 	//===================================================================================
@@ -326,12 +327,8 @@ protected:
 			}
 			case WM_PAINT:
 			{
-				PAINTSTRUCT ps;
-				ps.fErase = TRUE;
-				ps.fIncUpdate = FALSE;
-				HDC hdc = BeginPaint(cbb->m_hWnd, &ps);
-				cbb->OnPaint(ps);
-				return EndPaint(cbb->m_hWnd, &ps);
+				cbb->Draw(true);
+				return TRUE;
 			}
 			case CBN_DROPDOWN:
 			{
@@ -341,7 +338,7 @@ protected:
 			case WM_LBUTTONDOWN:
 			{
 				long x, y;
-				if (cbb->GetCursorPos(x, y) && 
+				if (cbb->GetCursorPosInParent(x, y) &&
 					cbb->m_rect_btn_dropdown.Contains(x , y))
 				{
 					cbb->Send_Message(CBB_EVT_DROPDOWN, PROCESS_MSG, 0);
@@ -404,11 +401,10 @@ protected:
 					cbb->m_dropdown_leave = true;
 				}
 
-				POINT cursor_pos = get_cursor_in_screen();
-				if (ScreenToClient(cbb->m_hWndDropDown, &cursor_pos) == TRUE)
+				long x, y;
+				if (cbb->GetCursorPosInParent(x, y))
 				{
-					int iHover = cbb->GetItemHover(cursor_pos.x, cursor_pos.y);
-					std::cout << iHover << std::endl;
+					int iHover = cbb->GetItemHover(x, y);
 					cbb->Send_Message(CBB_EVT_HOVER_DROPDOWN, PROCESS_MSG, iHover);
 				}
 
@@ -426,26 +422,22 @@ protected:
 			}
 			case WM_PAINT:
 			{
-				PAINTSTRUCT ps;
-				BeginPaint(cbb->m_hWndDropDown, &ps);
-
-				cbb->OnPaintDropDown(ps);
-
-				return EndPaint(cbb->m_hWndDropDown, &ps);
+				cbb->OnDrawDropDown(true);
+				return TRUE;
 			}
 			case WM_LBUTTONDOWN:
 			{
-				//long x, y;
-				//if (cbb->GetCursorPos(x, y) && 
-				//	cbb->m_rect_btn_dropdown.Contains(x , y))
-				//{
-				//	cbb->Send_Message(DROPDOWN, PROCESS_MSG, 0);
-				//}
-				//break;
+				POINT cursor_pos = get_cursor_in_screen();
+				if (ScreenToClient(cbb->m_hWndDropDown, &cursor_pos) == TRUE)
+				{
+					int iHover = cbb->GetItemHover(cursor_pos.x, cursor_pos.y);
+					cbb->Send_Message(CBB_EVT_CLICK_DROPDOWN, PROCESS_MSG, iHover);
+				}
+
+				break;
 			}
 			case WM_LBUTTONUP:
 			{
-				//btn->m_eState = btn->m_eOldState;
 				break;
 			}
 			case WM_ERASEBKGND:
@@ -489,24 +481,28 @@ protected:
 
 	void RecalRectItems()
 	{
+		auto rect = this->GetRect(m_hWndDropDown, true);
+
 		for (int i = 0; i < m_items.size(); i++)
 		{
-			Gdiplus::Rect rect_item({ 1, (int)m_rect.height * i }, { (INT)m_rect.width, (INT)m_rect.height });
+			Gdiplus::Rect rect_item({ rect.left, rect.top + (int)m_rect.height * i }, { (INT)m_rect.width, (INT)m_rect.height });
 			m_items[i].rect = rect_item;
 		}
 	}
 
-	void RecalDropDownButton(RECT& rect)
+	void RecalTitleBarInfo()
 	{
-		m_rect_titlebar.X = 0;
-		m_rect_titlebar.Y = 0;
-		m_rect_titlebar.Width = rect.right - rect.left;
-		m_rect_titlebar.Height = m_rect.height;
+		auto rect = this->GetRect(true);
 
-		m_rect_btn_dropdown.X = m_rect_titlebar.Width - m_rect_titlebar.Height - m_property.border_width +1;
-		m_rect_btn_dropdown.Y = m_property.border_width;
+		m_rect_titlebar.X		= rect.left;
+		m_rect_titlebar.Y		= rect.top;
+		m_rect_titlebar.Width	= rect.right - rect.left;
+		m_rect_titlebar.Height	= m_rect.height;
+
+		m_rect_btn_dropdown.X = m_rect_titlebar.X + m_rect_titlebar.Width - m_rect_titlebar.Height - m_property.border_width +1;
+		m_rect_btn_dropdown.Y = m_rect_titlebar.Y + m_property.border_width;
 		m_rect_btn_dropdown.Width  = m_rect_titlebar.Height -  m_property.border_width;
-		m_rect_btn_dropdown.Height = m_rect_titlebar.Height - (m_property.border_width +1);
+		m_rect_btn_dropdown.Height = m_rect_titlebar.Height -  (m_property.border_width +1);
 	}
 
 protected:
@@ -528,7 +524,7 @@ protected:
 
 		m_hWndDropDown = CreateWindow(L"STATIC", NULL, style,
 										(int)m_rect.x, (int)m_rect.y + m_rect.height +1,
-										m_rect.width, m_rect.height * m_items.size(),
+										m_rect.width, m_rect.height * static_cast<int>(m_items.size()),
 										m_hWndPar, NULL, NULL, NULL);
 		NULL_RETURN(m_hWnd, 0);
 
@@ -539,18 +535,11 @@ protected:
 
 		SetWindowLongPtr(m_hWndDropDown, GWLP_USERDATA, (LONG_PTR)this);
 
+		this->RecalTitleBarInfo();
+
 		UpdateItems();
 
 		return 1;
-	}
-
-	virtual void Event(Window* window, WORD _id, WORD _event)
-	{
-		if (_event == CBN_SELCHANGE)
-		{
-			GetSelectIndexItem();
-			if (m_EventSelectedChangedFun)  m_EventSelectedChangedFun(window, this);
-		}
 	}
 
 protected:
@@ -569,7 +558,14 @@ protected:
 
 				::ShowWindow(m_hWndDropDown, (m_eState == NORMAL) ? SW_HIDE : SW_SHOW);
 
-				InvalidateRect(m_hWndPar, NULL, FALSE);
+				if (m_eState == DROPDOWN)
+				{
+					InvalidateRect(m_hWndDropDown, NULL, FALSE);
+				}
+				
+
+				this->Draw(true);
+
 				break;
 			}
 			case CBB_EVT_HOVER_DROPDOWN:
@@ -583,15 +579,19 @@ protected:
 
 				break;
 			}
-
-			case MINI_WIN:
+			case CBB_EVT_CLICK_DROPDOWN:
 			{
+				m_iSelected = lParam;
 
-				break;
-			}
+				if (m_iSelected >= 0)
+				{
+					m_eState = NORMAL;
+					::ShowWindow(m_hWndDropDown, SW_HIDE);
+					InvalidateRect(m_hWndPar, NULL, FALSE);
 
-			case CLOSE_WIN:
-			{
+					CHECK_RUN_FUNCTION(m_EventSelectedChangedFun, this);
+				}
+
 				break;
 			}
 
@@ -604,7 +604,7 @@ protected:
 
 public:
 
-	void OnPaintTitleBar()
+	void OnDrawTitleBar()
 	{
 		// [1] Draw border title bar
 		int iBorderWidth  = m_property.border_width;
@@ -619,13 +619,13 @@ public:
 
 		if (iBorderWidth > 0)
 		{
-			m_render.DrawRectangle(rect, m_property.m_border_color.wrefcol, nullptr, iBorderWidth, iBorderRadius);
+			m_pRender->DrawRectangle(rect, m_property.m_border_color.wrefcol, nullptr, iBorderWidth, iBorderRadius);
 		}
 
 		// [4] Draw drop down icon combobox
 		Gdiplus::SolidBrush brush_dropdown({ 255, 123, 0 });
-		m_render.DrawRectangle(m_rect_btn_dropdown, nullptr, &brush_dropdown, m_property.border_radius);
-		m_render.DrawRectangle(m_rect_btn_dropdown, m_property.m_border_color.wrefcol, nullptr, m_property.border_width, m_property.border_radius);
+		m_pRender->DrawRectangle(m_rect_btn_dropdown, nullptr, &brush_dropdown, m_property.border_radius);
+		m_pRender->DrawRectangle(m_rect_btn_dropdown, m_property.m_border_color.wrefcol, nullptr, m_property.border_width, m_property.border_radius);
 
 		Gdiplus::StringFormat format;
 		format.SetAlignment(Gdiplus::StringAlignmentCenter);
@@ -633,7 +633,7 @@ public:
 
 		std::wstring text_dropdown = (m_eState == NORMAL)? L"▼": L"▲";
 		Gdiplus::SolidBrush dropdown_color(Gdiplus::Color(m_property.text_color.wrefcol));
-		m_render.DrawTextRect(m_rect_btn_dropdown, text_dropdown.c_str(), &dropdown_color, &format);
+		m_pRender->DrawTextRect(m_rect_btn_dropdown, text_dropdown.c_str(), &dropdown_color, &format);
 
 		CHECK_RETURN(m_iSelected < 0, );
 
@@ -645,7 +645,7 @@ public:
 		format.SetLineAlignment(Gdiplus::StringAlignmentCenter);
 
 		Gdiplus::SolidBrush text_color(Gdiplus::Color(m_property.text_color.wrefcol));
-		m_render.DrawTextRect(m_rect_titlebar, strSelect, &text_color, &format, {5 ,0});
+		m_pRender->DrawTextRect(m_rect_titlebar, strSelect, &text_color, &format, {5 ,0});
 	}
 
 	void DrawItem(int index)
@@ -655,8 +655,8 @@ public:
 
 		Gdiplus::Rect& rect_item = m_items[index].rect;
 
-		Gdiplus::PointF pStart = { (float)rect_item.X		  , (float)rect_item.GetBottom() };
-		Gdiplus::PointF pEnd   = { (float)rect_item.GetRight(), (float)rect_item.GetBottom() };
+		Gdiplus::PointF pStart = { (float)rect_item.X +1		 , (float)rect_item.GetBottom() };
+		Gdiplus::PointF pEnd   = { (float)rect_item.GetRight() -1, (float)rect_item.GetBottom() };
 
 		Gdiplus::StringFormat format;
 		format.SetAlignment(Gdiplus::StringAlignmentNear);
@@ -664,67 +664,77 @@ public:
 
 		if (index == m_iItemHover)
 		{
-			std::wstring temp = L"•" + m_items[index].text;
+			std::wstring temp = L"ᐅ " + m_items[index].text;
 			Gdiplus::SolidBrush text_color(Gdiplus::Color(255, 0, 0));
-			m_render.DrawTextRect(rect_item, temp.c_str(), &text_color, &format, { 5 ,0 });
+			m_pRender->DrawTextRect(rect_item, temp.c_str(), &text_color, &format, { 5 ,0 });
 		}
 		else
 		{
 			Gdiplus::SolidBrush text_color(Gdiplus::Color(m_property.text_color.wrefcol));
-			m_render.DrawTextRect(rect_item, m_items[index].text.c_str(), &text_color, &format, { 5 ,0 });
+			m_pRender->DrawTextRect(rect_item, m_items[index].text.c_str(), &text_color, &format, { 5 ,0 });
 		}
 
-		if (index < m_items.size())
+		if (index < m_items.size() -1)
 		{
 			Gdiplus::Pen pen(m_property.m_border_color.wrefcol);
-			m_render.DrawLineFull(pStart, pEnd, &pen);
+			m_pRender->DrawLineFull(pStart, pEnd, &pen);
 		}
 	}
 
-	void OnPaintDropDown(PAINTSTRUCT& ps)
+	void OnDrawDropDown(bool bDraw = false)
 	{
-		if (m_eState == DROPDOWN)
-		{
-			m_render.Init(ps.hdc, ps.rcPaint);
-			m_render.LoadFont(L"Consolas");
+		NULL_RETURN(m_pRender, );
 
+		m_pRender->BeginDrawRect(this->GetRect(m_hWndDropDown, true));
+		{
+			if (m_eState == DROPDOWN)
+			{
+				// [1] Erase background color
+				this->DrawEraseBackground(m_pRender);
+
+				// [2] Draw background combobox
+				this->DrawFillBackground(m_pRender);
+
+				this->DrawBorderBackground(m_pRender);
+
+				for (int i = 0; i < m_items.size(); i++)
+				{
+					DrawItem(i);
+				}
+			}
+		}
+		m_pRender->EndDrawRect();
+
+		if (bDraw)
+		{
+			m_pRender->Flush();
+		}
+	}
+
+	virtual void Draw(bool bDraw = false)
+	{
+		NULL_RETURN(m_pRender, );
+
+		m_pRender->BeginDrawRect(this->GetRect(true));
+		{
 			// [1] Erase background color
-			this->DrawEraseBackground(&m_render);
+			this->DrawEraseBackground(m_pRender);
 
 			// [2] Draw background combobox
-			this->DrawFillBackground(&m_render);
+			this->DrawFillBackground(m_pRender);
 
-			this->DrawBorderBackground(&m_render);
+			this->DrawBorderBackground(m_pRender);
 
+			this->OnDrawTitleBar();
 
-			for (int i = 0; i < m_items.size(); i++)
-			{
-				DrawItem(i);
-			}
-
-			m_render.Flush(true);
+			this->OnDrawDropDown(false);
 		}
-	}
+		m_pRender->EndDrawRect();
 
-	void OnPaint(PAINTSTRUCT& ps)
-	{
-		this->RecalDropDownButton(ps.rcPaint);
-
-		m_render.Init(ps.hdc, ps.rcPaint);
-		m_render.LoadFont(L"Consolas");
-
-		// [1] Erase background color
-		this->DrawEraseBackground(&m_render);
-
-		// [2] Draw background combobox
-		this->DrawFillBackground(&m_render);
-
-		this->DrawBorderBackground(&m_render);
-
-
-		this->OnPaintTitleBar();
-
-		m_render.Flush(true);
+		if (bDraw)
+		{
+			m_pRender->Flush();
+		}
 	}
 };
 

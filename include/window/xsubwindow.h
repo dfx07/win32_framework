@@ -33,9 +33,7 @@ protected:
 	};
 
 protected:
-	GDIplusCtrlRender	m_render;
 	HDC					m_hdc;
-
 
 	// Window control information
 	int					m_height_title_bar;
@@ -162,8 +160,10 @@ public:
 
 		// Init Gdiplus render control
 		m_hdc = GetDC(m_hWnd);
-		m_render.Init(m_hdc, rect);
-		m_render.LoadFont(L"Consolas");
+		m_pRender = new GDIplusCtrlRender();
+
+		m_pRender->Init(m_hdc, rect);
+		m_pRender->LoadFont(L"Consolas");
 
 		return true;
 	}
@@ -176,6 +176,8 @@ public:
 	virtual void DestroyHandle()
 	{
 		ReleaseDC(m_hWnd, m_hdc);
+
+		SAFE_DELETE(m_pRender);
 
 		// Xử lý hủy mặc định
 		DeleteGDIplus();
@@ -412,7 +414,7 @@ protected:
 			WORD wID = LOWORD(wParam); // item, control, or accelerator identifier
 			LPDRAWITEMSTRUCT pdis = (LPDRAWITEMSTRUCT)lParam;
 			auto pControl = (ControlBase*)(GetWindowLongPtr(pdis->hwndItem, GWLP_USERDATA));
-			if (pControl) pControl->Draw(pdis);
+			if (pControl) pControl->Draw(true);
 			return TRUE;
 		}
 		case WM_MEASUREITEM:
@@ -473,7 +475,7 @@ public:
 		m_background_color = { 24, 26, 27, 255.f };
 		m_title_background_color = { 14, 14, 13, 255 };
 
-		GDIPLUS_DRAW_INFO_PTR pRenderInfo = static_cast<GDIPLUS_DRAW_INFO_PTR>(m_render.RenderInfo());
+		GDIPLUS_DRAW_INFO_PTR pRenderInfo = static_cast<GDIPLUS_DRAW_INFO_PTR>(m_pRender->RenderInfo());
 		NULL_RETURN(pRenderInfo, );
 
 		m_height_title_bar = 18;
@@ -493,41 +495,48 @@ public:
 		Button* btn_close = new Button();
 		btn_close->SetID(IDC_BTN_CLOSE);
 		btn_close->SetLabel(L"x");
+		btn_close->SetPosition(pRenderInfo->rect.Width - (m_height_title_bar) - 2, 2);
 		btn_close->SetBackgroundColor(m_title_background_color);
-		btn_close->SetPosition(pRenderInfo->rect.Width - (m_height_title_bar) -2, 2);
 		btn_close->SetSize(m_height_title_bar, m_height_title_bar -1);
 		AddControl(btn_close);
 	}
 
 	void OnPaintDefault()
 	{
-		GDIPLUS_DRAW_INFO_PTR pRenderInfo = static_cast<GDIPLUS_DRAW_INFO_PTR>(m_render.RenderInfo());
+		NULL_RETURN(m_pRender, );
+
+		GDIPLUS_DRAW_INFO_PTR pRenderInfo = static_cast<GDIPLUS_DRAW_INFO_PTR>(m_pRender->RenderInfo());
 		NULL_RETURN(pRenderInfo, );
 
 		// 0 > Draw background color
 		int iRadiusBorder = 0;
 		// Fill erase background
 		auto rect	 = pRenderInfo->rect;
-		m_render.DrawRectangle(rect, NULL, m_background_color.wrefcol, iRadiusBorder);
+		m_pRender->DrawRectangle(rect, NULL, m_background_color.wrefcol, iRadiusBorder);
 
 		// Fill rectangle background;
 		rect.Width	-= 1;
 		rect.Height -= 1;
 		Gdiplus::Pen pen_back(Gdiplus::Color(255, 255, 255), 1);
-		m_render.DrawRectangle(rect, &pen_back, nullptr, iRadiusBorder);
+		m_pRender->DrawRectangle(rect, &pen_back, nullptr, iRadiusBorder);
 
 		// 1 > Draw title bar
 		Gdiplus::SolidBrush brush_title(m_title_background_color.wrefcol);
-		m_render.DrawRectangle(m_rect_title, NULL, &brush_title, 0);
+		m_pRender->DrawRectangle(m_rect_title, NULL, &brush_title, 0);
 
 		Gdiplus::StringFormat format;
 		format.SetAlignment(Gdiplus::StringAlignmentNear);
 		format.SetLineAlignment(Gdiplus::StringAlignmentCenter);
 
 		Gdiplus::SolidBrush text_normal_color(Gdiplus::Color(255, 255, 255));
-		m_render.DrawTextRect(m_rect_title, m_CurStatus.m_title.c_str(), &text_normal_color, &format, Gdiplus::PointF(m_height_title_bar + 1, 0));
+		m_pRender->DrawTextRect(m_rect_title, m_CurStatus.m_title.c_str(), &text_normal_color, &format, Gdiplus::PointF(m_height_title_bar + 1, 0));
 
-		m_render.Flush();
+		for (int i = 0; i < m_ControlList.size(); i++)
+		{
+			m_ControlList[i]->Draw(false);
+		}
+
+		m_pRender->Flush();
 	}
 
 	/*******************************************************************************
@@ -541,7 +550,15 @@ public:
 
 		if (pControlRectUI)
 		{
-			pControlRectUI->SetEraseBackgroundColor(m_background_color);
+			if (pControl->GetID() == IDC_BTN_MINIMIZE || 
+				pControl->GetID() == IDC_BTN_CLOSE)
+			{
+				pControlRectUI->SetEraseBackgroundColor(m_title_background_color);
+			}
+			else
+			{
+				pControlRectUI->SetEraseBackgroundColor(m_background_color);
+			}
 		}
 
 		if (pControl->GetType() == ControlType::CHECKBOX)
@@ -569,6 +586,8 @@ public:
 		{
 			if (!m_ControlList[i]->IsCreated())
 			{
+				m_ControlList[i]->SetRenderControl(m_pRender);
+
 				int iNextControlID = m_ControlList[i]->Create(m_hWnd, m_uiControlIDs);
 
 				if (iNextControlID == m_uiControlIDs)

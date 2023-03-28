@@ -532,6 +532,7 @@ protected:
 
 	bool						m_bClosed;
 
+	GDIplusCtrlRender*			m_pRender = nullptr;
 public:
 	WindowBase(): XControl(), 
 		m_uiControlIDs(1000), m_zDeltaScroll(0), m_bClosed(false),
@@ -919,6 +920,8 @@ public:
 		// if existed window handle then initiation control
 		else
 		{
+			control->SetRenderControl(m_pRender);
+
 			auto uiNextControlID = control->Create(m_hWnd, m_uiControlIDs);
 			if (uiNextControlID != m_uiControlIDs)
 			{

@@ -42,6 +42,16 @@ protected:
 		return rect;
 	}
 
+	/***************************************************************************
+	*! @brief  : Get current cursor position [Center]
+	*! @return : true : ok | false : not ok
+	*! @author : thuong.nv          - [Date] : 05/03/2023
+	***************************************************************************/
+	virtual void SetRenderControl(GDIplusCtrlRender* pRender)
+	{
+		m_pRender = pRender;
+	}
+
 protected:
 	/***************************************************************************
 	*! @brief  : Get current cursor position [Center]
@@ -62,7 +72,7 @@ protected:
 	*! @return : true : ok | false : not ok
 	*! @author : thuong.nv          - [Date] : 05/03/2023
 	***************************************************************************/
-	virtual void Draw(LPDRAWITEMSTRUCT& ){};
+	virtual void Draw(bool bDraw = false ){};
 
 	/***************************************************************************
 	*! @brief  : Active when user use BS_OWNERDRAW control
@@ -118,6 +128,28 @@ protected:
 		}
 	}
 
+	/***************************************************************************
+	*! @brief  : Get current cursor position in parent window [left - top]
+	*! @return : void
+	*! @author : thuong.nv          - [Date] : 05/03/2023
+	***************************************************************************/
+	bool GetCursorPosInParent(long& xpos, long& ypos)
+	{
+		POINT cursor_pos = get_cursor_in_screen();
+		if (ScreenToClient(m_hWndPar, &cursor_pos) == TRUE)
+		{
+			xpos = cursor_pos.x;
+			ypos = cursor_pos.y;
+			return true;
+		}
+		else
+		{
+			xpos = 0;
+			ypos = 0;
+			return false;
+		}
+	}
+
 public:
 	/***************************************************************************
 	*! @brief  : Function design pattern init control
@@ -159,6 +191,9 @@ public:
 
 		return uiID;
 	}
+
+public:
+	GDIplusCtrlRender*	m_pRender = nullptr;
 
 	friend class WindowBase;
 	friend class Window;

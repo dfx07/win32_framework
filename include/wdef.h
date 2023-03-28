@@ -18,6 +18,7 @@
 #include <wingdi.h>
 #include <winuser.h>
 #include <assert.h>
+#include <stack>
 
 
 // disable waring visual studio c++14
@@ -546,9 +547,25 @@ public:
 		this->CreateRender(hdc, rect);
 	}
 
-	Gdiplus::Rect GetRect()
+	Gdiplus::Rect GetDrawRect()
 	{
 		return m_pRender->rect;
+	}
+
+	void BeginDrawRect(const RECT& rect)
+	{
+		m_stackRect.push(m_pRender->rect);
+		m_pRender->rect = ConvertToGdiplusRect(rect);
+	}
+
+	void EndDrawRect()
+	{
+		// restore draw view old -> check set draw rect
+		if (!m_stackRect.empty())
+		{
+			m_pRender->rect = m_stackRect.top();
+			m_stackRect.pop();
+		}
 	}
 
 public:
@@ -565,6 +582,13 @@ public:
 		BitBlt(m_origDrawInfo.hDC, 0, 0, m_origDrawInfo.rect.right - m_origDrawInfo.rect.left,
 			m_origDrawInfo.rect.bottom - m_origDrawInfo.rect.top, m_DrawInfo.hDC, 0, 0, SRCCOPY);
 
+		// restore draw view old -> check set draw rect
+		if (!m_stackRect.empty())
+		{
+			m_pRender->rect = m_stackRect.top();
+			m_stackRect.pop();
+		}
+
 		// all done, now we need to cleanup
 		if (bDestroy)
 		{
@@ -576,7 +600,7 @@ public:
 private:
 	static Gdiplus::Rect ConvertToGdiplusRect(const RECT& rect, const int offset_x = 0, const int offset_y = 0)
 	{
-		return Gdiplus::Rect(rect.left, rect.top, rect.right + offset_x, rect.bottom + offset_y);
+		return Gdiplus::Rect(rect.left, rect.top, (rect.right - rect.left) + offset_x, (rect.bottom - rect.top )+ offset_y);
 	}
 
 	static Gdiplus::RectF Rect2RectF(const Gdiplus::Rect* rect)
@@ -783,8 +807,9 @@ private:
 	GDI_DRAW_INFO			m_DrawInfo;
 
 private:
-	GDIPLUS_DRAW_INFO_PTR	m_pRender;
-	Gdiplus::Font*			m_font_render;
+	GDIPLUS_DRAW_INFO_PTR		m_pRender;
+	Gdiplus::Font*				m_font_render;
+	std::stack<Gdiplus::Rect>	m_stackRect;
 };
 
 /**********************************************************************************

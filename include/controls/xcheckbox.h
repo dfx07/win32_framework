@@ -25,8 +25,6 @@ private:
 	std::wstring		m_sLabel;
 	bool				m_bChecked;
 
-	GDIplusCtrlRender	m_render;
-
 	Gdiplus::Bitmap*	m_image_check;
 	Gdiplus::Bitmap*	m_image_uncheck;
 
@@ -133,6 +131,7 @@ protected:
 	virtual int OnInitControl()
 	{
 		DWORD style = WS_VISIBLE | WS_CHILD | BS_AUTOCHECKBOX | BS_OWNERDRAW;
+		//style = ~WS_VISIBLE;
 
 		CalcTextSize(m_rect.width, m_rect.height);
 
@@ -199,7 +198,7 @@ protected:
 	void UpdateCheck()
 	{
 		m_bChecked = !m_bChecked;
-		InvalidateRect(m_hWnd, NULL, FALSE);
+		this->Draw(m_pRender);
 	}
 
 public:
@@ -212,11 +211,13 @@ public:
 		}
 	}
 
-	void Draw(LPDRAWITEMSTRUCT& pdis)
+	virtual void Draw(bool bDraw = false)
 	{
-		//TODO : draw use swap buffer image (hdc) -> not draw each element (OK)
-		m_render.Init(pdis->hDC, pdis->rcItem);
-		m_render.LoadFont(L"Segoe UI");
+		NULL_RETURN(m_pRender, );
+
+		m_pRender->BeginDrawRect(this->GetRect(true));
+
+		Gdiplus::Rect rect = m_pRender->GetDrawRect();
 
 		this->CreateColorButton();
 
@@ -224,24 +225,13 @@ public:
 		const unsigned int iRadius		= m_property.border_radius;
 		const unsigned int iBorderWidth = m_property.border_width;
 
-		// Fill erase background
-		Gdiplus::Rect rect = ConvertToRect(pdis->rcItem);
-		rect.X		-= 1;
-		rect.Y		-= 1;
-		rect.Width	+= 1;
-		rect.Height += 1;
-		m_render.DrawRectangle(rect, NULL, m_property.m_erase_color.wrefcol, 0);
-
 		// Fill rectangle background;
-		rect = ConvertToRect(pdis->rcItem);
+		rect		 = m_pRender->GetDrawRect();
 		rect.X		+= 2;
 		rect.Y		+= 2;
 		rect.Width	-= iBorderWidth + 3;
 		rect.Height -= iBorderWidth + 3;
-		m_render.DrawRectangle(rect, NULL,m_property.m_background_color.wrefcol, iRadius);
-
-		//Gdiplus::Pen pen(, iBorderWidth);
-		//m_render.DrawRectangleFull(iBorderWidth > 0 ? &pen : NULL, m_background_normal, iRadius);
+		m_pRender->DrawRectangle(rect, nullptr,m_property.m_background_color.wrefcol, iRadius);
 
 		// [2] Draw image check
 		if (m_bChecked)
@@ -251,7 +241,7 @@ public:
 				GdiplusEx::ImageFormat imgformat;
 				imgformat.SetVerticalAlignment(GdiplusEx::ImageAlignment::ImageAlignmentNear);
 				imgformat.SetHorizontalAlignment(GdiplusEx::ImageAlignment::ImageAlignmentCenter);
-				m_render.DrawImageFullRect(m_image_check, &imgformat, Gdiplus::PointF(2, 0));
+				m_pRender->DrawImageFullRect(m_image_check, &imgformat, Gdiplus::PointF(2, 0));
 			}
 		}
 		else
@@ -261,7 +251,7 @@ public:
 				GdiplusEx::ImageFormat imgformat;
 				imgformat.SetVerticalAlignment(GdiplusEx::ImageAlignment::ImageAlignmentNear);
 				imgformat.SetHorizontalAlignment(GdiplusEx::ImageAlignment::ImageAlignmentCenter);
-				m_render.DrawImageFullRect(m_image_uncheck, &imgformat, Gdiplus::PointF(2, 0));
+				m_pRender->DrawImageFullRect(m_image_uncheck, &imgformat, Gdiplus::PointF(2, 0));
 			}
 		}
 
@@ -271,9 +261,14 @@ public:
 		format.SetLineAlignment(Gdiplus::StringAlignmentCenter);
 
 		Gdiplus::SolidBrush normal_textcolor(Gdiplus::Color(m_property.text_color.wrefcol)); // color text normal
-		m_render.DrawTextFullRect(m_sLabel.c_str(), &normal_textcolor, &format, Gdiplus::PointF(20, 0));
+		m_pRender->DrawTextFullRect(m_sLabel.c_str(), &normal_textcolor, &format, Gdiplus::PointF(20, 0));
 
-		m_render.Flush(true);
+		m_pRender->EndDrawRect();
+
+		if (bDraw)
+		{
+			m_pRender->Flush();
+		}
 	}
 };
 ____END_NAMESPACE____

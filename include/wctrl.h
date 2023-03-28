@@ -206,6 +206,44 @@ public:
 	***************************************************************************/
 	virtual int GetHeight() { return m_rect.height; }
 
+	/***************************************************************************
+	*! @brief  : Get current cursor position [Center]
+	*! @return : true : ok | false : not ok
+	*! @author : thuong.nv          - [Date] : 05/03/2023
+	***************************************************************************/
+	virtual RECT GetRect(bool bWithParent = true)
+	{
+		RECT rect = { 0 ,0 ,0 ,0 };
+		NULL_RETURN(m_hWnd, rect);
+		::GetWindowRect(m_hWnd, &rect);
+
+		if (bWithParent)
+		{
+			MapWindowPoints(HWND_DESKTOP, m_hWndPar, (LPPOINT)&rect, 2);
+		}
+
+		return rect;
+	}
+
+	/***************************************************************************
+	*! @brief  : Get current cursor position [Center]
+	*! @return : true : ok | false : not ok
+	*! @author : thuong.nv          - [Date] : 05/03/2023
+	***************************************************************************/
+	virtual RECT GetRect(HWND hwnd, bool bWithParent = true)
+	{
+		RECT rect = { 0 ,0 ,0 ,0 };
+		NULL_RETURN(hwnd, rect);
+		::GetWindowRect(hwnd, &rect);
+
+		if (bWithParent)
+		{
+			MapWindowPoints(HWND_DESKTOP, m_hWndPar, (LPPOINT)&rect, 2);
+		}
+
+		return rect;
+	}
+
 public:
 	/***************************************************************************
 	*! @brief  : send message window
@@ -326,7 +364,7 @@ protected:
 	void DrawEraseBackground(GDIplusCtrlRender*	render, Gdiplus::Brush* brush = NULL)
 	{
 		// Fill erase background
-		Gdiplus::Rect rect = render->GetRect();
+		Gdiplus::Rect rect = render->GetDrawRect();
 		rect.X		-= 1;
 		rect.Y		-= 1;
 		rect.Width  += 1;
@@ -345,23 +383,17 @@ protected:
 	void DrawFillBackground(GDIplusCtrlRender*	render, Gdiplus::Brush* brush = NULL)
 	{
 		// Fill erase background
-		Gdiplus::Rect rect = render->GetRect();
+		Gdiplus::Rect rect = render->GetDrawRect();
 
 		int iBorderWidth = m_property.border_width;
 
 		if (iBorderWidth <= 0)
 		{
-			rect.X -= 1;
-			rect.Y -= 1;
-
-			rect.Width  -= iBorderWidth - 1;
-			rect.Height -= iBorderWidth - 1;
+			rect.Width  -= 1;
+			rect.Height -= 1;
 		}
 		else
 		{
-			rect.X += 1;
-			rect.Y += 1;
-
 			rect.Width	-= iBorderWidth +1;
 			rect.Height -= iBorderWidth +1;
 		}
@@ -384,7 +416,7 @@ protected:
 
 		if (iBorderWidth > 0)
 		{
-			Gdiplus::Rect rect = render->GetRect();
+			Gdiplus::Rect rect = render->GetDrawRect();
 
 			rect.X		+= 1;
 			rect.Y		+= 1;

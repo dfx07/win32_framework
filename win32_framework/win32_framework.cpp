@@ -107,16 +107,19 @@ void Create(WindowBase* win)
     //btn->UseEffect(true);
     //sub->AddControl(btn);
 
-
     Combobox* cbb = new Combobox();
     cbb->AddItem(L"select 1", new int(1));
     cbb->AddItem(L"select 2", new int(2));
     cbb->SetSelect(0);
-
-    cbb->SetPosition(90, 90);
+    cbb->SetPosition(10, 60);
     cbb->SetSize(85, 20);
-
     sub->AddControl(cbb);
+
+    chk = new Checkbox();
+    chk->SetText(L"Check box 2");
+    chk->SetPosition(10, 80);
+    chk->SetSize(100, 20);
+    sub->AddControl(chk);
 
     win->AddSubWindow(sub);
 }
