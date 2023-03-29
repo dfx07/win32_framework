@@ -87,15 +87,14 @@ void Create(WindowBase* win)
     chk->SetSize(100, 20);
     sub->AddControl(chk);
 
-    //Button* btn = new Button();
-    //btn->SetLabel(L"Resize");
-    //btn->SetSize(70, 21);
-    //btn->SetPosition(10, 90);
-    //btn->SetBorderRadius(2);
-    //btn->SetBorderWidth(1);
-    //btn->Visible(true);
-    //btn->UseEffect(true);
-    //sub->AddControl(btn);
+    Button* btn = new Button();
+    btn->SetLabel(L"Resize");
+    btn->SetSize(70, 21);
+    btn->SetPosition(10, 130);
+    btn->SetBorderRadius(2);
+    btn->SetBorderWidth(1);
+    btn->UseEffect(true);
+    sub->AddControl(btn);
 
     //btn = new Button();
     //btn->SetLabel(L"Button 2");
@@ -107,19 +106,24 @@ void Create(WindowBase* win)
     //btn->UseEffect(true);
     //sub->AddControl(btn);
 
-    Combobox* cbb = new Combobox();
-    cbb->AddItem(L"select 1", new int(1));
-    cbb->AddItem(L"select 2", new int(2));
-    cbb->SetSelect(0);
-    cbb->SetPosition(10, 60);
-    cbb->SetSize(85, 20);
-    sub->AddControl(cbb);
+    //Combobox* cbb = new Combobox();
+    //cbb->AddItem(L"select 1", new int(1));
+    //cbb->AddItem(L"select 2", new int(2));
+    //cbb->SetSelect(0);
+    //cbb->SetPosition(10, 60);
+    //cbb->SetSize(85, 20);
+    //sub->AddControl(cbb);
 
-    chk = new Checkbox();
-    chk->SetText(L"Check box 2");
-    chk->SetPosition(10, 80);
-    chk->SetSize(100, 20);
-    sub->AddControl(chk);
+    //chk = new Checkbox();
+    //chk->SetText(L"Check box 2");
+    //chk->SetPosition(10, 80);
+    //chk->SetSize(100, 20);
+    //sub->AddControl(chk);
+
+    Label* label = new Label();
+    label->SetText(L"Label select item one");
+    label->SetPosition(10, 100);
+    sub->AddControl(label);
 
     win->AddSubWindow(sub);
 }

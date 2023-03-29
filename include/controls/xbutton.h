@@ -80,13 +80,14 @@ protected:
 
 	virtual void SetDefaultPropertyUI()
 	{
-		m_property.m_hover_color	= std::move(Color4(255, 255, 255));
-		m_property.m_click_color	= std::move(Color4(255, 255, 245));
+		m_property.m_background_color	= std::move(Color4(59, 91, 179));
+		m_property.m_hover_color		= std::move(Color4(100, 110, 217));
+		m_property.m_click_color		= std::move(Color4(255, 255, 245));
 
-		m_property.border_radius	= 0;
-		m_property.border_width		= 0;
-		m_property.text_color		= std::move(Color4(255, 255, 255));
-		m_property.text_hover_color = std::move(Color4(0, 0, 0));
+		m_property.border_radius		= 0;
+		m_property.border_width			= 0;
+		m_property.text_color			= std::move(Color4(255, 255, 255));
+		m_property.text_hover_color		= std::move(Color4(0, 0, 0));
 	}
 
 private:
@@ -197,7 +198,6 @@ private:
 			break;
 		}
 		}
-		std::cout << "BTN :: " << uMsg << std::endl;
 
 		return CallWindowProc(sfunButtonWndProc, hwndBtn, uMsg, wParam, lParam);
 	}
@@ -251,12 +251,10 @@ private:
 				if (this->UpdateX1ThemeEffect())
 				{
 					InvalidateRect(m_hWnd, NULL, FALSE);
-					UpdateWindow(m_hWnd);
 				}
 				else
 				{
 					EndX1ThemeEffect();
-					InvalidateRect(m_hWnd, NULL, FALSE);
 				}
 				break;
 			}
@@ -270,80 +268,75 @@ protected:
 		NULL_RETURN(m_pRender, );
 
 		m_pRender->BeginDrawRect(this->GetRect(true));
-
-		Gdiplus::Rect rect = m_pRender->GetDrawRect();
-
-		// [2] Draw color button state
-		const unsigned int iRadius      = m_property.border_radius;
-		const unsigned int iBorderWidth = m_property.border_width;
-
-		Gdiplus::Brush* background_color = NULL;
-		Gdiplus::Pen*	pen_color		 = NULL;
-
-		if (m_eState == BtnState::Click)
 		{
-			background_color = new Gdiplus::SolidBrush(m_property.m_click_color.wrefcol);
-			pen_color = new Gdiplus::Pen(Gdiplus::Color(255, 98, 162, 228), iBorderWidth);
+			Gdiplus::Rect rect = m_pRender->GetDrawRect();
+
+			// [2] Draw color button state
+			const unsigned int iRadius = m_property.border_radius;
+			const unsigned int iBorderWidth = m_property.border_width;
+
+			Gdiplus::Brush* background_color = NULL;
+			Gdiplus::Pen* pen_color = NULL;
+
+			if (m_eState == BtnState::Click)
+			{
+				background_color = new Gdiplus::SolidBrush(m_property.m_click_color.wrefcol);
+				pen_color = new Gdiplus::Pen(Gdiplus::Color(255, 98, 162, 228), iBorderWidth);
+			}
+			else if (m_eState == BtnState::Hover)
+			{
+				background_color = new Gdiplus::SolidBrush(m_property.m_hover_color.wrefcol);
+				pen_color = new Gdiplus::Pen(m_property.m_background_color.wrefcol, iBorderWidth);
+			}
+			else
+			{
+				background_color = new Gdiplus::SolidBrush(m_cur_background_color);
+				pen_color = new Gdiplus::Pen(Gdiplus::Color(255, 255, 255, 253), iBorderWidth);
+			}
+
+			// Fill erase background
+			this->DrawEraseBackground(m_pRender);
+
+			// Fill rectangle background;
+			this->DrawFillBackground(m_pRender, background_color);
+
+			// Draw rectangle background;
+			this->DrawBorderBackground(m_pRender, pen_color);
+
+			SAFE_DELETE(pen_color);
+			SAFE_DELETE(background_color);
+
+			// [2] Draw image
+			if (m_image)
+			{
+				GdiplusEx::ImageFormat imgformat;
+				imgformat.SetVerticalAlignment(GdiplusEx::ImageAlignment::ImageAlignmentNear);
+				imgformat.SetHorizontalAlignment(GdiplusEx::ImageAlignment::ImageAlignmentCenter);
+				m_pRender->DrawImageFullRect(m_image, &imgformat);
+			}
+
+			// [3] Draw text for button
+			Gdiplus::StringFormat format;
+			format.SetAlignment(Gdiplus::StringAlignmentCenter);
+			format.SetLineAlignment(Gdiplus::StringAlignmentCenter);
+
+			if (m_eState == BtnState::Hover)
+			{
+				Gdiplus::SolidBrush hover_textcolor(Gdiplus::Color(m_property.text_hover_color.wrefcol));
+				m_pRender->DrawTextFullRect(this->m_sLabel.c_str(), &hover_textcolor, &format);
+			}
+			else if (m_eState == BtnState::Click)
+			{
+				Gdiplus::SolidBrush hover_textcolor(Gdiplus::Color(255, 0, 0));
+				m_pRender->DrawTextFullRect(this->m_sLabel.c_str(), &hover_textcolor, &format);
+			}
+			else
+			{
+				Gdiplus::SolidBrush normal_textcolor(Gdiplus::Color(m_property.text_color.wrefcol));
+				m_pRender->DrawTextFullRect(this->m_sLabel.c_str(), &normal_textcolor, &format);
+			}
 		}
-		else if (m_eState == BtnState::Hover)
-		{
-			background_color = new Gdiplus::SolidBrush(m_property.m_hover_color.wrefcol);
-			pen_color = new Gdiplus::Pen(m_property.m_background_color.wrefcol, iBorderWidth);
-		}
-		else
-		{
-			background_color = new Gdiplus::SolidBrush(m_cur_background_color);
-			pen_color = new Gdiplus::Pen(Gdiplus::Color(255, 255, 255, 253), iBorderWidth);
-		}
-
-		// Fill erase background
-		this->DrawEraseBackground(m_pRender);
-
-		// Fill rectangle background;
-		this->DrawFillBackground(m_pRender, background_color);
-
-		// Draw rectangle background;
-		this->DrawBorderBackground(m_pRender, pen_color);
-
-		SAFE_DELETE(pen_color);
-		SAFE_DELETE(background_color);
-
-		// [2] Draw image
-		if (m_image)
-		{
-			GdiplusEx::ImageFormat imgformat;
-			imgformat.SetVerticalAlignment(GdiplusEx::ImageAlignment::ImageAlignmentNear);
-			imgformat.SetHorizontalAlignment(GdiplusEx::ImageAlignment::ImageAlignmentCenter);
-			m_pRender->DrawImageFullRect(m_image, &imgformat);
-		}
-
-		// [3] Draw text for button
-		Gdiplus::StringFormat format;
-		format.SetAlignment(Gdiplus::StringAlignmentCenter);
-		format.SetLineAlignment(Gdiplus::StringAlignmentCenter);
-
-		if (m_eState == BtnState::Hover)
-		{
-			Gdiplus::SolidBrush hover_textcolor(Gdiplus::Color(m_property.text_hover_color.wrefcol));
-			m_pRender->DrawTextFullRect(this->m_sLabel.c_str(), &hover_textcolor, &format);
-		}
-		else if (m_eState == BtnState::Click)
-		{
-			Gdiplus::SolidBrush hover_textcolor(Gdiplus::Color(255, 0, 0));
-			m_pRender->DrawTextFullRect(this->m_sLabel.c_str(), &hover_textcolor, &format);
-		}
-		else
-		{
-			Gdiplus::SolidBrush normal_textcolor(Gdiplus::Color(m_property.text_color.wrefcol));
-			m_pRender->DrawTextFullRect(this->m_sLabel.c_str(), &normal_textcolor, &format);
-		}
-
-		m_pRender->EndDrawRect();
-
-		if (bDraw)
-		{
-			m_pRender->Flush();
-		}
+		m_pRender->EndDrawRect(bDraw);
 	}
 
 public:

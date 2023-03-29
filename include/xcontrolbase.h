@@ -193,7 +193,7 @@ public:
 	}
 
 public:
-	GDIplusCtrlRender*	m_pRender = nullptr;
+	GDIplusCtrlRender*	m_pRender = nullptr;  // render draw parent
 
 	friend class WindowBase;
 	friend class Window;

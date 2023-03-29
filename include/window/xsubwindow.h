@@ -475,7 +475,7 @@ public:
 		m_background_color = { 24, 26, 27, 255.f };
 		m_title_background_color = { 14, 14, 13, 255 };
 
-		GDIPLUS_DRAW_INFO_PTR pRenderInfo = static_cast<GDIPLUS_DRAW_INFO_PTR>(m_pRender->RenderInfo());
+		GDIPLUS_DRAW_INFO_PTR pRenderInfo = static_cast<GDIPLUS_DRAW_INFO_PTR>(m_pRender->Render());
 		NULL_RETURN(pRenderInfo, );
 
 		m_height_title_bar = 18;
@@ -505,7 +505,7 @@ public:
 	{
 		NULL_RETURN(m_pRender, );
 
-		GDIPLUS_DRAW_INFO_PTR pRenderInfo = static_cast<GDIPLUS_DRAW_INFO_PTR>(m_pRender->RenderInfo());
+		GDIPLUS_DRAW_INFO_PTR pRenderInfo = static_cast<GDIPLUS_DRAW_INFO_PTR>(m_pRender->Render());
 		NULL_RETURN(pRenderInfo, );
 
 		// 0 > Draw background color
@@ -561,7 +561,8 @@ public:
 			}
 		}
 
-		if (pControl->GetType() == ControlType::CHECKBOX)
+		if (pControl->GetType() == ControlType::CHECKBOX ||
+			pControl->GetType() == ControlType::LABEL)
 		{
 			pControlRectUI->SetBackgroundColor(m_background_color);
 		}

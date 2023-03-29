@@ -19,6 +19,7 @@
 #include <winuser.h>
 #include <assert.h>
 #include <stack>
+#include <iostream>
 
 
 // disable waring visual studio c++14
@@ -532,14 +533,14 @@ public:
 	{
 		if (m_pRender->render != NULL)
 		{
-			return &m_pRender;
+			return m_pRender;
 		}
 		return NULL;
 	}
 
-	void* RenderInfo()
+	HDC GetHDC()
 	{
-		return m_pRender;
+		return m_DrawInfo.hDC;
 	}
 
 	void Init(const HDC& hdc, const RECT& rect)
@@ -558,13 +559,19 @@ public:
 		m_pRender->rect = ConvertToGdiplusRect(rect);
 	}
 
-	void EndDrawRect()
+	void EndDrawRect(bool bDraw = false)
 	{
 		// restore draw view old -> check set draw rect
 		if (!m_stackRect.empty())
 		{
 			m_pRender->rect = m_stackRect.top();
 			m_stackRect.pop();
+		}
+
+		// handle instant drawing immediately.
+		if (bDraw)
+		{
+			Flush();
 		}
 	}
 
@@ -581,13 +588,6 @@ public:
 		// TODO: http://www.winprog.org/tutorial/transparency.html
 		BitBlt(m_origDrawInfo.hDC, 0, 0, m_origDrawInfo.rect.right - m_origDrawInfo.rect.left,
 			m_origDrawInfo.rect.bottom - m_origDrawInfo.rect.top, m_DrawInfo.hDC, 0, 0, SRCCOPY);
-
-		// restore draw view old -> check set draw rect
-		if (!m_stackRect.empty())
-		{
-			m_pRender->rect = m_stackRect.top();
-			m_stackRect.pop();
-		}
 
 		// all done, now we need to cleanup
 		if (bDestroy)
@@ -713,6 +713,21 @@ private:
 
 // Draw function
 public:
+	Gdiplus::RectF MeasureString(const wchar_t* str, const int length, const Gdiplus::StringFormat* stringFormat = NULL)
+	{
+		Gdiplus::RectF rect = { 0, 0 ,0 ,0 };
+
+		NULL_RETURN(m_pRender->render, rect);
+
+		Gdiplus::PointF oriPoint{0,0};
+
+		if (Gdiplus::Status::Ok != m_pRender->render->MeasureString(str, length, m_font_render, oriPoint, &rect))
+		{
+			std::cerr << " MeasureString failed !" << std::endl;
+		}
+
+		return rect;
+	}
 
 	void DrawRectangle(const Gdiplus::Rect& rect, const Gdiplus::Pen* pen, const Gdiplus::ARGB& brush, int radius)
 	{

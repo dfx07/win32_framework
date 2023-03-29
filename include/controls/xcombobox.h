@@ -34,7 +34,7 @@ class Dllexport Combobox : public ControlBase , public ControlRectUI
 	enum { WIDTH_DEF = 100 };
 	enum { HEIGHT_DEF = 50 };
 
-	enum CBB_State
+	enum class CBB_State
 	{
 		NORMAL  ,
 		DROPDOWN,
@@ -88,7 +88,7 @@ public:
 		m_bEditText		= false;
 		m_iSelected		= -1;
 
-		m_eState		= NORMAL;
+		m_eState		= CBB_State::NORMAL;
 		m_iItemHover	= -1;
 		m_dropdown_leave = false;
 
@@ -554,11 +554,11 @@ protected:
 		{
 			case CBB_EVT_DROPDOWN:
 			{
-				m_eState = (m_eState == NORMAL)? DROPDOWN : NORMAL;
+				m_eState = (m_eState == CBB_State::NORMAL)? CBB_State::DROPDOWN : CBB_State::NORMAL;
 
-				::ShowWindow(m_hWndDropDown, (m_eState == NORMAL) ? SW_HIDE : SW_SHOW);
+				::ShowWindow(m_hWndDropDown, (m_eState == CBB_State::NORMAL) ? SW_HIDE : SW_SHOW);
 
-				if (m_eState == DROPDOWN)
+				if (m_eState == CBB_State::DROPDOWN)
 				{
 					InvalidateRect(m_hWndDropDown, NULL, FALSE);
 				}
@@ -585,7 +585,7 @@ protected:
 
 				if (m_iSelected >= 0)
 				{
-					m_eState = NORMAL;
+					m_eState = CBB_State::NORMAL;
 					::ShowWindow(m_hWndDropDown, SW_HIDE);
 					InvalidateRect(m_hWndPar, NULL, FALSE);
 
@@ -631,7 +631,7 @@ public:
 		format.SetAlignment(Gdiplus::StringAlignmentCenter);
 		format.SetLineAlignment(Gdiplus::StringAlignmentCenter);
 
-		std::wstring text_dropdown = (m_eState == NORMAL)? L"▼": L"▲";
+		std::wstring text_dropdown = (m_eState == CBB_State::NORMAL)? L"▼": L"▲";
 		Gdiplus::SolidBrush dropdown_color(Gdiplus::Color(m_property.text_color.wrefcol));
 		m_pRender->DrawTextRect(m_rect_btn_dropdown, text_dropdown.c_str(), &dropdown_color, &format);
 
@@ -687,7 +687,7 @@ public:
 
 		m_pRender->BeginDrawRect(this->GetRect(m_hWndDropDown, true));
 		{
-			if (m_eState == DROPDOWN)
+			if (m_eState == CBB_State::DROPDOWN)
 			{
 				// [1] Erase background color
 				this->DrawEraseBackground(m_pRender);
@@ -703,12 +703,7 @@ public:
 				}
 			}
 		}
-		m_pRender->EndDrawRect();
-
-		if (bDraw)
-		{
-			m_pRender->Flush();
-		}
+		m_pRender->EndDrawRect(bDraw);
 	}
 
 	virtual void Draw(bool bDraw = false)
@@ -729,12 +724,7 @@ public:
 
 			this->OnDrawDropDown(false);
 		}
-		m_pRender->EndDrawRect();
-
-		if (bDraw)
-		{
-			m_pRender->Flush();
-		}
+		m_pRender->EndDrawRect(bDraw);
 	}
 };
 

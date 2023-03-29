@@ -158,12 +158,12 @@ protected:
 		{
 		case WM_MOUSEMOVE:
 		{
-			InvalidateRect(hwndChk, NULL, FALSE);
+			//InvalidateRect(hwndChk, NULL, FALSE);
 			break;
 		}
 		case WM_MOUSELEAVE:
 		{
-			InvalidateRect(hwndChk, NULL, FALSE);
+			//InvalidateRect(hwndChk, NULL, FALSE);
 			break;
 		}
 		case WM_TIMER:
@@ -216,59 +216,54 @@ public:
 		NULL_RETURN(m_pRender, );
 
 		m_pRender->BeginDrawRect(this->GetRect(true));
-
-		Gdiplus::Rect rect = m_pRender->GetDrawRect();
-
-		this->CreateColorButton();
-
-		// [2] Draw color button state
-		const unsigned int iRadius		= m_property.border_radius;
-		const unsigned int iBorderWidth = m_property.border_width;
-
-		// Fill rectangle background;
-		rect		 = m_pRender->GetDrawRect();
-		rect.X		+= 2;
-		rect.Y		+= 2;
-		rect.Width	-= iBorderWidth + 3;
-		rect.Height -= iBorderWidth + 3;
-		m_pRender->DrawRectangle(rect, nullptr,m_property.m_background_color.wrefcol, iRadius);
-
-		// [2] Draw image check
-		if (m_bChecked)
 		{
-			if (m_image_check)
+			Gdiplus::Rect rect = m_pRender->GetDrawRect();
+
+			this->CreateColorButton();
+
+			// [2] Draw color button state
+			const unsigned int iRadius = m_property.border_radius;
+			const unsigned int iBorderWidth = m_property.border_width;
+
+			// Fill rectangle background;
+			rect = m_pRender->GetDrawRect();
+			rect.X += 2;
+			rect.Y += 2;
+			rect.Width -= iBorderWidth + 3;
+			rect.Height -= iBorderWidth + 3;
+			m_pRender->DrawRectangle(rect, nullptr, m_property.m_background_color.wrefcol, iRadius);
+
+			// [2] Draw image check
+			if (m_bChecked)
 			{
-				GdiplusEx::ImageFormat imgformat;
-				imgformat.SetVerticalAlignment(GdiplusEx::ImageAlignment::ImageAlignmentNear);
-				imgformat.SetHorizontalAlignment(GdiplusEx::ImageAlignment::ImageAlignmentCenter);
-				m_pRender->DrawImageFullRect(m_image_check, &imgformat, Gdiplus::PointF(2, 0));
+				if (m_image_check)
+				{
+					GdiplusEx::ImageFormat imgformat;
+					imgformat.SetVerticalAlignment(GdiplusEx::ImageAlignment::ImageAlignmentNear);
+					imgformat.SetHorizontalAlignment(GdiplusEx::ImageAlignment::ImageAlignmentCenter);
+					m_pRender->DrawImageFullRect(m_image_check, &imgformat, Gdiplus::PointF(2, 0));
+				}
 			}
-		}
-		else
-		{
-			if (m_image_uncheck)
+			else
 			{
-				GdiplusEx::ImageFormat imgformat;
-				imgformat.SetVerticalAlignment(GdiplusEx::ImageAlignment::ImageAlignmentNear);
-				imgformat.SetHorizontalAlignment(GdiplusEx::ImageAlignment::ImageAlignmentCenter);
-				m_pRender->DrawImageFullRect(m_image_uncheck, &imgformat, Gdiplus::PointF(2, 0));
+				if (m_image_uncheck)
+				{
+					GdiplusEx::ImageFormat imgformat;
+					imgformat.SetVerticalAlignment(GdiplusEx::ImageAlignment::ImageAlignmentNear);
+					imgformat.SetHorizontalAlignment(GdiplusEx::ImageAlignment::ImageAlignmentCenter);
+					m_pRender->DrawImageFullRect(m_image_uncheck, &imgformat, Gdiplus::PointF(2, 0));
+				}
 			}
+
+			// [3] Draw text for button
+			Gdiplus::StringFormat format;
+			format.SetAlignment(Gdiplus::StringAlignmentNear);
+			format.SetLineAlignment(Gdiplus::StringAlignmentCenter);
+
+			Gdiplus::SolidBrush normal_textcolor(Gdiplus::Color(m_property.text_color.wrefcol)); // color text normal
+			m_pRender->DrawTextFullRect(m_sLabel.c_str(), &normal_textcolor, &format, Gdiplus::PointF(20, 0));
 		}
-
-		// [3] Draw text for button
-		Gdiplus::StringFormat format;
-		format.SetAlignment(Gdiplus::StringAlignmentNear);
-		format.SetLineAlignment(Gdiplus::StringAlignmentCenter);
-
-		Gdiplus::SolidBrush normal_textcolor(Gdiplus::Color(m_property.text_color.wrefcol)); // color text normal
-		m_pRender->DrawTextFullRect(m_sLabel.c_str(), &normal_textcolor, &format, Gdiplus::PointF(20, 0));
-
-		m_pRender->EndDrawRect();
-
-		if (bDraw)
-		{
-			m_pRender->Flush();
-		}
+		m_pRender->EndDrawRect(bDraw);
 	}
 };
 ____END_NAMESPACE____

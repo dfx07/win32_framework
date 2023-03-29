@@ -558,7 +558,7 @@ public:
 
         for (int i = 0; i < m_data_list.size(); i++)
         {
-            if (m_data_list[i].pause) continue;
+            if(m_data_list[i].pause) continue;
 
             m_bPause = false;
 
@@ -567,7 +567,11 @@ public:
             duration = m_data_list[i].duration;
 
             auto _action = std::static_pointer_cast<EasingAction>(m_data_list[i].action);
-            if (nullptr == _action) continue;
+            if (nullptr == _action)
+            {
+                m_data_list[i].pause = true;
+                continue;
+            }
 
             cumula_map = math::hard_map(m_dCumulativeTime, 0.f, duration, EASING_STANDTIME_START, EASING_STANDTIME_END, EASING_EPSILON);
 
@@ -585,9 +589,12 @@ public:
                     break;
             }
 
-            value = math::soft_map(value, EASING_STANDTIME_START, EASING_STANDTIME_END, from, to, EASING_EPSILON);
+            m_data_list[i].value = math::soft_map(value, EASING_STANDTIME_START, EASING_STANDTIME_END, from, to, EASING_EPSILON);
 
-            m_data_list[i].value = value;
+            if (m_dCumulativeTime > duration)
+            {
+                m_data_list[i].pause = true;
+            }
         }
     }
 
