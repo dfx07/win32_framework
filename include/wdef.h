@@ -1,4 +1,4 @@
-////////////////////////////////////////////////////////////////////////////////////
+﻿////////////////////////////////////////////////////////////////////////////////////
 /*!*********************************************************************************
 * @Copyright (C) 2021-2022 thuong.nv <thuong.nv.mta@gmail.com>
 *            All rights reserved.
@@ -713,6 +713,28 @@ private:
 
 // Draw function
 public:
+	Gdiplus::RectF GetRectWchar(const wchar_t ch, const Gdiplus::RectF& rectLayout, Gdiplus::StringFormat* stringFormat)
+	{
+		Gdiplus::RectF rect = { 0, 0 ,0 ,0 };
+		NULL_RETURN(m_pRender->render, rect);
+
+		Gdiplus::CharacterRange charRanges(0, 1);
+		stringFormat->SetMeasurableCharacterRanges(1, &charRanges);
+
+		int count = stringFormat->GetMeasurableCharacterRangeCount();
+		Gdiplus::Region pCharRangeRegions;
+
+		if (m_pRender->render->MeasureCharacterRanges(&ch, 1, m_font_render, rectLayout, stringFormat, 1, &pCharRangeRegions)
+			== Gdiplus::Ok)
+		{
+			pCharRangeRegions.GetBounds (&rect, m_pRender->render);
+
+			Gdiplus::SolidBrush redBrush(Gdiplus::Color(100, 255, 0, 0));
+			m_pRender->render->FillRegion(&redBrush, &pCharRangeRegions);
+		}
+		return rect;
+	}
+
 	Gdiplus::RectF MeasureString(const wchar_t* str, const int length, const Gdiplus::StringFormat* stringFormat = NULL)
 	{
 		Gdiplus::RectF rect = { 0, 0 ,0 ,0 };
@@ -721,12 +743,23 @@ public:
 
 		Gdiplus::PointF oriPoint{0,0};
 
-		if (Gdiplus::Status::Ok != m_pRender->render->MeasureString(str, length, m_font_render, oriPoint, &rect))
+		if (Gdiplus::Status::Ok != m_pRender->render->MeasureString(str, length, m_font_render, oriPoint, stringFormat, &rect))
 		{
 			std::cerr << " MeasureString failed !" << std::endl;
 		}
 
 		return rect;
+	}
+
+	void DrawRectangle1(const Gdiplus::RectF& rect, const Gdiplus::Pen* pen, const Gdiplus::Brush* brush)
+	{
+		NULL_RETURN(m_pRender->render, );
+
+		//Gdiplus::Brush* pBrush = new Gdiplus::SolidBrush(brush);
+
+		m_pRender->render->DrawRectangle(pen, rect);
+
+		//delete pBrush;
 	}
 
 	void DrawRectangle(const Gdiplus::Rect& rect, const Gdiplus::Pen* pen, const Gdiplus::ARGB& brush, int radius)
@@ -769,6 +802,45 @@ public:
 			funcFillRoundRectangle(m_pRender->render, brush, m_pRender->rect, radius);
 		if(pen)
 			funcDrawRoundRectangle(m_pRender->render, pen, m_pRender->rect, radius);
+	}
+
+	void DrawTextRect(	const Gdiplus::RectF&		 rect,
+						const wchar_t*				 text,
+						const Gdiplus::Brush*		 brush,
+						const Gdiplus::StringFormat* stringFormat = NULL,
+						const Gdiplus::PointF&		 offset = Gdiplus::PointF(0, 0))
+	{
+		if (!m_pRender->render || !brush || !m_font_render) return;
+		Gdiplus::RectF rectf = rect;
+		rectf.X += offset.X;
+		rectf.Y += offset.Y;
+
+		funDrawText(m_pRender->render, &rectf, text, m_font_render, brush, stringFormat);
+	}
+
+	void DrawLine(const Gdiplus::PointF& pStart, const Gdiplus::PointF& pEnd,
+				  const Gdiplus::Pen&	pen)
+	{
+		NULL_RETURN(m_pRender->render, );
+
+		m_pRender->render->DrawLine(&pen, pStart, pEnd);
+	}
+
+	void DrawTextInSideRect(const Gdiplus::RectF&	rect,
+							const Gdiplus::PointF&	ptStartText,
+							const wchar_t*			text,
+							const Gdiplus::Brush*	brush,
+							const Gdiplus::StringFormat* stringFormat = NULL)
+	{
+		Gdiplus::GraphicsPath path;
+		path.AddRectangle(rect);
+
+		Gdiplus::Region region(&path);
+		m_pRender->render->SetClip(rect);
+		{
+			m_pRender->render->DrawString(text, -1, m_font_render, ptStartText, stringFormat, brush);
+		}
+		m_pRender->render->ResetClip();
 	}
 
 	void DrawTextRect(	const Gdiplus::Rect&		 rect,

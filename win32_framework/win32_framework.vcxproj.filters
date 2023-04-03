@@ -98,5 +98,8 @@
     <ClInclude Include="..\include\incl_control.h">
       <Filter>Header Files\ui</Filter>
     </ClInclude>
+    <ClInclude Include="..\include\controls\xtextbox.h">
+      <Filter>Header Files\ui\controls</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

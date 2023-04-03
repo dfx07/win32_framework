@@ -148,6 +148,7 @@
     <ClInclude Include="..\include\controls\xcombobox.h" />
     <ClInclude Include="..\include\controls\xlabel.h" />
     <ClInclude Include="..\include\controls\xmenucontext.h" />
+    <ClInclude Include="..\include\controls\xtextbox.h" />
     <ClInclude Include="..\include\graphics\wtext_render.h" />
     <ClInclude Include="..\include\incl_control.h" />
     <ClInclude Include="..\include\wapi.h" />

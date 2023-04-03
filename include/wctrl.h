@@ -24,6 +24,7 @@ enum class ControlType
 	COMBOBOX	,
 	LABEL		,
 	CHECKBOX	,
+	TEXTBOX		,
 };
 
 // window define type
@@ -283,6 +284,26 @@ public:
 	virtual void  DeleteContext() = 0;
 	virtual bool  MakeContext() = 0;
 	virtual void  SwapBuffer() = 0;
+};
+
+/**********************************************************************************
+* ⮟⮟ Class name: Control base
+* Base class for inherited window controls
+***********************************************************************************/
+class Dllexport RectUI
+{
+	typedef struct tagPadding
+	{
+		float left		= 0;
+		float top		= 0;
+		float right		= 0;
+		float bottom	= 0;
+
+	} RectPadding, RectMargin;
+
+protected:
+
+	RectPadding		m_padding;
 };
 
 /**********************************************************************************

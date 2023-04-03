@@ -80,21 +80,21 @@ void Create(WindowBase* win)
     sub->SetSize(200, 200);
     sub->Visible(true);
 
-    Checkbox* chk = new Checkbox();
+    //Checkbox* chk = new Checkbox();
 
-    chk->SetText(L"Check box");
-    chk->SetPosition(10, 40);
-    chk->SetSize(100, 20);
-    sub->AddControl(chk);
+    //chk->SetText(L"Check box");
+    //chk->SetPosition(10, 40);
+    //chk->SetSize(100, 20);
+    //sub->AddControl(chk);
 
-    Button* btn = new Button();
-    btn->SetLabel(L"Resize");
-    btn->SetSize(70, 21);
-    btn->SetPosition(10, 130);
-    btn->SetBorderRadius(2);
-    btn->SetBorderWidth(1);
-    btn->UseEffect(true);
-    sub->AddControl(btn);
+    //Button* btn = new Button();
+    //btn->SetLabel(L"Resize");
+    //btn->SetSize(70, 21);
+    //btn->SetPosition(10, 130);
+    //btn->SetBorderRadius(2);
+    //btn->SetBorderWidth(1);
+    //btn->UseEffect(true);
+    //sub->AddControl(btn);
 
     //btn = new Button();
     //btn->SetLabel(L"Button 2");
@@ -120,10 +120,16 @@ void Create(WindowBase* win)
     //chk->SetSize(100, 20);
     //sub->AddControl(chk);
 
-    Label* label = new Label();
-    label->SetText(L"Label select item one");
-    label->SetPosition(10, 100);
-    sub->AddControl(label);
+    //Label* label = new Label();
+    //label->SetText(L"Label select item one");
+    //label->SetPosition(10, 100);
+    //sub->AddControl(label);
+
+    Textbox* textbox = new Textbox();
+    textbox->SetPosition(10, 130);
+    textbox->SetText(L"");
+    textbox->SetSize(100, 20);
+    sub->AddControl(textbox);
 
     win->AddSubWindow(sub);
 }

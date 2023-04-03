@@ -16,5 +16,6 @@
 #include "controls/xcheckbox.h"
 #include "controls/xlabel.h"
 #include "controls/xmenucontext.h"
+#include "controls/xtextbox.h"
 
 #endif // !INCL_CONTROL_H
