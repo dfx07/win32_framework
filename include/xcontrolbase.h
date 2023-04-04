@@ -42,6 +42,22 @@ protected:
 		return rect;
 	}
 
+	static std::wstring ToWchar(const char* strTxt, const int iLength)
+	{
+		std::wstring utf16;
+
+		int length = iLength;
+		if (iLength < 0)
+			length = static_cast<int>(strlen(strTxt));
+
+		utf16.resize(length + 2, 0);
+
+		int nWide = MultiByteToWideChar(CP_UTF8, MB_ERR_INVALID_CHARS, strTxt, iLength,
+			(LPWSTR)utf16.c_str(), (int)utf16.size());
+
+		return utf16;
+	}
+
 	/***************************************************************************
 	*! @brief  : Get current cursor position [Center]
 	*! @return : true : ok | false : not ok

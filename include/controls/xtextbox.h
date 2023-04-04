@@ -162,36 +162,24 @@ private:
 		{
 			break;
 		}
-		//case WM_SYSKEYDOWN:
 		case WM_KEYDOWN:
-		//case WM_SYSCHAR:
 		{
-			//BYTE keyState[256];
-			//GetKeyboardState(keyState);
-			//keyState[VK_CONTROL] = keyState[VK_SHIFT] = keyState[VK_MENU] = 0;
-			//keyState[VK_LCONTROL] = keyState[VK_LSHIFT] = keyState[VK_LMENU] = 0;
-			//keyState[VK_RCONTROL] = keyState[VK_RSHIFT] = keyState[VK_RMENU] = 0;
+			// process control key
+			std::cout << "control : " << wParam << std::endl;
 
-			//UINT scanCode = (wParam >> 16) & 0xFF;
-
-			//WCHAR temp[100];
-			//int i = ToUnicode(wParam, scanCode, keyState, temp, 100, 0);
-
-			std::cout << wParam << std::endl;
-
+			tb->ProcessKeyControl((wchar_t)wParam);
+			tb->Draw(true);
+			break;
+		}
+		case WM_CHAR:
+		{
+			std::cout << "key : " << wParam  << "  ---  " << lParam << std::endl;
 			tb->ProcessKeyDown((wchar_t)wParam);
 			tb->Draw(true);
 			break;
 		}
 		case WM_DRAWITEM:
 		{
-			break;
-		}
-		case WM_PAINT:
-		{
-			//tb->Draw(true);
-			
-			//return TRUE;
 			break;
 		}
 		case WM_LBUTTONDOWN:
@@ -222,14 +210,11 @@ private:
 
 protected:
 
-	virtual void ProcessKeyDown(wchar_t ch)
+	virtual void ProcessKeyControl(wchar_t ch)
 	{
-		int iAction = 0; // 0 : no action | 1 : add | 2 : remove | 3: move left | 4: move right
+		int iAction = 0;
 
-		std::cout << ch << std::endl;
-		iAction = 1;
-
-		if (ch == 8)
+		if (ch == VK_BACK)  // press backspace
 		{
 			if (m_icur >= 0)
 			{
@@ -238,58 +223,16 @@ protected:
 
 			iAction = 2;
 		}
-		else if (ch == 0x25) // left
+		else if (ch == VK_LEFT) // move cursor left 
 		{
 			iAction = 3;
 		}
-		else if (ch == 0x27) // right
+		else if (ch == VK_RIGHT) // move cursor right
 		{
 			iAction = 4;
 		}
 
-		//if (ch == 231)
-		//{
-		//	BYTE keyState[256];
-		//	GetKeyboardState(keyState);
-		//	keyState[VK_CONTROL] = keyState[VK_SHIFT] = keyState[VK_MENU] = 0;
-		//	keyState[VK_LCONTROL] = keyState[VK_LSHIFT] = keyState[VK_LMENU] = 0;
-		//	keyState[VK_RCONTROL] = keyState[VK_RSHIFT] = keyState[VK_RMENU] = 0;
-
-		//	UINT scanCode = (ch >> 16) & 0xFF;
-
-		//	WCHAR temp[100];
-		//	int i = ToUnicode(ch, scanCode, keyState, temp, 100, 0);
-
-		//	WPARAM unicode1 = (ch >> 16) & 0xFF;
-		//	WPARAM unicode2 = (m_last << 16) & 0xFF;
-		//	WPARAM unicode = unicode1 | unicode2;
-		//}
-
-		if (iAction == 1)
-		{
-			float fWidthMove = 0.f;
-
-			Gdiplus::RectF rect_string_cur = m_pRender->MeasureString(m_stext.c_str(), m_stext.length(), &m_text_format);
-			m_stext.insert(m_stext.begin() + (m_icur + 1), ch);
-			Gdiplus::RectF rect_string_top = m_pRender->MeasureString(m_stext.c_str(), m_stext.length(), &m_text_format);
-			fWidthMove += std::fabs(rect_string_top.Width - rect_string_cur.Width);
-
-			m_ptCursor.X += fWidthMove;
-
-			if (m_icur < 0)
-			{
-				m_ptCursor.X -= 2.f;
-			}
-
-			if (m_ptCursor.X >= m_rect_text.GetRight())
-			{
-				m_ptCursor.X    -= fWidthMove;
-				m_ptTextStart.X -= fWidthMove;
-			}
-
-			m_icur++;
-		}
-		else if (iAction == 2) //back
+		if (iAction == 2) //back
 		{
 			int length = static_cast<int>(m_stext.length());
 
@@ -302,7 +245,7 @@ protected:
 				float fWidthMove = std::fabs(rect_string_top.Width - rect_string_cur.Width);
 
 				// remove charactor and move cursor text
-				if (m_ptTextStart.X < m_rect_text.X)
+				if (std::fabs(m_ptTextStart.X - m_rect_text.X) > 0.001f)
 				{
 					m_ptTextStart.X += fWidthMove;
 				}
@@ -348,8 +291,6 @@ protected:
 				}
 				m_icur--;
 			}
-
-			std::cout << m_icur << std::endl;
 		}
 		else if (iAction == 4) // move right
 		{
@@ -378,6 +319,100 @@ protected:
 				}
 				m_icur++;
 			}
+		}
+	}
+
+	virtual void ProcessKeyDown(wchar_t ch)
+	{
+		int iAction = 1;
+
+		std::wstring clipboard = L"";
+
+		if (ch == VK_BACK)  // press backspace
+		{
+			return;
+		}
+		else if (ch == 0x16) // patse value
+		{
+			// Try opening the clipboard
+			if (::OpenClipboard(nullptr))
+			{
+				// Get handle of clipboard object for ANSI text
+				HANDLE hData = GetClipboardData(CF_TEXT);
+				if (hData != nullptr)
+				{
+					// Lock the handle to get the actual text pointer
+					char* pzChar = static_cast<char*>(GlobalLock(hData));
+					clipboard = ToWchar(pzChar, -1);
+					// Release the lock
+					GlobalUnlock(hData);
+				}
+				else
+				{
+					std::cerr << "hData clip board error !" << std::endl;
+				}
+
+				// Release the clipboard
+				CloseClipboard();
+			}
+			else
+			{
+				std::cerr << "clip board empty !" << std::endl;
+			}
+
+			if (clipboard.empty())
+				return;
+
+			iAction = 5;
+		}
+
+		if (iAction == 1) // add + insert value
+		{
+			float fWidthMove = 0.f;
+
+			Gdiplus::RectF rect_string_cur = m_pRender->MeasureString(m_stext.c_str(), m_stext.length(), &m_text_format);
+			m_stext.insert(m_stext.begin() + (m_icur + 1), ch);
+			Gdiplus::RectF rect_string_top = m_pRender->MeasureString(m_stext.c_str(), m_stext.length(), &m_text_format);
+			fWidthMove += std::fabs(rect_string_top.Width - rect_string_cur.Width);
+
+			m_ptCursor.X += fWidthMove;
+
+			if (m_icur < 0)
+			{
+				m_ptCursor.X -= 2.f;
+			}
+
+			if (m_ptCursor.X >= m_rect_text.GetRight())
+			{
+				m_ptCursor.X    -= fWidthMove;
+				m_ptTextStart.X -= fWidthMove;
+			}
+
+			m_icur++;
+		}
+		else if (iAction == 5) // paste value
+		{
+			float fWidthMove = 0.f;
+
+			Gdiplus::RectF rect_string_cur = m_pRender->MeasureString(m_stext.c_str(), m_stext.length(), &m_text_format);
+			m_stext.insert(m_icur + 1, clipboard.c_str(), clipboard.length());
+			Gdiplus::RectF rect_string_top = m_pRender->MeasureString(m_stext.c_str(), m_stext.length(), &m_text_format);
+			fWidthMove += std::fabs(rect_string_top.Width - rect_string_cur.Width);
+
+			m_ptCursor.X += fWidthMove;
+
+			if (m_icur < 0)
+			{
+				m_ptCursor.X -= 2.f;
+			}
+
+			if (m_ptCursor.X >= m_rect_text.GetRight())
+			{
+				m_ptCursor.X -= fWidthMove;
+				m_ptTextStart.X -= fWidthMove;
+			}
+
+			m_icur+= clipboard.length();
 		}
 	}
 
