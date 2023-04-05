@@ -29,6 +29,14 @@ class Dllexport Textbox : public ControlBase, public ControlRectUI, public RectU
 
 	enum { TIME_UPDATE_EFFECT = 5	  };
 
+	enum class TB_ACTION {
+		MOVE_LEFT ,
+		MOVE_RIGHT,
+
+		DELETE_BACKSPACE,
+		DELETE_BTN,
+	};
+
 private:
 	bool					m_bUseEffect = false;
 
@@ -214,13 +222,8 @@ protected:
 	{
 		int iAction = 0;
 
-		if (ch == VK_BACK)  // press backspace
+		if (ch == VK_BACK)     // press backspace
 		{
-			if (m_icur >= 0)
-			{
-				m_last = m_stext[m_icur];
-			}
-
 			iAction = 2;
 		}
 		else if (ch == VK_LEFT) // move cursor left 
@@ -233,6 +236,156 @@ protected:
 		}
 
 		if (iAction == 2) //back
+		{
+			DeleteCharacter(TB_ACTION::DELETE_BACKSPACE);
+		}
+		else if (iAction == 3)
+		{
+			MoveCursor(TB_ACTION::MOVE_LEFT);
+		}
+		else if (iAction == 4)
+		{
+			MoveCursor(TB_ACTION::MOVE_RIGHT);
+		}
+
+	}
+
+	virtual void ProcessKeyDown(wchar_t ch)
+	{
+		int iAction = 1;
+
+		std::wstring clipboard = L"";
+
+		if (ch == VK_BACK)  // press backspace
+		{
+			return;
+		}
+
+		else if (ch == 0x16) // patse value
+		{
+			// Try opening the clipboard
+			if (::OpenClipboard(nullptr))
+			{
+				// Get handle of clipboard object for ANSI text
+				HANDLE hData = GetClipboardData(CF_TEXT);
+				if (hData != nullptr)
+				{
+					// Lock the handle to get the actual text pointer
+					char* pzChar = static_cast<char*>(GlobalLock(hData));
+					clipboard = ToWchar(pzChar, -1);
+					// Release the lock
+					GlobalUnlock(hData);
+				}
+				else
+				{
+					std::cerr << "hData clip board error !" << std::endl;
+				}
+
+				// Release the clipboard
+				CloseClipboard();
+			}
+			else
+			{
+				std::cerr << "clip board empty !" << std::endl;
+			}
+
+			iAction = 5;
+		}
+
+		if (iAction == 1) // add + insert value
+		{
+			AddCharacter(ch);
+		}
+		else if (iAction == 5 && !clipboard.empty()) // paste value
+		{
+			PasteValue(clipboard);
+		}
+	}
+
+
+	/*******************************************************************************
+	*! @brief  : Patse giá trị vào vị trí con trỏ
+	*! @return : | 0: thêm thành công và không full
+	*!           | 1: thêm thành công và full
+	*! @author : thuong.nv          - [Date] : 05/03/2023
+	*******************************************************************************/
+	virtual void PasteValue(std::wstring& txt)
+	{
+		if (txt.empty()) return;
+
+		std::cout << m_icur << std::endl;
+
+		int iIndexClipboard = 0;
+		int nClipboardLength =  wcslen(txt.c_str());
+
+		while ( iIndexClipboard < nClipboardLength &&
+				AddCharacter(txt[iIndexClipboard]) == 0)
+		{
+			iIndexClipboard++;
+		}
+
+		if (iIndexClipboard < nClipboardLength)
+		{
+			float fWidthMove = 0.f;
+
+			float fWidth_Cur = m_pRender->MeasureString(m_stext.c_str(), m_stext.length(), &m_text_format).Width;
+			m_stext.insert(m_icur + 1, &txt[iIndexClipboard + 1]);
+			float fWidth_Top = m_pRender->MeasureString(m_stext.c_str(), m_stext.length(), &m_text_format).Width;
+
+			fWidthMove += std::fabs(fWidth_Top - fWidth_Cur);
+
+			m_ptTextStart.X -= fWidthMove;
+
+			m_icur -= iIndexClipboard + 1;
+			m_icur += nClipboardLength;
+		}
+	}
+
+	/*******************************************************************************
+	*! @brief  : Thêm ký tự vào list danh sách
+	*! @return : | 0: thêm thành công và không full
+	*!           | 1: thêm thành công và full
+	*! @author : thuong.nv          - [Date] : 05/03/2023
+	*******************************************************************************/
+	virtual int AddCharacter(wchar_t ch)
+	{
+		int iRet = 0;
+
+		Gdiplus::RectF rect_string_cur = m_pRender->MeasureString(m_stext.c_str(), m_stext.length(), &m_text_format);
+		m_stext.insert(m_stext.begin() + (m_icur + 1), ch);
+		Gdiplus::RectF rect_string_top = m_pRender->MeasureString(m_stext.c_str(), m_stext.length(), &m_text_format);
+		float fWidthMove = std::fabs(rect_string_top.Width - rect_string_cur.Width);
+
+		m_ptCursor.X += fWidthMove;
+
+		if (m_icur < 0)
+		{
+			m_ptCursor.X -= 2.f;
+		}
+
+		if (m_ptCursor.X > m_rect_text.GetRight() &&
+			std::fabs(m_ptCursor.X - m_rect_text.GetRight()) >= 0.001f)
+		{
+			m_ptCursor.X    -= fWidthMove;
+			m_ptTextStart.X -= fWidthMove;
+
+			iRet = 1; // full text;
+		}
+
+		m_icur++;
+
+		return iRet; // ok add one;
+	}
+
+	/*******************************************************************************
+	*! @brief  : Xóa ký tự tại vị trí con trỏ
+	*! @return : | 0: thêm thành công và không full
+	*!           | 1: thêm thành công và full
+	*! @author : thuong.nv          - [Date] : 05/03/2023
+	*******************************************************************************/
+	virtual void DeleteCharacter(TB_ACTION action)
+	{
+		if (action == TB_ACTION::DELETE_BACKSPACE)
 		{
 			int length = static_cast<int>(m_stext.length());
 
@@ -263,7 +416,21 @@ protected:
 				m_icur--;
 			}
 		}
-		else if (iAction == 3) // move left
+		else if (action == TB_ACTION::DELETE_BTN)
+		{
+
+		}
+	}
+
+	/*******************************************************************************
+	*! @brief  : Di chuyển con trỏ từ vị trí hiện tại
+	*! @return : | 0: thêm thành công và không full
+	*!           | 1: thêm thành công và full
+	*! @author : thuong.nv          - [Date] : 05/03/2023
+	*******************************************************************************/
+	virtual void MoveCursor(TB_ACTION action)
+	{
+		if (action == TB_ACTION::MOVE_LEFT) // move left
 		{
 			int length = static_cast<int>(m_stext.length());
 
@@ -292,7 +459,7 @@ protected:
 				m_icur--;
 			}
 		}
-		else if (iAction == 4) // move right
+		else if (action == TB_ACTION::MOVE_RIGHT) // move right
 		{
 			int length = static_cast<int>(m_stext.length());
 
@@ -319,100 +486,6 @@ protected:
 				}
 				m_icur++;
 			}
-		}
-	}
-
-	virtual void ProcessKeyDown(wchar_t ch)
-	{
-		int iAction = 1;
-
-		std::wstring clipboard = L"";
-
-		if (ch == VK_BACK)  // press backspace
-		{
-			return;
-		}
-		else if (ch == 0x16) // patse value
-		{
-			// Try opening the clipboard
-			if (::OpenClipboard(nullptr))
-			{
-				// Get handle of clipboard object for ANSI text
-				HANDLE hData = GetClipboardData(CF_TEXT);
-				if (hData != nullptr)
-				{
-					// Lock the handle to get the actual text pointer
-					char* pzChar = static_cast<char*>(GlobalLock(hData));
-					clipboard = ToWchar(pzChar, -1);
-					// Release the lock
-					GlobalUnlock(hData);
-				}
-				else
-				{
-					std::cerr << "hData clip board error !" << std::endl;
-				}
-
-				// Release the clipboard
-				CloseClipboard();
-			}
-			else
-			{
-				std::cerr << "clip board empty !" << std::endl;
-			}
-
-			if (clipboard.empty())
-				return;
-
-			iAction = 5;
-		}
-
-		if (iAction == 1) // add + insert value
-		{
-			float fWidthMove = 0.f;
-
-			Gdiplus::RectF rect_string_cur = m_pRender->MeasureString(m_stext.c_str(), m_stext.length(), &m_text_format);
-			m_stext.insert(m_stext.begin() + (m_icur + 1), ch);
-			Gdiplus::RectF rect_string_top = m_pRender->MeasureString(m_stext.c_str(), m_stext.length(), &m_text_format);
-			fWidthMove += std::fabs(rect_string_top.Width - rect_string_cur.Width);
-
-			m_ptCursor.X += fWidthMove;
-
-			if (m_icur < 0)
-			{
-				m_ptCursor.X -= 2.f;
-			}
-
-			if (m_ptCursor.X >= m_rect_text.GetRight())
-			{
-				m_ptCursor.X    -= fWidthMove;
-				m_ptTextStart.X -= fWidthMove;
-			}
-
-			m_icur++;
-		}
-		else if (iAction == 5) // paste value
-		{
-			float fWidthMove = 0.f;
-
-			Gdiplus::RectF rect_string_cur = m_pRender->MeasureString(m_stext.c_str(), m_stext.length(), &m_text_format);
-			m_stext.insert(m_icur + 1, clipboard.c_str(), clipboard.length());
-			Gdiplus::RectF rect_string_top = m_pRender->MeasureString(m_stext.c_str(), m_stext.length(), &m_text_format);
-			fWidthMove += std::fabs(rect_string_top.Width - rect_string_cur.Width);
-
-			m_ptCursor.X += fWidthMove;
-
-			if (m_icur < 0)
-			{
-				m_ptCursor.X -= 2.f;
-			}
-
-			if (m_ptCursor.X >= m_rect_text.GetRight())
-			{
-				m_ptCursor.X -= fWidthMove;
-				m_ptTextStart.X -= fWidthMove;
-			}
-
-			m_icur+= clipboard.length();
 		}
 	}
 
