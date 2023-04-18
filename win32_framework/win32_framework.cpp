@@ -120,16 +120,19 @@ void Create(WindowBase* win)
     //chk->SetSize(100, 20);
     //sub->AddControl(chk);
 
-    //Label* label = new Label();
-    //label->SetText(L"Label select item one");
-    //label->SetPosition(10, 100);
-    //sub->AddControl(label);
+    // draw input value
+    {
+        Label* label = new Label();
+        label->SetText(L"Input value:");
+        label->SetPosition(5, 102);
+        sub->AddControl(label);
 
-    Textbox* textbox = new Textbox();
-    textbox->SetPosition(10, 130);
-    textbox->SetText(L"");
-    textbox->SetSize(100, 20);
-    sub->AddControl(textbox);
+        Textbox* textbox = new Textbox();
+        textbox->SetPosition(90, 100);
+        textbox->SetText(L"");
+        textbox->SetSize(100, 20);
+        sub->AddControl(textbox);
+    }
 
     win->AddSubWindow(sub);
 }

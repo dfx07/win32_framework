@@ -15,6 +15,8 @@
 #include "xeasing.h"
 #include <list>
 
+#pragma warning( disable : 26451)
+
 ___BEGIN_NAMESPACE___
 
 /***********************************************************************************
@@ -29,7 +31,10 @@ class Dllexport Textbox : public ControlBase, public ControlRectUI, public RectU
 
 	enum { TIME_UPDATE_EFFECT = 5	  };
 
-	enum class TB_ACTION {
+	enum {EVENT_TIMER_CURSOR =  50001};
+
+	enum class TB_ACTION
+	{
 		MOVE_LEFT ,
 		MOVE_RIGHT,
 
@@ -37,16 +42,26 @@ class Dllexport Textbox : public ControlBase, public ControlRectUI, public RectU
 		DELETE_BTN,
 	};
 
+	enum class TB_STATE
+	{
+		TB_HOVER,
+		TB_INPUT,
+		TB_NORMAL,
+	};
+
 private:
 	bool					m_bUseEffect = false;
 
 	Gdiplus::RectF			m_rect_text;
 	Gdiplus::PointF			m_ptTextStart;
-	Gdiplus::PointF			m_ptCursor;
-	UINT					m_last;
-
-	std::list<float>		m_list_width_charac;
 	int						m_icur;
+
+	Gdiplus::PointF			m_ptCursor;
+	bool					m_bStateCursor = false;
+	bool					m_bActive = false;
+	
+	TB_STATE				m_eStateTB = TB_STATE::TB_NORMAL;
+	bool					m_bTrackLeave = false;
 
 	Gdiplus::StringFormat	m_text_format;
 
@@ -67,7 +82,7 @@ public:
 		m_rect.width  = WIDTH_DEF;
 		m_rect.height = HEIGHT_DEF;
 
-		m_padding = { 2, 2, 2, 2 };
+		m_padding = { 3, 2, 2, 2 };
 
 		this->SetDefaultPropertyUI();
 	}
@@ -88,14 +103,14 @@ protected:
 
 	virtual void SetDefaultPropertyUI()
 	{
-		m_property.m_background_color	= std::move(Color4(255, 91, 179));
+		m_property.m_background_color	= std::move(Color4(252, 252, 252));
 		m_property.m_hover_color		= std::move(Color4(100, 110, 217));
 		m_property.m_click_color		= std::move(Color4(255, 255, 245));
 
 		m_property.border_radius		= 4;
 		m_property.border_width			= 1;
 		m_property.m_border_color		= std::move(Color4(255, 255, 255));
-		m_property.text_color			= std::move(Color4(255, 255, 255));
+		m_property.text_color			= std::move(Color4(0, 0, 0));
 		m_property.text_hover_color		= std::move(Color4(0, 0, 0));
 	}
 
@@ -142,6 +157,16 @@ private:
 		return 1;
 	}
 
+	static void TrackMouse(HWND hwnd)
+	{
+		TRACKMOUSEEVENT tme;
+		tme.cbSize = sizeof(TRACKMOUSEEVENT);
+		tme.dwFlags = TME_HOVER | TME_LEAVE; //Type of events to track & trigger.
+		tme.dwHoverTime = 1; //How long the mouse has to be in the window to trigger a hover event.
+		tme.hwndTrack = hwnd;
+		TrackMouseEvent(&tme);
+	}
+
 	/*******************************************************************************
 	*! @brief  : Hàm xử lý sự kiện cho button window
 	*! @return : number of control created
@@ -153,75 +178,142 @@ private:
 
 		NULL_RETURN(tb, 0);
 
-
-		//std::cout << "Move : " << uMsg << std::endl;
 		switch (uMsg)
 		{
-		case WM_MOUSEMOVE:
-		{
-			
-			break;
-		}
-		case WM_MOUSELEAVE:
-		{
-			break;
-		}
-		case WM_TIMER:
-		{
-			break;
-		}
-		case WM_KEYDOWN:
-		{
-			// process control key
-			std::cout << "control : " << wParam << std::endl;
+			case WM_MOUSEMOVE:
+			{
+				if (tb->m_bTrackLeave == false)
+				{
+					auto hCursor = LoadCursor(NULL, IDC_IBEAM);
+					SetCursor(hCursor);
 
-			tb->ProcessKeyControl((wchar_t)wParam);
-			tb->Draw(true);
-			break;
-		}
-		case WM_CHAR:
-		{
-			std::cout << "key : " << wParam  << "  ---  " << lParam << std::endl;
-			tb->ProcessKeyDown((wchar_t)wParam);
-			tb->Draw(true);
-			break;
-		}
-		case WM_DRAWITEM:
-		{
-			break;
-		}
-		case WM_LBUTTONDOWN:
-		{
-			SetFocus(tb->GetHwnd());
+					TrackMouse(hWnd);
+					tb->m_bTrackLeave = true;
+				}
 
-			break;
-		}
-		case WM_LBUTTONUP:
-		{
-			break;
-		}
-		case WM_ERASEBKGND:
-		{
-			return TRUE;
-		}
-		case WM_CTLCOLORBTN:
-		{
+				if (tb->m_eStateTB == TB_STATE::TB_NORMAL)
+				{
+					tb->m_eStateTB = TB_STATE::TB_HOVER;
+					tb->Draw(true);
+				}
 
-			break;
-		}
-		}
+				break;
+			}
+			case WM_SETCURSOR:
+			{
+				if (LOWORD(lParam) == HTCLIENT)
+				{
+					return TRUE;
+				}
+				break;
+			}
 
-		//std::cout << uMsg << std::endl;
+			case WM_MOUSELEAVE:
+			{
+				tb->m_bTrackLeave = false;
+				if (tb->m_eStateTB == TB_STATE::TB_HOVER)
+				{
+					auto hCursor = LoadCursor(NULL, IDC_IBEAM);
+					SetCursor(hCursor);
+					tb->m_eStateTB = TB_STATE::TB_NORMAL;
+					tb->Draw(true);
+				}
+				break;
+			}
+			case WM_KEYDOWN:
+			{
+				tb->ProcessKeyControl((wchar_t)wParam);
+				tb->Draw(true);
+				break;
+			}
+			case WM_CHAR:
+			{
+				tb->m_bStateCursor = true;
+				tb->ProcessKeyDown((wchar_t)wParam);
+				tb->Draw(true);
+				break;
+			}
+			case WM_LBUTTONDOWN:
+			{
+				tb->BeginInput();
+				break;
+			}
 
+			case WM_KILLFOCUS:
+			{
+				tb->m_eStateTB = TB_STATE::TB_NORMAL;
+				tb->EndInput();
+				tb->Draw(true);
+				break;
+			}
+			case WM_TIMER:
+			{
+				switch (wParam)
+				{
+					case EVENT_TIMER_CURSOR:
+					{
+						tb->UpdateInput();
+						break;
+					}
+				}
+				break;
+			}
+			case WM_LBUTTONUP:
+			{
+				break;
+			}
+		}
 		return CallWindowProc(sfunTexboxWndProc, hWnd, uMsg, wParam, lParam);
 	}
 
 protected:
 
+	/*******************************************************************************
+	*! @brief  : Cập nhật trạng thái input textbox
+	*! @return : | 0: thêm thành công và không full
+	*!           | 1: thêm thành công và full
+	*! @author : thuong.nv          - [Date] : 05/03/2023
+	*******************************************************************************/
+	void UpdateInput()
+	{
+		if (m_bActive)
+		{
+			m_bStateCursor = !m_bStateCursor;
+			Draw(true);
+		}
+		else
+		{
+			this->EndInput();
+			Draw(true);
+		}
+	}
+
+	void BeginInput()
+	{
+		if (m_bActive == false)
+		{
+			m_bStateCursor = true;
+			m_bActive = true;
+			SetTimer(m_hWnd, EVENT_TIMER_CURSOR, 500, NULL); // 0.5 second
+			SetFocus(m_hWnd);
+			this->Draw(true);
+		}
+	}
+
+	void EndInput()
+	{
+		m_bStateCursor = false;
+		if (m_bActive == true)
+		{
+			KillTimer(m_hWnd, EVENT_TIMER_CURSOR);
+		}
+		m_bActive = false;
+	}
+
+
 	virtual void ProcessKeyControl(wchar_t ch)
 	{
 		int iAction = 0;
-
 		if (ch == VK_BACK)     // press backspace
 		{
 			iAction = 2;
@@ -233,6 +325,14 @@ protected:
 		else if (ch == VK_RIGHT) // move cursor right
 		{
 			iAction = 4;
+		}
+		else if (ch == VK_TAB)  // lost forcus
+		{
+			iAction = 5;
+		}
+		else if (ch == VK_DELETE) // delete charactor
+		{
+			iAction = 6;
 		}
 
 		if (iAction == 2) //back
@@ -247,7 +347,14 @@ protected:
 		{
 			MoveCursor(TB_ACTION::MOVE_RIGHT);
 		}
-
+		else if (iAction == 5)
+		{
+			Send_Message(WM_KILLFOCUS, 0, 0);
+		}
+		else if (iAction == 6)
+		{
+			DeleteCharacter(TB_ACTION::DELETE_BTN);
+		}
 	}
 
 	virtual void ProcessKeyDown(wchar_t ch)
@@ -302,7 +409,6 @@ protected:
 		}
 	}
 
-
 	/*******************************************************************************
 	*! @brief  : Patse giá trị vào vị trí con trỏ
 	*! @return : | 0: thêm thành công và không full
@@ -312,8 +418,6 @@ protected:
 	virtual void PasteValue(std::wstring& txt)
 	{
 		if (txt.empty()) return;
-
-		std::cout << m_icur << std::endl;
 
 		int iIndexClipboard = 0;
 		int nClipboardLength =  wcslen(txt.c_str());
@@ -418,7 +522,28 @@ protected:
 		}
 		else if (action == TB_ACTION::DELETE_BTN)
 		{
+			int length = static_cast<int>(m_stext.length());
 
+			int idel = m_icur + 1;
+
+			if (idel >= 0 && idel < length)
+			{
+				Gdiplus::RectF rect_string_cur = m_pRender->MeasureString(m_stext.c_str(), m_stext.length(), &m_text_format);
+				m_stext.erase(m_stext.begin() + idel);
+				Gdiplus::RectF rect_string_top = m_pRender->MeasureString(m_stext.c_str(), m_stext.length(), &m_text_format);
+
+				float fWidthMove = std::fabs(rect_string_top.Width - rect_string_cur.Width);
+
+				if (m_ptTextStart.X + fWidthMove > m_rect_text.X)
+				{
+					m_ptTextStart.X = m_rect_text.X;
+				}
+				else if (m_ptTextStart.X + rect_string_top.Width < m_rect_text.GetRight())
+				{
+					m_ptTextStart.X += fWidthMove;
+					m_ptCursor.X += fWidthMove;
+				}
+			}
 		}
 	}
 
@@ -512,8 +637,16 @@ protected:
 			Gdiplus::Brush* background_color = NULL;
 			Gdiplus::Pen* pen_color = NULL;
 
-			background_color = new Gdiplus::SolidBrush(m_property.m_erase_color.wrefcol);
-			pen_color = new Gdiplus::Pen(Gdiplus::Color(255, 255, 255, 253), iBorderWidth);
+			if (m_eStateTB == TB_STATE::TB_NORMAL)
+			{
+				background_color = new Gdiplus::SolidBrush(m_property.m_background_color.wrefcol);
+				pen_color = new Gdiplus::Pen(Gdiplus::Color(255, 189, 196, 209), iBorderWidth);
+			}
+			else
+			{
+				background_color = new Gdiplus::SolidBrush(Gdiplus::Color(255, 255, 255, 253));
+				pen_color = new Gdiplus::Pen(Gdiplus::Color(255, 21, 120, 214), iBorderWidth);
+			}
 
 			// Fill erase background
 			this->DrawEraseBackground(m_pRender);
@@ -528,19 +661,22 @@ protected:
 			SAFE_DELETE(background_color);
 
 			Gdiplus::SolidBrush text_color(Gdiplus::Color(m_property.text_color.wrefcol));
-			Gdiplus::Pen pen_text_color(Gdiplus::Color(m_property.text_color.wrefcol));
-			Gdiplus::Pen pen_cursor_color(Gdiplus::Color::Red);
 
-
-			m_pRender->DrawRectangle1(m_rect_text, &pen_text_color, nullptr);
+			//Gdiplus::Pen pen_text_color(Gdiplus::Color(m_property.text_color.wrefcol));
+			//m_pRender->DrawRectangle1(m_rect_text, &pen_text_color, nullptr);
 
 			m_pRender->DrawTextInSideRect(m_rect_text, Gdiplus::PointF(m_ptTextStart.X, m_ptTextStart.Y), m_stext.c_str(), &text_color, &m_text_format);
 
-			Gdiplus::PointF pCurS = m_ptCursor;
-			Gdiplus::PointF pCurE = m_ptCursor;
-			pCurE.Y = pCurE.Y + m_rect_text.Height;
+			if (m_bActive == true && m_bStateCursor == true)
+			{
+				Gdiplus::Pen pen_cursor_color(Gdiplus::Color::Red);
 
-			m_pRender->DrawLine(pCurS, pCurE, pen_cursor_color);
+				Gdiplus::PointF pCurS = m_ptCursor;
+				Gdiplus::PointF pCurE = m_ptCursor;
+				pCurE.Y = pCurE.Y + m_rect_text.Height;
+
+				m_pRender->DrawLine(pCurS, pCurE, pen_cursor_color);
+			}
 		}
 		m_pRender->EndDrawRect(bDraw);
 	}

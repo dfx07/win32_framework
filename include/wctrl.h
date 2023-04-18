@@ -407,6 +407,7 @@ protected:
 		Gdiplus::Rect rect = render->GetDrawRect();
 
 		int iBorderWidth = m_property.border_width;
+		int iBorderRadius = m_property.border_radius;
 
 		if (iBorderWidth <= 0)
 		{
@@ -421,11 +422,11 @@ protected:
 
 		if (brush)
 		{
-			render->DrawRectangle(rect, NULL, brush, 0);
+			render->DrawRectangle(rect, NULL, brush, iBorderRadius);
 		}
 		else
 		{
-			render->DrawRectangle(rect, NULL, m_property.m_background_color.wrefcol, 0);
+			render->DrawRectangle(rect, NULL, m_property.m_background_color.wrefcol, iBorderRadius);
 		}
 	}
 

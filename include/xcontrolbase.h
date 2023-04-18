@@ -50,7 +50,7 @@ protected:
 		if (iLength < 0)
 			length = static_cast<int>(strlen(strTxt));
 
-		utf16.resize(length + 2, 0);
+		utf16.resize( static_cast<int64_t>(length) + 2, 0);
 
 		int nWide = MultiByteToWideChar(CP_UTF8, MB_ERR_INVALID_CHARS, strTxt, iLength,
 			(LPWSTR)utf16.c_str(), (int)utf16.size());
