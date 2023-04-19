@@ -235,7 +235,15 @@ private:
 			}
 			case WM_LBUTTONDOWN:
 			{
-				tb->BeginInput();
+				long x, y;
+				if (tb->GetCursorPosInParent(x, y))
+				{
+					tb->BeginInput(x, y);
+				}
+				else
+				{
+					tb->BeginInput(-999, -999);
+				}
 				break;
 			}
 
@@ -268,6 +276,20 @@ private:
 
 protected:
 
+	void SetSelectCursor(int index)
+	{
+		if (index >= 0)
+		{
+			m_icur = index;
+			m_ptCursor.X = m_ptTextStart.X + m_pRender->MeasureString(m_stext.c_str(), m_icur + 1, &m_text_format).Width - 2.f;
+		}
+		else
+		{
+			m_icur = -1;
+			m_ptCursor.X = m_rect_text.X;
+		}
+	}
+
 	/*******************************************************************************
 	*! @brief  : Cập nhật trạng thái input textbox
 	*! @return : | 0: thêm thành công và không full
@@ -288,8 +310,18 @@ protected:
 		}
 	}
 
-	void BeginInput()
+	void BeginInput(long x, long y)
 	{
+		int iSelect = -1;
+
+		if (m_stext.length() > 0)
+		{
+			iSelect = DetectIndexActive(x, y);
+		}
+		std::cout <<" >>> " << iSelect << std::endl;
+
+		SetSelectCursor(iSelect);
+
 		if (m_bActive == false)
 		{
 			m_bStateCursor = true;
@@ -407,6 +439,79 @@ protected:
 		{
 			PasteValue(clipboard);
 		}
+	}
+
+	/*******************************************************************************
+	*! @brief  : Patse giá trị vào vị trí con trỏ
+	*! @return : | 0: thêm thành công và không full
+	*!           | 1: thêm thành công và full
+	*! @author : thuong.nv          - [Date] : 05/03/2023
+	*******************************************************************************/
+	virtual int DetectIndexActive(long x, long y)
+	{
+		typedef std::pair<int, int> POS_DETECT;
+
+		std::cout << x << ":" << y << std::endl;
+		int iSelect = 0;
+
+		float fWidthText = 0.f;
+
+		int nTextLength = m_stext.length();
+		int iStartIndex = 0;
+
+		int iStart1, nLength1; float xStart1, xEnd1;
+		int iStart2, nLength2; float xStart2, xEnd2;
+
+		while (nTextLength > 1)
+		{
+			iStart1  = iStartIndex;
+			nLength1 = nTextLength / 2;
+			fWidthText = m_pRender->MeasureString(&m_stext[iStart1], nLength1, &m_text_format).Width;
+
+			float offset = 0.f;
+			if (iStart1 <= 0)
+			{
+				offset = 0.f;
+			}
+			else
+			{
+				offset = m_pRender->MeasureString(&m_stext[0], iStart1 - 1, &m_text_format).Width;
+			}
+
+			xStart1  = m_ptTextStart.X + offset;
+			xEnd1 = xStart1 + fWidthText;
+
+			iStart2  = iStart1 + nLength1;
+			nLength2 = nTextLength - nLength1 + 1;
+			fWidthText = m_pRender->MeasureString(&m_stext[iStart2], nLength2, &m_text_format).Width;
+
+			xStart2 = xEnd1;
+			xEnd2 = xStart2 + fWidthText;
+
+			if(x >= xStart1 && x <= xEnd1)
+			{
+				iStartIndex = iStart1;
+				nTextLength = nLength1;
+				continue;
+			}
+			else if (x >= xStart2 && y <= xEnd2)
+			{
+				iStartIndex = iStart2;
+				nTextLength = nLength2;
+				continue;
+			}
+
+			break;
+		}
+
+		iSelect = iStartIndex - 1;
+
+		if (iSelect < -1)
+		{
+			iSelect = -1;
+		}
+
+		return iSelect;
 	}
 
 	/*******************************************************************************
