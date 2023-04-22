@@ -21,6 +21,8 @@
 
 ___BEGIN_NAMESPACE___
 
+class Camera;
+
 /***********************************************************************************
 * ⮟⮟ Class name: Window
 * Thông tin và ngữ cảnh của một handle
@@ -79,6 +81,10 @@ private:
 	// Font information
 	std::wstring			m_fontName;
 	unsigned int			m_fontSize;
+
+
+	// Camera
+	Camera*					m_pCamera;
 
 private:
 //==================================================================================
@@ -324,9 +330,30 @@ protected:
 //==================================================================================
 //⮟⮟ Triển khai chính tạo và xử lý ngữ cảnh window  - important                    
 //==================================================================================
-private:
+public:
+	void SetCamera(Camera* pCam)
+	{
+		m_pCamera = pCam;
+	}
 
+	void* GetCamera()
+	{
+		return static_cast<void*>(m_pCamera);
+	}
 
+	/***************************************************************************
+	*! @brief  : Hide window -> update status
+	*! @return : void
+	*! @author : thuong.nv          - [Date] : 05/03/2023
+	***************************************************************************/
+	virtual int GetWidth() { return m_CurStatus.m_rect.width; }
+
+	/***************************************************************************
+	*! @brief  : Hide window -> update status
+	*! @return : void
+	*! @author : thuong.nv          - [Date] : 05/03/2023
+	***************************************************************************/
+	virtual int GetHeight() { return m_CurStatus.m_rect.height; }
 
 //==================================================================================
 //⮟⮟ Triển khai khởi tạo liên quan đến window                                      

@@ -31,6 +31,9 @@
     <Filter Include="Header Files\ui\window">
       <UniqueIdentifier>{18b381a7-8b66-4551-a4e4-24396f6131c5}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\api">
+      <UniqueIdentifier>{cd9d79ae-022a-4c37-a802-6dd9b52c5813}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="win32_framework.cpp">
@@ -52,9 +55,6 @@
     </ClInclude>
     <ClInclude Include="..\include\xeasing.h">
       <Filter>Header Files\math</Filter>
-    </ClInclude>
-    <ClInclude Include="..\include\wcontrol.h">
-      <Filter>Header Files\ui</Filter>
     </ClInclude>
     <ClInclude Include="..\include\wdef.h">
       <Filter>Header Files\ui</Filter>
@@ -89,17 +89,23 @@
     <ClInclude Include="..\include\graphics\wtext_render.h">
       <Filter>Header Files\graphics</Filter>
     </ClInclude>
-    <ClInclude Include="..\include\xcontrolbase.h">
-      <Filter>Header Files\ui</Filter>
-    </ClInclude>
-    <ClInclude Include="..\include\xwinbase.h">
-      <Filter>Header Files\ui</Filter>
-    </ClInclude>
-    <ClInclude Include="..\include\incl_control.h">
-      <Filter>Header Files\ui</Filter>
-    </ClInclude>
     <ClInclude Include="..\include\controls\xtextbox.h">
       <Filter>Header Files\ui\controls</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\graphics\gpcam.h">
+      <Filter>Header Files\graphics</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\import_control.h">
+      <Filter>Header Files\api</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\import_gl.h">
+      <Filter>Header Files\api</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\xcontrolbase.h">
+      <Filter>Header Files\ui\controls</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\xwinbase.h">
+      <Filter>Header Files\ui\window</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
