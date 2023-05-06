@@ -18,10 +18,11 @@
 #include <vector>
 #include <combaseapi.h>
 #include <memory>
+#include <chrono>
 
 #include "xalgorithm.h"
+#include "xmath.h"
 
-#define EASING_PI               3.14159265359f
 #define EASING_EPSILON          0.001f
 
 #define EASING_STANDTIME_START  0.f
@@ -49,6 +50,12 @@ Option:
     EaseInOut: Interpolation uses EaseIn for the first half of the animation and    
                EaseOut for the second half.                                         
 ==================================================================================*/
+
+
+//==================================================================================
+//⮟⮟ Section : function easing
+//==================================================================================
+____BEGIN_SECTION____(easing)
 
 enum class EaseMode
 {
@@ -422,35 +429,66 @@ private:
 class EasingDataBase : EasingBase
 {
 public:
-	easingbase_ptr    action;
-	EaseType          type;
-	EaseMode          mode;
-	double            from;
-	double            to;
+    easingbase_ptr    action;
+    EaseType          type;
+    EaseMode          mode;
+
+    double            from;
+    double            to;
     double            duration;
 
     double            value;
     bool              pause;
 
 public:
-	EasingDataBase(easingbase_ptr action, EaseType type,
-		EaseMode mode, double duration, double from , double to, double value_begin)
-	{
-		this->action = action;
-		this->type	 = type	 ;
-		this->mode	 = mode	 ;
-		this->from	 = from	 ;
-		this->to	 = to	 ;
+    EasingDataBase(easingbase_ptr action, EaseType type,
+        EaseMode mode, double duration, double from , double to, double value_begin)
+    {
+        this->action   = action;
+        this->type	   = type  ;
+        this->mode	   = mode  ;
+        this->from	   = from  ;
+        this->to       = to	   ;
         this->duration = duration;
 
-        this->value  = value_begin;
-        this->pause  = false;
-	}
+        this->value    = value_begin;
+        this->pause    = false;
+    }
 
+    ~EasingDataBase()
+    {
+
+    }
+
+    /***************************************************************************
+    *! @brief  : reset value and state
+    *! @return : void
+    *! @author : thuong.nv          - [Date] : 05/03/2023
+    ***************************************************************************/
     void reset()
     {
         this->value = from;
         this->pause = false;
+    }
+
+    /***************************************************************************
+    *! @brief  : reset only state
+    *! @return : void
+    *! @author : thuong.nv          - [Date] : 05/03/2023
+    ***************************************************************************/
+    void reset_state()
+    {
+        this->pause = false;
+    }
+
+    /***************************************************************************
+    *! @brief  : swap from : to -> to : from
+    *! @return : void
+    *! @author : thuong.nv          - [Date] : 05/03/2023
+    ***************************************************************************/
+    void reverse()
+    {
+        std::swap(this->from, this->to);
     }
 };
 
@@ -463,6 +501,8 @@ private:
 
     // data list contain
     std::vector<EasingDataBase> m_data_list;
+
+    bool                     m_bReverse = false;
 
 public:
     EasingEngine()
@@ -525,14 +565,12 @@ public:
     }
 
     /***************************************************************************
-	*! @brief  : reset data list
-	*! @return : number of control created
-	*! @author : thuong.nv          - [Date] : 05/03/2023
-	***************************************************************************/
+    *! @brief  : reset data list
+    *! @return : number of control created
+    *! @author : thuong.nv          - [Date] : 05/03/2023
+    ***************************************************************************/
     virtual void Reset()
     {
-        m_bPause = false;
-
         m_dCumulativeTime = 0.f;
 
         for (int i = 0; i < m_data_list.size(); i++)
@@ -541,42 +579,95 @@ public:
         }
     }
 
-    //==================================================================================
-    // Thực hiện tính toán giá trị animation easing với đầu vào là thời điểm t          
-    // t : Giá trị đầu vào tính theo millisecond
-    //==================================================================================
-    virtual void Update(double t)
+    /***************************************************************************
+    *! @brief  : reset state data list
+    *! @return : number of control created
+    *! @author : thuong.nv          - [Date] : 05/03/2023
+    ***************************************************************************/
+    virtual void ClearState()
     {
-        if (m_bPause) return;
+        for (int i = 0; i < m_data_list.size(); i++)
+        {
+            m_data_list[i].reset_state();
+        }
+    }
 
-        m_dCumulativeTime += t;
+    /***************************************************************************
+    *! @brief  : Reverse value source to destination state data list
+    *! @return : number of control created
+    *! @author : thuong.nv          - [Date] : 05/03/2023
+    *! @note   : keep value 
+    ***************************************************************************/
+    virtual void ReverseValue()
+    {
+        for (int i = 0; i < m_data_list.size(); i++)
+        {
+            m_data_list[i].reverse();
+        }
+    }
 
+    /***************************************************************************
+    *! @brief  : Reverse value source to destination state data list
+    *! @return : number of control created
+    *! @author : thuong.nv          - [Date] : 05/03/2023
+    *! @note   : keep value
+    ***************************************************************************/
+    virtual void SetReverse(bool bReverse)
+    {
+        m_bReverse = bReverse;
+    }
+
+    /***************************************************************************
+    *! @brief  : Check use reverse value
+    *! @return : bool
+    *! @author : thuong.nv          - [Date] : 05/03/2023
+    *! @note   : default up
+    ***************************************************************************/
+    virtual bool IsReverse()
+    {
+        return m_bReverse;
+    }
+
+protected:
+    /***************************************************************************
+    *! @brief  : Calculate the value animation easing at t time (up)
+    *!           Update value use time : default up, reverse down
+    *! @param  : t : elapsed time
+    *! @return : void
+    *! @author : thuong.nv          - [Date] : 05/03/2023
+    ***************************************************************************/
+    virtual void ForwardUpdate(double t)
+    {
+        CHECK_RETURN(m_bPause, );
+
+        EasingDataBase* pEasingDataBase = nullptr;
         double cumula_map = 0.0, value = 0.0, from = 0.0, to = 0.0;
         double duration = 0.0;
 
-        m_bPause = true;
+        m_dCumulativeTime += t; m_bPause = true;
 
         for (int i = 0; i < m_data_list.size(); i++)
         {
-            if(m_data_list[i].pause) continue;
+            pEasingDataBase = &m_data_list[i];
+            if (pEasingDataBase->pause) continue;
 
             m_bPause = false;
 
-            from     = m_data_list[i].from;
-            to       = m_data_list[i].to;
-            duration = m_data_list[i].duration;
+            from     = pEasingDataBase->from;
+            to       = pEasingDataBase->to;
+            duration = pEasingDataBase->duration;
 
-            auto _action = std::static_pointer_cast<EasingAction>(m_data_list[i].action);
+            auto _action = std::static_pointer_cast<EasingAction>(pEasingDataBase->action);
             if (nullptr == _action)
             {
-                m_data_list[i].pause = true;
+                pEasingDataBase->pause = true;
                 continue;
             }
 
             cumula_map = math::hard_map(m_dCumulativeTime, 0.f, duration, EASING_STANDTIME_START, EASING_STANDTIME_END, EASING_EPSILON);
 
             // call function caculation data easing
-            switch (m_data_list[i].mode)
+            switch (pEasingDataBase->mode)
             {
                 case  EaseMode::Out:
                     value = _action->EaseOut(cumula_map, duration, from, to);
@@ -589,13 +680,105 @@ public:
                     break;
             }
 
-            m_data_list[i].value = math::soft_map(value, EASING_STANDTIME_START, EASING_STANDTIME_END, from, to, EASING_EPSILON);
+            pEasingDataBase->value = math::soft_map(value, EASING_STANDTIME_START, EASING_STANDTIME_END, from, to, EASING_EPSILON);
 
-            if (m_dCumulativeTime > duration)
+            if (m_dCumulativeTime >= duration)
             {
-                m_data_list[i].pause = true;
+                pEasingDataBase->pause = true;
             }
         }
+    }
+
+    /***************************************************************************
+    *! @brief  : Calculate the value animation easing at t time (back)
+    *!           Update value use time : default up, reverse down
+    *! @param  : t : elapsed time
+    *! @return : void
+    *! @author : thuong.nv          - [Date] : 05/03/2023
+    ***************************************************************************/
+    virtual void BackwardUpdate(double t)
+    {
+        CHECK_RETURN(m_bPause, );
+
+        EasingDataBase* pEasingDataBase = nullptr;
+        double cumula_map = 0.0, value = 0.0, from = 0.0, to = 0.0;
+        double duration = 0.0;
+
+        m_dCumulativeTime -= t; m_bPause = true;
+
+        for (int i = 0; i < m_data_list.size(); i++)
+        {
+            pEasingDataBase = &m_data_list[i];
+            if(pEasingDataBase->pause) continue;
+
+            m_bPause = false;
+
+            from     = pEasingDataBase->from;
+            to       = pEasingDataBase->to;
+            duration = pEasingDataBase->duration;
+
+            auto _action = std::static_pointer_cast<EasingAction>(pEasingDataBase->action);
+            if (nullptr == _action)
+            {
+                pEasingDataBase->pause = true;
+                continue;
+            }
+
+            cumula_map = math::hard_map(m_dCumulativeTime, 0.f, duration, EASING_STANDTIME_START, EASING_STANDTIME_END, EASING_EPSILON);
+
+            // call function caculation data easing
+            switch (pEasingDataBase->mode)
+            {
+                case  EaseMode::Out:
+                    value = _action->EaseOut(cumula_map, duration, from, to);
+                    break;
+                case  EaseMode::InOut:
+                    value = _action->EaseInOut(cumula_map, duration, from, to);
+                    break;
+                default:
+                    value = _action->EaseIn(cumula_map, duration, from, to);
+                    break;
+            }
+
+            pEasingDataBase->value = math::soft_map(value, EASING_STANDTIME_START, EASING_STANDTIME_END, from, to, EASING_EPSILON);
+
+            if (m_dCumulativeTime <= 0.f)
+            {
+                pEasingDataBase->pause = true;
+            }
+        }
+    }
+
+public:
+     /***************************************************************************
+    *! @brief  : Calculate the value animation easing at t time
+    *!           Update value use time : default up, reverse down
+    *! @param  : t : elapsed time
+    *! @return : void
+    *! @author : thuong.nv          - [Date] : 05/03/2023
+    ***************************************************************************/
+    virtual void Update(double t)
+    {
+        double dElapse = 0.0;
+
+        // will return to the original state [from -> to] -> [to -> from]
+        bool bReverse = IsReverse();
+
+        auto dStart = std::chrono::high_resolution_clock::now();
+
+        if (bReverse == false)
+        {
+            this->ForwardUpdate(t);
+        }
+        else
+        {
+            this->BackwardUpdate(t);
+        }
+
+        auto dEnd = std::chrono::high_resolution_clock::now();
+        dElapse = std::chrono::duration_cast<std::chrono::milliseconds>(dEnd - dStart).count();
+
+        m_dCumulativeTime += (!bReverse) ? dElapse : -dElapse;
     }
 
     virtual double Value(const int& i) const
@@ -608,7 +791,18 @@ public:
         return this->Value(i);
     }
 
+    /***************************************************************************
+	*! @brief  : lay gia tri tich luy
+	*! @return : number of control created
+	*! @author : thuong.nv          - [Date] : 05/03/2023
+	***************************************************************************/
+    virtual double CumulativeTime() const
+    {
+        return m_dCumulativeTime;
+    }
 };
+
+_____END_SECTION_____
 
 ____END_NAMESPACE____
 

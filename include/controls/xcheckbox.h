@@ -111,9 +111,9 @@ protected:
 
 	virtual void SetDefaultPropertyUI()
 	{
-		m_property.m_background_color	= std::move(Color4(59, 91, 179));
-		m_property.m_hover_color		= std::move(Color4(229, 241, 255));
-		m_property.m_click_color		= std::move(Color4(201, 224, 247));
+		m_property.m_bk_color		= std::move(Color4(59, 91, 179));
+		m_property.m_bk_hover_color	= std::move(Color4(229, 241, 255));
+		m_property.m_click_color	= std::move(Color4(201, 224, 247));
 
 		m_property.border_radius = 0;
 		m_property.border_width  = 0;
@@ -231,7 +231,7 @@ public:
 			rect.Y += 2;
 			rect.Width -= iBorderWidth + 3;
 			rect.Height -= iBorderWidth + 3;
-			m_pRender->DrawRectangle(rect, nullptr, m_property.m_background_color.wrefcol, iRadius);
+			m_pRender->DrawRectangle(rect, nullptr, m_property.m_bk_color.wrefcol, iRadius);
 
 			// [2] Draw image check
 			if (m_bChecked)

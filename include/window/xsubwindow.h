@@ -458,7 +458,7 @@ protected:
 	}
 
 private:
-	fox::Color4			m_background_color;
+	fox::Color4			m_bk_color;
 	fox::Color4			m_title_background_color;
 
 //==================================================================================
@@ -472,7 +472,7 @@ public:
 	*******************************************************************************/
 	void OnCreateControl()
 	{
-		m_background_color = { 24, 26, 27, 255.f };
+		m_bk_color = { 24, 26, 27, 255.f };
 		m_title_background_color = { 14, 14, 13, 255 };
 
 		GDIPLUS_DRAW_INFO_PTR pRenderInfo = static_cast<GDIPLUS_DRAW_INFO_PTR>(m_pRender->Render());
@@ -512,7 +512,7 @@ public:
 		int iRadiusBorder = 0;
 		// Fill erase background
 		auto rect	 = pRenderInfo->rect;
-		m_pRender->DrawRectangle(rect, NULL, m_background_color.wrefcol, iRadiusBorder);
+		m_pRender->DrawRectangle(rect, NULL, m_bk_color.wrefcol, iRadiusBorder);
 
 		// Fill rectangle background;
 		rect.Width	-= 1;
@@ -557,14 +557,14 @@ public:
 			}
 			else
 			{
-				pControlRectUI->SetEraseBackgroundColor(m_background_color);
+				pControlRectUI->SetEraseBackgroundColor(m_bk_color);
 			}
 		}
 
 		if (pControl->GetType() == ControlType::CHECKBOX ||
 			pControl->GetType() == ControlType::LABEL)
 		{
-			pControlRectUI->SetBackgroundColor(m_background_color);
+			pControlRectUI->SetBackgroundColor(m_bk_color);
 		}
 	}
 

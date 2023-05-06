@@ -3,7 +3,7 @@
 * @Copyright (C) 2021-2023 thuong.nv <thuong.nv.mta@gmail.com>
 *            All rights reserved.
 ************************************************************************************
-* @file     xsysdef.h
+* @file     gp_camera.h
 * @create   April 15, 2023
 * @brief    Camera define
 * @note     For conditions of distribution and use, see copyright notice in readme.txt
@@ -436,6 +436,7 @@ public:
         m_fDis(0.f), m_iMode(0)
     {
         m_modelMat = Mat4(1.f);
+        m_vTarget = { 0.f, 0.f, 0.f };
     }
 
     /*******************************************************************************

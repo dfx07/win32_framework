@@ -11,17 +11,55 @@ using namespace fox;
 MenuContext* menu = NULL;
 Camera2D     cam2D;
 
+GeometryRender render;
+
+struct Component
+{
+    int   index;
+    float x;
+    float y;
+    float width;
+    float height;
+};
+
+typedef std::vector < Component>  ComponentList;
+
+ComponentList ReadFile(const char* filedata)
+{
+    ComponentList comp_list;
+
+    FILE* file = NULL;
+    if (fopen_s(&file, filedata, "r") == 0)
+    {
+        int index;
+        float x, y, width, height;
+
+        const int iNumberField = 5;
+
+        while (!feof(file))
+        {
+            if(iNumberField == fscanf_s(file, "%d,%f,%f,%f,%f", &index, &x, &y, &width, &height))
+            {
+                comp_list.emplace_back(Component{ index, x, y , width, height });
+            }
+        }
+    }
+
+    fclose(file);
+
+    return comp_list;
+}
 
 void Create(WindowBase* win)
 {
-    //btn = new Button();
-    //btn->SetLabel(L"Ngô Văn Thường");
-    //btn->SetSize(200, 24);
-    //btn->SetPosition(100, 100);
-    //btn->SetBorderRadius(2);
-    //btn->SetBorderWidth(1);
-    //btn->UseEffect(true);
-    //btn->Visible(true);
+    Button* btn = new Button();
+    btn->SetLabel(L"Button 1");
+    btn->SetSize(100, 24);
+    btn->SetPosition(10, 50);
+    btn->SetBorderRadius(2);
+    btn->SetBorderWidth(1);
+    btn->UseEffect(false);
+    btn->Visible(true);
 
     //win->AddControl(btn);
 
@@ -72,11 +110,11 @@ void Create(WindowBase* win)
 
     //win->AddControl(menu);
 
-    //SubWindow* sub = new SubWindow();
-    //sub->SetTitle(L"sub window");
-    //sub->SetPosition(20, 20);
-    //sub->SetSize(200, 200);
-    //sub->Visible(true);
+    SubWindow* sub = new SubWindow();
+    sub->SetTitle(L"sub window");
+    sub->SetPosition(20, 20);
+    sub->SetSize(200, 200);
+    sub->Visible(true);
 
     ////Checkbox* chk = new Checkbox();
 
@@ -132,7 +170,8 @@ void Create(WindowBase* win)
     //    sub->AddControl(textbox);
     //}
 
-    //win->AddSubWindow(sub);
+    sub->AddControl(btn);
+    win->AddSubWindow(sub);
     //Window* pWin = dynamic_cast<Window*>(win);
 
     //if (pWin)
@@ -144,13 +183,26 @@ void Create(WindowBase* win)
     cam2D.SetUpCamera({ 0.f, 0.f, 8.f }, { 0.f, 0.f, 1.f });
 
     cam2D.UpdateMatrix();
+
+
+    glm::vec3 p1 = { -100 ,  100, 0.f };
+    glm::vec3 p2 = {  100 ,  100, 0.f };
+    glm::vec3 p3 = {  100 , -100, 0.f };
+    glm::vec3 p4 = { -100 , -100, 0.f };
+
+    glm::vec3 c1 = {  1 , 1, 0 };
+    glm::vec3 c2 = {  0 , 0, 1 };
+
+    //render.AddLine(VERTEX_3D(p1, c1), VERTEX_3D(p2, c2));
+    render.AddRectangle(p1, p2, p3, p4);
+    render.UpdateRenderData();
 }
 
 void MouseButton(WindowBase* win, int button, int action)
 {
     if (button == GLMouse::RightButton && action == GL_PRESSED)
     {
-        menu->Show({ 10 ,10 });
+        //menu->Show({ 10 ,10 });
     }
 }
 
@@ -175,14 +227,7 @@ void Draw(WindowBase* win)
 
     cam2D.UseMatrix();
 
-    glPointSize(5.f);
-
-    glBegin(GL_POINTS);
-    {
-        glVertex3f(100.f, 100.f, 0.f);
-        glVertex3f(200.f, 200.f, 0.f);
-    }
-    glEnd();
+    render.Draw();
 }
 
 void Resize(WindowBase* win)
@@ -193,6 +238,7 @@ void Resize(WindowBase* win)
 
 void Process(WindowBase* pWin)
 {
+
 }
 
 int main()

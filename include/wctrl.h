@@ -316,16 +316,18 @@ protected:
 
 	typedef struct tagPropertyUI
 	{
-		unsigned int border_radius   = 0;
-		unsigned int border_width    = 0;
-		Color4		 text_color      = {255, 255, 255, 255};
-		Color4		 text_hover_color= {255, 255, 255, 255};
+		unsigned int border_radius        = 0;
+		unsigned int border_width         = 0;
+		Color4		 text_color           = { 255, 255, 255, 255 };
+		Color4		 text_hover_color     = { 255, 255, 255, 255 };
 
-		Color4		 m_erase_color      = { 255, 255, 255, 255 };
-		Color4		 m_background_color = { 255, 255, 255, 255 };
-		Color4		 m_border_color     = { 255, 255, 255, 255 };
-		Color4		 m_hover_color      = { 255,   0,   0, 255 };
-		Color4		 m_click_color      = { 0  , 255,   0, 255 };
+		Color4		 m_erase_color        = { 255, 255, 255, 255 };
+		Color4		 m_bk_color           = { 255, 255, 255, 255 };
+		Color4		 m_bk_hover_color     = { 255,   0,   0, 255 };
+		Color4		 m_border_color       = { 255, 255, 255, 255 };
+		Color4		 m_border_hover_color = { 255, 255, 255, 255 };
+
+		Color4		 m_click_color        = { 0  , 255,   0, 255 };
 
 	} PropertyControlUI;
 
@@ -347,7 +349,7 @@ public:
 
 	void SetBackgroundColor(const Color4 cl)
 	{
-		m_property.m_background_color = cl;
+		m_property.m_bk_color = cl;
 	}
 
 	void SetEraseBackgroundColor(const Color4& cl)
@@ -357,7 +359,7 @@ public:
 
 	void SetBackgroundHoverColor(const Color4& cl)
 	{
-		m_property.m_hover_color = cl;
+		m_property.m_bk_hover_color = cl;
 	}
 
 	void SetBackgroundClickColor(const Color4& cl)
@@ -367,7 +369,7 @@ public:
 
 	void SetTextColor(const Color4& cl)
 	{
-		m_property.m_hover_color = cl;
+		m_property.text_color = cl;
 	}
 
 	void SetTextHoverColor(const Color4& cl)
@@ -378,6 +380,11 @@ public:
 	void SetBorderColor(const Color4& col)
 	{
 		m_property.m_border_color = col;
+	}
+
+	void SetBorderHoverColor(const Color4& col)
+	{
+		m_property.m_border_hover_color = col;
 	}
 
 protected:
@@ -426,7 +433,7 @@ protected:
 		}
 		else
 		{
-			render->DrawRectangle(rect, NULL, m_property.m_background_color.wrefcol, iBorderRadius);
+			render->DrawRectangle(rect, NULL, m_property.m_bk_color.wrefcol, iBorderRadius);
 		}
 	}
 

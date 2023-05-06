@@ -455,10 +455,10 @@ protected:
 protected:
 	virtual void SetDefaultPropertyUI()
 	{
-		m_property.m_background_color	= std::move(Color4(42, 65, 128));
-		m_property.m_hover_color		= std::move(Color4(229, 241, 255));
-		m_property.m_click_color		= std::move(Color4(201, 224, 247));
-		m_property.m_border_color		= std::move(Color4(255, 255, 255));
+		m_property.m_bk_color		= std::move(Color4(42, 65, 128));
+		m_property.m_bk_hover_color	= std::move(Color4(229, 241, 255));
+		m_property.m_click_color			= std::move(Color4(201, 224, 247));
+		m_property.m_border_color			= std::move(Color4(255, 255, 255));
 
 		m_property.border_radius	= 2;
 		m_property.border_width		= 1;

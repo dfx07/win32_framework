@@ -12,10 +12,11 @@
 #define XTEXTBOX_H
 
 #include "xcontrolbase.h"
-#include "xeasing.h"
+#include "math/xeasing.h"
 #include <list>
 
 #pragma warning( disable : 26451)
+#pragma warning( disable : 4267)
 
 ___BEGIN_NAMESPACE___
 
@@ -69,10 +70,7 @@ private:
 
 protected:
 	std::wstring		m_stext;
-
 	Gdiplus::Bitmap*	m_image;
-
-	EasingEngine		m_easing;
 
 public:
 	Textbox() : ControlBase(), m_stext(L""), m_image(NULL)
@@ -103,8 +101,8 @@ protected:
 
 	virtual void SetDefaultPropertyUI()
 	{
-		m_property.m_background_color	= std::move(Color4(252, 252, 252));
-		m_property.m_hover_color		= std::move(Color4(100, 110, 217));
+		m_property.m_bk_color			= std::move(Color4(252, 252, 252));
+		m_property.m_bk_hover_color		= std::move(Color4(100, 110, 217));
 		m_property.m_click_color		= std::move(Color4(255, 255, 245));
 
 		m_property.border_radius		= 4;
@@ -744,7 +742,7 @@ protected:
 
 			if (m_eStateTB == TB_STATE::TB_NORMAL)
 			{
-				background_color = new Gdiplus::SolidBrush(m_property.m_background_color.wrefcol);
+				background_color = new Gdiplus::SolidBrush(m_property.m_bk_color.wrefcol);
 				pen_color = new Gdiplus::Pen(Gdiplus::Color(255, 189, 196, 209), iBorderWidth);
 			}
 			else

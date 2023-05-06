@@ -50,12 +50,6 @@
     <ClInclude Include="..\include\xsysutils.h">
       <Filter>Header Files\system</Filter>
     </ClInclude>
-    <ClInclude Include="..\include\xalgorithm.h">
-      <Filter>Header Files\math</Filter>
-    </ClInclude>
-    <ClInclude Include="..\include\xeasing.h">
-      <Filter>Header Files\math</Filter>
-    </ClInclude>
     <ClInclude Include="..\include\wdef.h">
       <Filter>Header Files\ui</Filter>
     </ClInclude>
@@ -92,7 +86,7 @@
     <ClInclude Include="..\include\controls\xtextbox.h">
       <Filter>Header Files\ui\controls</Filter>
     </ClInclude>
-    <ClInclude Include="..\include\graphics\gpcam.h">
+    <ClInclude Include="..\include\graphics\gp_camera.h">
       <Filter>Header Files\graphics</Filter>
     </ClInclude>
     <ClInclude Include="..\include\import_control.h">
@@ -106,6 +100,21 @@
     </ClInclude>
     <ClInclude Include="..\include\xwinbase.h">
       <Filter>Header Files\ui\window</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\graphics\gp_geometry_render.h">
+      <Filter>Header Files\graphics</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\math\xgeometry.h">
+      <Filter>Header Files\math</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\math\xmath.h">
+      <Filter>Header Files\math</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\math\xalgorithm.h">
+      <Filter>Header Files\math</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\math\xeasing.h">
+      <Filter>Header Files\math</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

@@ -297,7 +297,15 @@ private:
 		if (m_Setting.m_bWriteInfo == true)
 		{
 			char strsys[80];
-			sprintf_s(strsys, "fps: %d - frametime : %f ms", GetFPS(), GetFrameTime());
+			long x, y;
+			if (GetCursorPosCenter(x, y))
+			{
+				sprintf_s(strsys, "fps: %d - frametime : %f ms - mouse : %d:%d", GetFPS(), GetFrameTime(), x, y);
+			}
+			else
+			{
+				sprintf_s(strsys, "fps: %d - frametime : %f ms", GetFPS(), GetFrameTime());
+			}
 			WriteText(strsys, 10, 20);
 		}
 	}

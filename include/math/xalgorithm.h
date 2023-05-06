@@ -12,14 +12,11 @@
 #define XALGORITHM_H
 
 #include "xsysdef.h"
+#include "xmath.h"
 
 #include <iostream>
 #include <math.h>
 #include <algorithm>
-
-
-#define PI					 3.14159265359	/* PI	  */
-#define HPI					 1.57079632679	/* Haft PI*/
 
 ___BEGIN_NAMESPACE___
 
