@@ -13,6 +13,7 @@
 
 #include "xcontrolbase.h"
 #include "math/xeasing.h"
+#include "math/xgeometry.h"
 
 ___BEGIN_NAMESPACE___
 
@@ -26,10 +27,10 @@ protected:
 	typedef void(*typeFunButtonEvent)   (WindowBase* window, Trackbar* btn);
 
 protected:
-	enum class BtnState
+	enum class TrackbarState
 	{
-		Normal,
-		Hover,
+		Normal     ,
+		MoveTracker,
 		Click,
 	};
 
@@ -47,15 +48,14 @@ private:
 
 protected:
 	std::wstring		m_sLabel;
-	BtnState			m_eState;
-	BtnState			m_eOldState;
+	TrackbarState		m_eState;
+	TrackbarState		m_eOldState;
 
 	//////////////////////////////////////////////////////////////////
 	// Effect (animation)
 	easing::EasingEngine		m_easing;
 	Gdiplus::Color				m_cur_background_color;
 	Gdiplus::Color				m_cur_border_color;
-
 
 	//////////////////////////////////////////////////////////////////
 	// Event Function
@@ -71,10 +71,31 @@ protected:
 	GdiplusEx::ImageFormat		m_ImgFormat;
 	Gdiplus::Bitmap*			m_image;
 
+
+	typedef Gdiplus::RectF		foxRect;
+	typedef Gdiplus::PointF		foxPoint;
+
+	//////////////////////////////////////////////////////////////////
+	// Struct information 
+	foxRect						m_track_rect;
+
+	Gdiplus::PointF				m_start_loc;
+	Gdiplus::PointF				m_track_loc;
+	Gdiplus::SizeF				m_track_size;
+	Gdiplus::PointF				m_end_loc;
+
+	float						m_fValue;
+	float						m_fMinValue;
+	float						m_fMaxValue;
+
+
+	int							m_iModeGuide;
+
 public:
-	Trackbar() : ControlBase(), m_eState(BtnState::Normal), m_sLabel(L""), m_image(NULL),
+	Trackbar() : ControlBase(), m_eState(TrackbarState::Normal), 
+		m_sLabel(L""), m_image(NULL),
 		m_track_leave(false),
-		m_eOldState(BtnState::Normal)
+		m_eOldState(TrackbarState::Normal)
 	{
 		m_rect.x	  = 0;
 		m_rect.y	  = 0;
@@ -111,6 +132,112 @@ protected:
 
 private:
 
+	Gdiplus::PointF GetNormalVectorTracker()
+	{
+		Gdiplus::PointF v = m_end_loc - m_start_loc;
+		float mag = std::sqrt(v.X * v.X + v.Y * v.Y);
+
+		if (mag <= 0.001f)
+		{
+			return Gdiplus::PointF(0, 0);
+		}
+		return Gdiplus::PointF(v.X / mag , v.Y / mag);
+	}
+
+	float GetMagnitudeTracker()
+	{
+		Gdiplus::PointF v = m_end_loc - m_start_loc;
+		float mag = std::sqrt(v.X * v.X + v.Y * v.Y);
+
+		return mag;
+	}
+
+	void MoveTracker(float dis)
+	{
+		auto vec = GetNormalVectorTracker();
+
+		m_track_loc.X = m_track_loc.X + vec.X * dis;
+		m_track_loc.Y = m_track_loc.Y + vec.Y * dis;
+	}
+
+	virtual void UpdateTrackerSize()
+	{
+		m_track_rect.X = m_track_loc.X - m_track_size.Width  / 2;
+		m_track_rect.Y = m_track_loc.Y - m_track_size.Height / 2;
+
+		m_track_rect.Width  = m_track_size.Width;
+		m_track_rect.Height = m_track_size.Height;
+	}
+
+	virtual void UpdateValue()
+	{
+		if (m_fValue <= m_fMinValue)
+		{
+			m_fValue = m_fMinValue;
+			m_track_loc = m_start_loc;
+		}
+		else if (m_fValue >= m_fMaxValue)
+		{
+			m_fValue = m_fMaxValue;
+			m_track_loc = m_end_loc;
+		}
+		else
+		{
+			m_track_loc = m_start_loc;
+
+			float fScale = (m_fValue - m_fMinValue)/(m_fMaxValue - m_fMinValue);
+			float fTrackLength = GetMagnitudeTracker();
+			float value = fScale * fTrackLength;
+
+			MoveTracker(value);
+		}
+
+		this->UpdateTrackerSize();
+	}
+
+	virtual void UpdateValue(long x, long y)
+	{
+		Point2D pt;
+		geo::GetPerpPoint2Segment({ m_start_loc.X, m_start_loc.Y }, { m_end_loc.X, m_end_loc.Y }, { x , y }, &pt, true);
+		float fValuePix  = geo::GetMagnitude(pt - Point2D{ m_start_loc.X, m_start_loc.Y });
+		float fLengthPix = geo::GetMagnitude(Point2D{ m_end_loc.X, m_end_loc.Y } - Point2D{ m_start_loc.X, m_start_loc.Y });
+
+		float fscale = fValuePix / fLengthPix;
+		float value = m_fMinValue + fscale * (m_fMaxValue - m_fMinValue);
+
+		m_fValue = value;
+		std::cout << m_fValue << std::endl;
+
+		this->UpdateValue();
+	}
+
+	virtual bool InsideTracker(long x, long y)
+	{
+		return m_track_rect.Contains(x, y);
+	}
+
+public:
+	void SetMinValue(float value)
+	{
+		m_fMinValue = value;
+	}
+
+	void SetMaxValue(float value)
+	{
+		m_fMaxValue = value;
+	}
+
+	void SetValue(float value)
+	{
+		m_fValue = value;
+
+		NULL_RETURN(m_hWnd, );
+
+		this->UpdateValue();
+	}
+
+private:
+
 	/*******************************************************************************
 	*! @brief  : Init button control
 	*! @return : number of control created
@@ -118,9 +245,19 @@ private:
 	*******************************************************************************/
 	virtual int OnInitControl()
 	{
-		DWORD style = WS_CHILD | WS_VISIBLE | BS_OWNERDRAW /*| SS_OWNERDRAW*/ /*| SS_NOTIFY*/;
+		DWORD style = WS_CHILD | WS_VISIBLE | SS_OWNERDRAW | SS_NOTIFY;
 
-		m_hWnd = (HWND)CreateWindowW(TRACKBAR_CLASSW, L"Trackbar Control", style  /*| BS_NOTIFY*/,
+		//m_hWnd = (HWND)CreateWindowW(TRACKBAR_CLASSW, L"Trackbar Control", style,
+		//				(int)m_rect.x,									// x position 
+		//				(int)m_rect.y,									// y position 
+		//				m_rect.width,									// Button width
+		//				m_rect.height,									// Button height
+		//				m_hWndPar,										// Parent window
+		//				(HMENU)(UINT_PTR)m_ID,							// menu.
+		//				(HINSTANCE)GetWindowLongPtr(m_hWndPar, GWLP_HINSTANCE),
+		//				NULL);
+
+		m_hWnd = (HWND)(HWND)CreateWindow(L"STATIC", L"", style,
 						(int)m_rect.x,									// x position 
 						(int)m_rect.y,									// y position 
 						m_rect.width,									// Button width
@@ -154,6 +291,17 @@ private:
 		m_ImgFormat.SetVerticalAlignment(GdiplusEx::ImageAlignment::ImageAlignmentNear);
 		m_ImgFormat.SetHorizontalAlignment(GdiplusEx::ImageAlignment::ImageAlignmentCenter);
 
+		m_start_loc = Gdiplus::PointF((Gdiplus::REAL)m_rect.x, (Gdiplus::REAL)(m_rect.y + m_rect.height / 2));
+		m_end_loc = Gdiplus::PointF((Gdiplus::REAL)(m_rect.x + m_rect.width), (Gdiplus::REAL)(m_rect.y + m_rect.height / 2));
+
+		m_track_size.Width  = 10.f;
+		m_track_size.Height = 20.f;
+
+		this->SetMinValue(0.f);
+		this->SetMaxValue(100.f);
+
+		this->SetValue(25.f);
+
 		return 1;
 	}
 
@@ -178,63 +326,74 @@ private:
 
 		NULL_RETURN(trackbar, 0);
 
-		std::cout << "1234" << std::endl;
+		long x, y;
+
 		switch (uMsg)
 		{
-
-		case WM_MOUSEMOVE:
-		{
-			std::cout << "move" << std::endl;
-			InvalidateRect(hwndTrack, NULL, FALSE);
-			break;
-		}
-		case WM_PAINT:
-		{
-			trackbar->Draw(true);
-			return FALSE;
-		}
-		//case WM_MOUSELEAVE:
-		//{
-		//	btn->m_track_leave = false;
-		//	btn->UpdateState(BtnState::Normal);
-		//	btn->BeginX1ThemeEffect();
-		//	InvalidateRect(hwndBtn, NULL, FALSE);
-		//	break;
-		//}
-		//case WM_MOUSEHOVER:
-		//{
-		//	btn->UpdateState(BtnState::Hover);
-		//	btn->BeginX1ThemeEffect();
-		//	InvalidateRect(hwndBtn, NULL, FALSE);
-		//	break;
-		//}
-		//case WM_TIMER:
-		//{
-		//	btn->OnTimer(wParam);
-		//	break;
-		//}
-		//case WM_LBUTTONDOWN:
-		//{
-		//	btn->UpdateState(BtnState::Click);
-		//	break;
-		//}
-		//case WM_LBUTTONUP:
-		//{
-		//	btn->m_eState = btn->m_eOldState;
-		//	break;
-		//}
-		case WM_ERASEBKGND:
-		{
-			return TRUE;
-		}
-		case WM_CTLCOLORBTN:
-		{
-			break;
-		}
+			case WM_MOUSEMOVE:
+			{
+				if (trackbar->m_eState == TrackbarState::MoveTracker)
+				{
+					if (trackbar->GetCursorPosInParent(x, y))
+					{
+						trackbar->UpdateValue(x, y);
+						trackbar->Draw(true);
+					}
+				}
+				break;
+			}
+			//case WM_MOUSELEAVE:
+			//{
+			//	btn->m_track_leave = false;
+			//	btn->UpdateState(BtnState::Normal);
+			//	btn->BeginX1ThemeEffect();
+			//	InvalidateRect(hwndBtn, NULL, FALSE);
+			//	break;
+			//}
+			//case WM_MOUSEHOVER:
+			//{
+			//	btn->UpdateState(BtnState::Hover);
+			//	btn->BeginX1ThemeEffect();
+			//	InvalidateRect(hwndBtn, NULL, FALSE);
+			//	break;
+			//}
+			//case WM_TIMER:
+			//{
+			//	btn->OnTimer(wParam);
+			//	break;
+			//}
+			case WM_LBUTTONDOWN:
+			{
+				if (trackbar->GetCursorPosInParent(x, y))
+				{
+					if (trackbar->InsideTracker(x, y))
+					{
+						trackbar->m_eState = TrackbarState::MoveTracker;
+						std::cout << "move tracker " << std::endl;
+					}
+				}
+				break;
+			}
+			case WM_LBUTTONUP:
+			{
+				trackbar->m_eState = TrackbarState::Normal;
+				break;
+			}
+			case WM_ERASEBKGND:
+			{
+				return TRUE;
+			}
+			case WM_CTLCOLORBTN:
+			{
+				break;
+			}
 		}
 
 		return CallWindowProc(sfunTrackbarWndProc, hwndTrack, uMsg, wParam, lParam);
 	}
+
+private:
+	
 
 private:
 	//void BeginX1ThemeEffect()
@@ -313,6 +472,23 @@ private:
 
 protected:
 
+	virtual void DrawTracker()
+	{
+		Gdiplus::SolidBrush brushTracker(Gdiplus::Color(255, 100, 100));
+		Gdiplus::Pen penTracker(Gdiplus::Color(255, 100, 100), 1.f);
+		m_pRender->DrawRectangle1(m_track_rect, &penTracker, &brushTracker);
+	}
+
+	virtual void DrawGuideLine()
+	{
+
+	}
+
+	virtual void DrawTextInfo()
+	{
+
+	}
+
 	virtual void Draw(bool bDraw = false)
 	{
 		NULL_RETURN(m_pRender, );
@@ -328,42 +504,42 @@ protected:
 			Gdiplus::Brush* background_color = NULL;
 			Gdiplus::Pen* pen_color = NULL;
 
-			if (m_bUseEffect)
-			{
-				if (m_eState == BtnState::Click)
-				{
-					background_color = new Gdiplus::SolidBrush(m_property.m_click_color.wrefcol);
-					pen_color = new Gdiplus::Pen(Gdiplus::Color(255, 98, 162, 228), iBorderWidth);
-				}
-				else if (m_eState == BtnState::Hover)
-				{
-					background_color = new Gdiplus::SolidBrush(m_cur_background_color);
-					pen_color = new Gdiplus::Pen(m_cur_border_color, iBorderWidth);
-				}
-				else
-				{
-					background_color = new Gdiplus::SolidBrush(m_cur_background_color);
-					pen_color = new Gdiplus::Pen(m_cur_border_color, iBorderWidth);
-				}
-			}
-			else
-			{
-				if (m_eState == BtnState::Click)
-				{
-					background_color = new Gdiplus::SolidBrush(m_property.m_click_color.wrefcol);
-					pen_color = new Gdiplus::Pen(Gdiplus::Color(255, 98, 162, 228), iBorderWidth);
-				}
-				else if (m_eState == BtnState::Hover)
-				{
-					background_color = new Gdiplus::SolidBrush(m_property.m_bk_hover_color.wrefcol);
-					pen_color = new Gdiplus::Pen(m_property.m_border_hover_color.wrefcol, iBorderWidth);
-				}
-				else
-				{
-					background_color = new Gdiplus::SolidBrush(m_property.m_bk_color.wrefcol);
-					pen_color = new Gdiplus::Pen(m_property.m_border_color.wrefcol, iBorderWidth);
-				}
-			}
+			//if (m_bUseEffect)
+			//{
+			//	if (m_eState == TrackbarState::Click)
+			//	{
+			//		background_color = new Gdiplus::SolidBrush(m_property.m_click_color.wrefcol);
+			//		pen_color = new Gdiplus::Pen(Gdiplus::Color(255, 98, 162, 228), iBorderWidth);
+			//	}
+			//	else if (m_eState == TrackbarState::Hover)
+			//	{
+			//		background_color = new Gdiplus::SolidBrush(m_cur_background_color);
+			//		pen_color = new Gdiplus::Pen(m_cur_border_color, iBorderWidth);
+			//	}
+			//	else
+			//	{
+			//		background_color = new Gdiplus::SolidBrush(m_cur_background_color);
+			//		pen_color = new Gdiplus::Pen(m_cur_border_color, iBorderWidth);
+			//	}
+			//}
+			//else
+			//{
+			//	if (m_eState == TrackbarState::Click)
+			//	{
+			//		background_color = new Gdiplus::SolidBrush(m_property.m_click_color.wrefcol);
+			//		pen_color = new Gdiplus::Pen(Gdiplus::Color(255, 98, 162, 228), iBorderWidth);
+			//	}
+			//	else if (m_eState == TrackbarState::Hover)
+			//	{
+			//		background_color = new Gdiplus::SolidBrush(m_property.m_bk_hover_color.wrefcol);
+			//		pen_color = new Gdiplus::Pen(m_property.m_border_hover_color.wrefcol, iBorderWidth);
+			//	}
+			//	else
+			//	{
+			//		background_color = new Gdiplus::SolidBrush(m_property.m_bk_color.wrefcol);
+			//		pen_color = new Gdiplus::Pen(m_property.m_border_color.wrefcol, iBorderWidth);
+			//	}
+			//}
 
 			// Fill erase background
 			this->DrawEraseBackground(m_pRender);
@@ -377,10 +553,17 @@ protected:
 			SAFE_DELETE(pen_color);
 			SAFE_DELETE(background_color);
 
-			Gdiplus::PointF ptStart = { (Gdiplus::REAL)rect.X , (Gdiplus::REAL)(rect.Y + rect.Height / 2) };
-			Gdiplus::PointF ptEnd = { (Gdiplus::REAL)(rect.X + rect.Width) , (Gdiplus::REAL)(rect.Y + rect.Height / 2) };
 			Gdiplus::Pen penLine(Gdiplus::Color(255, 100, 100), 4.f);
-			m_pRender->DrawLineFull(ptStart, ptEnd, &penLine);
+			m_pRender->DrawLineFull(m_start_loc, m_end_loc, &penLine);
+
+			// [1] Draw Text [Min Max]
+			this->DrawTextInfo();
+
+			// [2] Draw Guide line 
+			this->DrawGuideLine();
+
+			// [4] Draw Tracker
+			this->DrawTracker();
 		}
 		m_pRender->EndDrawRect(bDraw);
 	}
@@ -398,20 +581,20 @@ public:
 		m_EventFun = mn;
 	}
 
-	void UpdateState(BtnState state, bool free_oldstate = false)
-	{
-		m_eOldState = (free_oldstate) ? BtnState::Normal : m_eState;
+	//void UpdateState(BtnState state, bool free_oldstate = false)
+	//{
+	//	m_eOldState = (free_oldstate) ? BtnState::Normal : m_eState;
 
-		if ( m_EventFunEnter && state == BtnState::Hover)
-		{
-			m_EventFunEnter(NULL, this);
-		}
-		else if (m_EventFunLeave && state == BtnState::Normal)
-		{
-			m_EventFunLeave(NULL, this);
-		}
-		m_eState = state;
-	}
+	//	if ( m_EventFunEnter && state == BtnState::Hover)
+	//	{
+	//		m_EventFunEnter(NULL, this);
+	//	}
+	//	else if (m_EventFunLeave && state == BtnState::Normal)
+	//	{
+	//		m_EventFunLeave(NULL, this);
+	//	}
+	//	m_eState = state;
+	//}
 
 	void SetEventEnterCallBack(void(*fun)(WindowBase* window, Trackbar* btn))
 	{

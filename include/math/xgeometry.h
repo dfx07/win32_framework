@@ -35,10 +35,12 @@
 #undef ASSERT
 	#define ASSERT(expr)  assert(expr)
 
-#define GEO_XY_EPSILON  0.0001f
+
+#define GEO_EPSILON			0.001f  // same
+#define GEO_XY_EPSILON		0.0001f
 
 typedef float		FLOAT;
-typedef bool		BOOL;
+typedef int			BOOL;
 typedef int			INT;
 
 ///////////////////////////////////////////////////////////////////////////////////
@@ -102,6 +104,7 @@ INT				GetRelation2Polygon(const VecPoint2D& vecPoly1, const VecPoint2D& vecPoly
 BOOL			IsPointInLine(const Point2D& pt1, const Point2D& pt2, const Point2D& ptc);            // line = two point
 BOOL			IsPointInLine2(const Point2D& pt, const Vec2D& vn, const Point2D& ptc);               // line = 1 point + unit vector
 Point2D			GetPerpPoint2Line(const Point2D& ptLine1, const Point2D& ptLine2, const Point2D& pt); // line = two point
+INT				GetPerpPoint2Segment(const Point2D& ptSeg1, const Point2D& ptSeg2, const Point2D& pt, Point2D* ptPerp = NULL, BOOL bCheckNearest = FALSE);// Segment = two point
 
 BOOL			IsPointInRay(const Point2D& pt, const Vec2D& vn, const Point2D& ptc);                 // ray  = 1 point + unit vector
 
@@ -823,6 +826,62 @@ Point2D GetPerpPoint2Line(const Point2D& ptLine1, const Point2D& ptLine2, const 
 	}
 
 	return ptPer;
+}
+
+/***********************************************************************************
+*! @brief  : Find the perpendicular projection of a point onto the segment. (segment = 2 point)
+*! @param  : [in] ptSeg1  : point start in segment
+*! @param  : [in] ptSeg2  : point end in segment
+*! @param  : [in] pt      : get point
+*! @param  : [out] pptPerp		: perpendicular point
+*! @param  : [in] bCheckNearest : near segment point (seg1 or seg2)
+*! @return : 1 : Exist perpendicular point
+*!         : 2 : Not exist perpendicular point but nearlly ptSeg1 (bCheckNearest = TRUE)
+*!         : 3 : Not exist perpendicular point but nearlly ptSeg2 (bCheckNearest = TRUE)
+*!         : 0 : Not exist perpendicular point
+*! @author : thuong.nv			- [Date] : 05/11/2023
+***********************************************************************************/
+INT GetPerpPoint2Segment(const  Point2D& ptSeg1, const Point2D& ptSeg2,
+						 const  Point2D& pt,
+								Point2D* pptPerp	  /* = NULL*/,
+								BOOL	 bCheckNearest/* = FALSE*/)
+{
+	INT iRet = 0;
+
+	Point2D ptPer = GetPerpPoint2Line(ptSeg1, ptSeg2, pt);
+
+	// Point in side line Segment
+	FLOAT fDot1 = GetDotProduct(ptSeg2 - ptSeg1, ptPer - ptSeg1);
+	FLOAT fDot2 = GetDotProduct(ptSeg1 - ptSeg2, ptPer - ptSeg2);
+
+	if (fDot1 >= GEO_EPSILON && fDot2 >= GEO_EPSILON)
+	{
+		iRet = 1;
+	}
+	else if (bCheckNearest == TRUE)
+	{
+		FLOAT fDis1 = GetMagnitude(ptSeg1 - ptPer);
+		FLOAT fDis2 = GetMagnitude(ptSeg2 - ptPer);
+		iRet = (fDis1 <= fDis2) ? 2 : 3;
+	}
+
+	if (pptPerp)
+	{
+		if (iRet == 1)
+		{
+			*pptPerp = ptPer;
+		}
+		else if (iRet == 2)
+		{
+			*pptPerp = ptSeg1;
+		}
+		else if (iRet == 3)
+		{
+			*pptPerp = ptSeg2;
+		}
+	}
+
+	return iRet;
 }
 
 /***********************************************************************************
