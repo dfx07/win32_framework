@@ -52,14 +52,24 @@ ComponentList ReadFile(const char* filedata)
 
 void Create(WindowBase* win)
 {
-    Button* btn = new Button();
-    btn->SetLabel(L"Button 1");
-    btn->SetSize(100, 24);
-    btn->SetPosition(10, 50);
-    btn->SetBorderRadius(2);
-    btn->SetBorderWidth(1);
-    btn->UseEffect(false);
-    btn->Visible(true);
+    //Button* btn = new Button();
+    //btn->SetLabel(L"Button 1");
+    //btn->SetSize(100, 24);
+    //btn->SetPosition(10, 50);
+    //btn->SetBorderRadius(2);
+    //btn->SetBorderWidth(1);
+    //btn->UseEffect(true);
+    //btn->Visible(true);
+
+    Trackbar* track = new Trackbar();
+    track->SetLabel(L"Track bar");
+    track->SetSize(100, 24);
+    track->SetPosition(10, 50);
+    track->SetBorderRadius(2);
+    track->SetBorderWidth(1);
+    //btn->UseEffect(true);
+    track->Visible(true);
+
 
     //win->AddControl(btn);
 
@@ -170,7 +180,8 @@ void Create(WindowBase* win)
     //    sub->AddControl(textbox);
     //}
 
-    sub->AddControl(btn);
+    //sub->AddControl(btn);
+    sub->AddControl(track);
     win->AddSubWindow(sub);
     //Window* pWin = dynamic_cast<Window*>(win);
 

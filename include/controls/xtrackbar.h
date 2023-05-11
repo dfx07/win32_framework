@@ -3,13 +3,13 @@
 * @Copyright (C) 2021-2022 thuong.nv <thuong.nv.mta@gmail.com>
 *            All rights reserved.
 ************************************************************************************
-* @file     xbutton.h
+* @file     xtrackbar.h
 * @create   Nov 15, 2022
-* @brief    Create and handle event button
+* @brief    Create and handle event trackbar
 * @note     For conditions of distribution and use, see copyright notice in readme.txt
 ************************************************************************************/
-#ifndef XBUTTON_H
-#define XBUTTON_H
+#ifndef XTRACKBAR_H
+#define XTRACKBAR_H
 
 #include "xcontrolbase.h"
 #include "math/xeasing.h"
@@ -17,13 +17,13 @@
 ___BEGIN_NAMESPACE___
 
 /***********************************************************************************
-* ⮟⮟ Class name: Button control
-* Button control for window
+* ⮟⮟ Class name: Trackbar control
+* Trackbar control for window
 ***********************************************************************************/
-class Dllexport Button : public ControlBase, public ControlRectUI
+class Dllexport Trackbar : public ControlBase, public ControlRectUI
 {
 protected:
-	typedef void(*typeFunButtonEvent)   (WindowBase* window, Button* btn);
+	typedef void(*typeFunButtonEvent)   (WindowBase* window, Trackbar* btn);
 
 protected:
 	enum class BtnState
@@ -43,7 +43,7 @@ private:
 	bool				m_track_leave;
 	bool				m_bUseEffect = false;
 
-	static WNDPROC		sfunButtonWndProc;
+	static WNDPROC		sfunTrackbarWndProc;
 
 protected:
 	std::wstring		m_sLabel;
@@ -72,7 +72,7 @@ protected:
 	Gdiplus::Bitmap*			m_image;
 
 public:
-	Button() : ControlBase(), m_eState(BtnState::Normal), m_sLabel(L""), m_image(NULL),
+	Trackbar() : ControlBase(), m_eState(BtnState::Normal), m_sLabel(L""), m_image(NULL),
 		m_track_leave(false),
 		m_eOldState(BtnState::Normal)
 	{
@@ -84,7 +84,7 @@ public:
 		this->SetDefaultPropertyUI();
 	}
 
-	~Button()
+	~Trackbar()
 	{
 		delete m_image;
 	}
@@ -118,8 +118,9 @@ private:
 	*******************************************************************************/
 	virtual int OnInitControl()
 	{
-		m_hWnd = (HWND)CreateWindow(L"BUTTON", m_sLabel.c_str(),		// Button text 
-						WS_CHILD | WS_VISIBLE | BS_OWNERDRAW  /*| BS_NOTIFY*/,
+		DWORD style = WS_CHILD | WS_VISIBLE | BS_OWNERDRAW /*| SS_OWNERDRAW*/ /*| SS_NOTIFY*/;
+
+		m_hWnd = (HWND)CreateWindowW(TRACKBAR_CLASSW, L"Trackbar Control", style  /*| BS_NOTIFY*/,
 						(int)m_rect.x,									// x position 
 						(int)m_rect.y,									// y position 
 						m_rect.width,									// Button width
@@ -131,21 +132,21 @@ private:
 
 		NULL_RETURN(m_hWnd, 0);
 
-		sfunButtonWndProc = (WNDPROC)SetWindowLongPtr(m_hWnd, GWLP_WNDPROC, (LONG_PTR)&ButtonProcHandle);
+		sfunTrackbarWndProc = (WNDPROC)SetWindowLongPtr(m_hWnd, GWLP_WNDPROC, (LONG_PTR)&TrackbarProcHandle);
 
 		m_cur_background_color = m_property.m_bk_color.wrefcol;
 		m_cur_border_color = m_property.m_border_color.wrefcol;
 
-		easing::EaseType eType = easing::EaseType::Sine;
-		easing::EaseMode eMode = easing::EaseMode::In;
+		//easing::EaseType eType = easing::EaseType::Sine;
+		//easing::EaseMode eMode = easing::EaseMode::In;
 
-		m_easing.AddExec(eType, eMode, S2MS(0.2), m_property.m_bk_color.r, m_property.m_bk_hover_color.r);
-		m_easing.AddExec(eType, eMode, S2MS(0.2), m_property.m_bk_color.g, m_property.m_bk_hover_color.g);
-		m_easing.AddExec(eType, eMode, S2MS(0.2), m_property.m_bk_color.b, m_property.m_bk_hover_color.b);
+		//m_easing.AddExec(eType, eMode, S2MS(0.2), m_property.m_bk_color.r, m_property.m_bk_hover_color.r);
+		//m_easing.AddExec(eType, eMode, S2MS(0.2), m_property.m_bk_color.g, m_property.m_bk_hover_color.g);
+		//m_easing.AddExec(eType, eMode, S2MS(0.2), m_property.m_bk_color.b, m_property.m_bk_hover_color.b);
 
-		m_easing.AddExec(eType, eMode, S2MS(0.2), m_property.m_border_color.r, m_property.m_border_hover_color.r);
-		m_easing.AddExec(eType, eMode, S2MS(0.2), m_property.m_border_color.g, m_property.m_border_hover_color.g);
-		m_easing.AddExec(eType, eMode, S2MS(0.2), m_property.m_border_color.b, m_property.m_border_hover_color.b);
+		//m_easing.AddExec(eType, eMode, S2MS(0.2), m_property.m_border_color.r, m_property.m_border_hover_color.r);
+		//m_easing.AddExec(eType, eMode, S2MS(0.2), m_property.m_border_color.g, m_property.m_border_hover_color.g);
+		//m_easing.AddExec(eType, eMode, S2MS(0.2), m_property.m_border_color.b, m_property.m_border_hover_color.b);
 
 		m_StringFormat.SetAlignment(Gdiplus::StringAlignmentCenter);
 		m_StringFormat.SetLineAlignment(Gdiplus::StringAlignmentCenter);
@@ -171,147 +172,144 @@ private:
 	*! @return : number of control created
 	*! @author : thuong.nv          - [Date] : 05/03/2023
 	*******************************************************************************/
-	static LRESULT CALLBACK ButtonProcHandle(HWND hwndBtn, UINT uMsg, WPARAM wParam, LPARAM lParam)
+	static LRESULT CALLBACK TrackbarProcHandle(HWND hwndTrack, UINT uMsg, WPARAM wParam, LPARAM lParam)
 	{
-		Button* btn = (Button*)::GetWindowLongPtr(hwndBtn, GWLP_USERDATA);
+		Trackbar* trackbar = (Trackbar*)::GetWindowLongPtr(hwndTrack, GWLP_USERDATA);
 
-		NULL_RETURN(btn, 0);
+		NULL_RETURN(trackbar, 0);
 
+		std::cout << "1234" << std::endl;
 		switch (uMsg)
 		{
+
 		case WM_MOUSEMOVE:
 		{
-			if (btn->m_eState == BtnState::Click ||
-				btn->m_eState == BtnState::Hover)
-				break;
-
-			if (!btn->m_track_leave)
-			{
-				TrackMouse(hwndBtn);
-				btn->m_track_leave = true;
-			}
-
-			InvalidateRect(hwndBtn, NULL, FALSE);
+			std::cout << "move" << std::endl;
+			InvalidateRect(hwndTrack, NULL, FALSE);
 			break;
 		}
-		case WM_MOUSELEAVE:
+		case WM_PAINT:
 		{
-			btn->m_track_leave = false;
-			btn->UpdateState(BtnState::Normal);
-			btn->BeginX1ThemeEffect();
-			InvalidateRect(hwndBtn, NULL, FALSE);
-			break;
+			trackbar->Draw(true);
+			return FALSE;
 		}
-		case WM_MOUSEHOVER:
-		{
-			btn->UpdateState(BtnState::Hover);
-			btn->BeginX1ThemeEffect();
-			InvalidateRect(hwndBtn, NULL, FALSE);
-			break;
-		}
-		case WM_TIMER:
-		{
-			btn->OnTimer(wParam);
-			break;
-		}
-		case WM_LBUTTONDOWN:
-		{
-			btn->UpdateState(BtnState::Click);
-			break;
-		}
-		case WM_LBUTTONUP:
-		{
-			btn->m_eState = btn->m_eOldState;
-			break;
-		}
+		//case WM_MOUSELEAVE:
+		//{
+		//	btn->m_track_leave = false;
+		//	btn->UpdateState(BtnState::Normal);
+		//	btn->BeginX1ThemeEffect();
+		//	InvalidateRect(hwndBtn, NULL, FALSE);
+		//	break;
+		//}
+		//case WM_MOUSEHOVER:
+		//{
+		//	btn->UpdateState(BtnState::Hover);
+		//	btn->BeginX1ThemeEffect();
+		//	InvalidateRect(hwndBtn, NULL, FALSE);
+		//	break;
+		//}
+		//case WM_TIMER:
+		//{
+		//	btn->OnTimer(wParam);
+		//	break;
+		//}
+		//case WM_LBUTTONDOWN:
+		//{
+		//	btn->UpdateState(BtnState::Click);
+		//	break;
+		//}
+		//case WM_LBUTTONUP:
+		//{
+		//	btn->m_eState = btn->m_eOldState;
+		//	break;
+		//}
 		case WM_ERASEBKGND:
 		{
 			return TRUE;
 		}
 		case WM_CTLCOLORBTN:
 		{
-
 			break;
 		}
 		}
 
-		return CallWindowProc(sfunButtonWndProc, hwndBtn, uMsg, wParam, lParam);
+		return CallWindowProc(sfunTrackbarWndProc, hwndTrack, uMsg, wParam, lParam);
 	}
 
 private:
-	void BeginX1ThemeEffect()
-	{
-		if (m_bUseEffect == false)
-			return;
+	//void BeginX1ThemeEffect()
+	//{
+	//	if (m_bUseEffect == false)
+	//		return;
 
-		::SetTimer(m_hWnd, IDC_EFFECT_X1, TIME_UPDATE_EFFECT, (TIMERPROC)NULL);
+	//	::SetTimer(m_hWnd, IDC_EFFECT_X1, TIME_UPDATE_EFFECT, (TIMERPROC)NULL);
 
-		easing::EasingEngine* pEasing = &m_easing;
+	//	easing::EasingEngine* pEasing = &m_easing;
 
-		if (m_eState == BtnState::Hover)
-		{
-			pEasing->SetReverse(false);
-		}
-		else if (m_eState == BtnState::Normal)
-		{
-			pEasing->SetReverse(true);
-		}
+	//	if (m_eState == BtnState::Hover)
+	//	{
+	//		pEasing->SetReverse(false);
+	//	}
+	//	else if (m_eState == BtnState::Normal)
+	//	{
+	//		pEasing->SetReverse(true);
+	//	}
 
-		pEasing->ClearState();
-		pEasing->Start();
-	}
+	//	pEasing->ClearState();
+	//	pEasing->Start();
+	//}
 
-	bool UpdateX1ThemeEffect(bool bFirst =false)
-	{
-		if (m_bUseEffect == false)
-			return false;
+	//bool UpdateX1ThemeEffect(bool bFirst =false)
+	//{
+	//	if (m_bUseEffect == false)
+	//		return false;
 
-		easing::EasingEngine* pEasing = &m_easing;
+	//	easing::EasingEngine* pEasing = &m_easing;
 
-		pEasing->Update(TIME_UPDATE_EFFECT);
+	//	pEasing->Update(TIME_UPDATE_EFFECT);
 
-		int r = static_cast<int>(pEasing->Value(0));
-		int g = static_cast<int>(pEasing->Value(1));
-		int b = static_cast<int>(pEasing->Value(2));
+	//	int r = static_cast<int>(pEasing->Value(0));
+	//	int g = static_cast<int>(pEasing->Value(1));
+	//	int b = static_cast<int>(pEasing->Value(2));
 
-		m_cur_background_color = m_cur_background_color.MakeARGB(255, r, g, b);
+	//	m_cur_background_color = m_cur_background_color.MakeARGB(255, r, g, b);
 
-		r = static_cast<int>(pEasing->Value(3));
-		g = static_cast<int>(pEasing->Value(4));
-		b = static_cast<int>(pEasing->Value(5));
+	//	r = static_cast<int>(pEasing->Value(3));
+	//	g = static_cast<int>(pEasing->Value(4));
+	//	b = static_cast<int>(pEasing->Value(5));
 
-		m_cur_border_color = m_cur_border_color.MakeARGB(255, r, g, b);
+	//	m_cur_border_color = m_cur_border_color.MakeARGB(255, r, g, b);
 
-		return pEasing->IsActive();
-	}
+	//	return pEasing->IsActive();
+	//}
 
-	void EndX1ThemeEffect()
-	{
-		if (m_bUseEffect == false)
-			return;
+	//void EndX1ThemeEffect()
+	//{
+	//	if (m_bUseEffect == false)
+	//		return;
 
-		::KillTimer(m_hWnd, IDC_EFFECT_X1);
-	}
+	//	::KillTimer(m_hWnd, IDC_EFFECT_X1);
+	//}
 
-	virtual void OnTimer(DWORD wParam)
-	{
-		static int a = 0;
-		switch (wParam)
-		{
-			case IDC_EFFECT_X1:
-			{
-				if (UpdateX1ThemeEffect())
-				{
-					InvalidateRect(m_hWnd, NULL, FALSE);
-				}
-				else
-				{
-					EndX1ThemeEffect();
-				}
-				break;
-			}
-		}
-	}
+	//virtual void OnTimer(DWORD wParam)
+	//{
+	//	static int a = 0;
+	//	switch (wParam)
+	//	{
+	//		case IDC_EFFECT_X1:
+	//		{
+	//			if (UpdateX1ThemeEffect())
+	//			{
+	//				InvalidateRect(m_hWnd, NULL, FALSE);
+	//			}
+	//			else
+	//			{
+	//				EndX1ThemeEffect();
+	//			}
+	//			break;
+	//		}
+	//	}
+	//}
 
 protected:
 
@@ -379,28 +377,10 @@ protected:
 			SAFE_DELETE(pen_color);
 			SAFE_DELETE(background_color);
 
-			// [2] Draw image
-			if (m_image)
-			{
-				m_pRender->DrawImageFullRect(m_image, &m_ImgFormat);
-			}
-
-			// [3] Draw text for button
-			if (m_eState == BtnState::Hover)
-			{
-				Gdiplus::SolidBrush hover_textcolor(Gdiplus::Color(m_property.text_hover_color.wrefcol));
-				m_pRender->DrawTextFullRect(this->m_sLabel.c_str(), &hover_textcolor, &m_StringFormat);
-			}
-			else if (m_eState == BtnState::Click)
-			{
-				Gdiplus::SolidBrush hover_textcolor(Gdiplus::Color(235, 235, 235));
-				m_pRender->DrawTextFullRect(this->m_sLabel.c_str(), &hover_textcolor, &m_StringFormat);
-			}
-			else
-			{
-				Gdiplus::SolidBrush normal_textcolor(Gdiplus::Color(m_property.text_color.wrefcol));
-				m_pRender->DrawTextFullRect(this->m_sLabel.c_str(), &normal_textcolor, &m_StringFormat);
-			}
+			Gdiplus::PointF ptStart = { (Gdiplus::REAL)rect.X , (Gdiplus::REAL)(rect.Y + rect.Height / 2) };
+			Gdiplus::PointF ptEnd = { (Gdiplus::REAL)(rect.X + rect.Width) , (Gdiplus::REAL)(rect.Y + rect.Height / 2) };
+			Gdiplus::Pen penLine(Gdiplus::Color(255, 100, 100), 4.f);
+			m_pRender->DrawLineFull(ptStart, ptEnd, &penLine);
 		}
 		m_pRender->EndDrawRect(bDraw);
 	}
@@ -413,7 +393,7 @@ public:
 		m_EventFun(window, this);
 	}
 
-	void SetEvent(void(*mn)(WindowBase*, Button*))
+	void SetEvent(void(*mn)(WindowBase*, Trackbar*))
 	{
 		m_EventFun = mn;
 	}
@@ -433,11 +413,11 @@ public:
 		m_eState = state;
 	}
 
-	void SetEventEnterCallBack(void(*fun)(WindowBase* window, Button* btn))
+	void SetEventEnterCallBack(void(*fun)(WindowBase* window, Trackbar* btn))
 	{
 		this->m_EventFunEnter = fun;
 	}
-	void SetEventLeaveCallBack(void(*fun)(WindowBase* window, Button* btn))
+	void SetEventLeaveCallBack(void(*fun)(WindowBase* window, Trackbar* btn))
 	{
 		this->m_EventFunLeave = fun;
 	}
@@ -450,7 +430,7 @@ public:
 	friend class Combobox;
 };
 
-WNDPROC Button::sfunButtonWndProc = NULL;
+WNDPROC Trackbar::sfunTrackbarWndProc = NULL;
 
 ____END_NAMESPACE____
 

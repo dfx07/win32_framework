@@ -116,5 +116,8 @@
     <ClInclude Include="..\include\math\xeasing.h">
       <Filter>Header Files\math</Filter>
     </ClInclude>
+    <ClInclude Include="..\include\controls\xtrackbar.h">
+      <Filter>Header Files\ui\controls</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

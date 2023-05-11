@@ -134,7 +134,7 @@ class Dllexport WindowOpenGLContext : public WindowContext
 {
 #pragma comment (lib,"Gdiplus.lib")
 #pragma comment (lib,"opengl32.lib")
-#pragma comment (lib,"glew32.lib")
+#pragma comment (lib,"../build/lib/glew32.lib")
 
 protected:
 	bool				m_bUseOpenGLEx;

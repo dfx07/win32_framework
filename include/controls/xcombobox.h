@@ -513,8 +513,7 @@ protected:
 		if (m_bEditText) style |= CBS_DROPDOWN;
 		else			 style |= CBS_DROPDOWNLIST;
 
-		m_hWnd = CreateWindow(L"Combobox", NULL, style,			//
-								(int)m_rect.x, (int)m_rect.y,	// x, y
+		m_hWnd = CreateWindow(L"Combobox", NULL, style, (int)m_rect.x, (int)m_rect.y,	// x, y
 								m_rect.width, m_rect.height,	// chiều rộng / chiều cao
 								m_hWndPar,						// handle parent
 								(HMENU)(UINT_PTR)m_ID,

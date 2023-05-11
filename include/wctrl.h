@@ -447,8 +447,12 @@ protected:
 		{
 			Gdiplus::Rect rect = render->GetDrawRect();
 
-			rect.Width  -= iBorderWidth + 1;
-			rect.Height -= iBorderWidth + 1;
+			int iB = (iBorderWidth & 1) ? iBorderWidth -1 : iBorderWidth;
+
+			rect.X      += iBorderWidth/2;
+			rect.Y      += iBorderWidth/2;
+			rect.Width  -= iB;
+			rect.Height -= iB;
 
 			if (pen)
 			{
