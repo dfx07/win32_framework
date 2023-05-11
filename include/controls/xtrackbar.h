@@ -91,6 +91,9 @@ protected:
 
 	int							m_iModeGuide;
 
+	HWND						m_hWndTT;
+	std::wstring				m_strTT;
+
 public:
 	Trackbar() : ControlBase(), m_eState(TrackbarState::Normal), 
 		m_sLabel(L""), m_image(NULL),
@@ -271,6 +274,8 @@ private:
 
 		sfunTrackbarWndProc = (WNDPROC)SetWindowLongPtr(m_hWnd, GWLP_WNDPROC, (LONG_PTR)&TrackbarProcHandle);
 
+		CreateMyTooltip(m_hWnd);
+
 		m_cur_background_color = m_property.m_bk_color.wrefcol;
 		m_cur_border_color = m_property.m_border_color.wrefcol;
 
@@ -362,6 +367,28 @@ private:
 			//	btn->OnTimer(wParam);
 			//	break;
 			//}
+			case WM_NOTIFY :
+			{
+				NMHDR* pnm = reinterpret_cast<NMHDR*>(lParam);
+				if (pnm->hwndFrom == trackbar->m_hWndTT)
+				{
+					std::cout << pnm->code << std::endl;
+					switch (pnm->code)
+					{
+					case TTN_SHOW:
+						return trackbar->OnToolTipShow(pnm);
+					case TTN_POP:
+					{
+						std::cout << "hide" << std::endl;
+						return TRUE;
+					}
+						
+					//case NM_CUSTOMDRAW:
+					//	return trackbar->OnToolTipCustomDraw((NMTTCUSTOMDRAW*)pnm);
+					}
+				}
+				break;
+			}
 			case WM_LBUTTONDOWN:
 			{
 				if (trackbar->GetCursorPosInParent(x, y))
@@ -369,7 +396,7 @@ private:
 					if (trackbar->InsideTracker(x, y))
 					{
 						trackbar->m_eState = TrackbarState::MoveTracker;
-						std::cout << "move tracker " << std::endl;
+						
 					}
 				}
 				break;
@@ -393,6 +420,107 @@ private:
 	}
 
 private:
+
+	// Determine the required size of the client area of the tooltip
+	BOOL GetToolTipContentSize(SIZE* psz)
+	{
+		BOOL ret = FALSE;
+
+		HDC hdc = GetDC(m_hWndTT);
+		if (hdc != NULL)
+		{
+			HFONT hfontTT = (HFONT)SendMessage(m_hWndTT, WM_GETFONT, 0, 0);
+			HFONT hfontTTOld = (HFONT)SelectObject(hdc, hfontTT);
+			if (hfontTTOld != NULL)
+			{
+				SIZE szText;
+				if (GetTextExtentPoint32(hdc, m_strTT.c_str(), lstrlen(m_strTT.c_str()), &szText))
+				{
+					psz->cx = szText.cx;
+					psz->cy = szText.cy;
+					ret = TRUE;
+				}
+
+				SelectObject(hdc, hfontTTOld);
+			}
+
+			ReleaseDC(m_hWndTT, hdc);
+		}
+
+		return ret;
+	}
+
+	// Determine the required client rectangle of the tooltip to fit the
+	// text
+	BOOL GetToolTipContentRect(RECT* prc)
+	{
+		BOOL ret = FALSE;
+
+		SIZE sz;
+		if (GetToolTipContentSize(&sz))
+		{
+			if (GetWindowRect(m_hWndTT, prc))
+			{
+				prc->right = prc->left + sz.cx;
+				prc->bottom = prc->top + sz.cy;
+				ret = TRUE;
+			}
+		}
+
+		return ret;
+	}
+
+	//https://www.stevenengelhardt.com/2007/08/29/custom-drawn-win32-tooltips/
+
+	LRESULT OnToolTipShow(NMHDR* pnm)
+	{
+		std::cout << "show tool tip" << std::endl;
+		LRESULT ret = 0;
+		RECT rc;
+
+		if (GetToolTipContentRect(&rc))
+		{
+			// Adjust the rectangle to be the proper size to contain the
+			// content
+			if (SendMessage(m_hWndTT, TTM_ADJUSTRECT, TRUE, (LPARAM)&rc))
+			{
+				
+
+
+				if (SetWindowPos(m_hWndTT, NULL, m_track_loc.X, m_track_loc.Y, 100, 24,
+					SWP_NOZORDER | SWP_NOACTIVATE))
+				{
+					ret = TRUE;
+				}
+			}
+		}
+
+		return ret;
+	}
+
+	void CreateMyTooltip(HWND hparent)
+	{
+		m_hWndTT = CreateWindowEx(WS_EX_TOPMOST, TOOLTIPS_CLASS, NULL,
+			WS_POPUP | TTS_NOPREFIX | TTS_ALWAYSTIP, 0, 0, 0, 0, hparent, NULL, (HINSTANCE)GetWindowLongPtr(m_hWndPar, GWLP_HINSTANCE), NULL);
+
+		TTTOOLINFO ti = { 0 };
+
+		//ti.cbSize = sizeof(TTTOOLINFO);
+		//*********************************************************
+		// Specific settings for specific compiler options (Unicode/VC2013)
+		//*********************************************************
+		ti.cbSize = TTTOOLINFOW_V2_SIZE;
+
+		ti.uFlags = TTF_SUBCLASS;
+		ti.hwnd = hparent;
+		wchar_t tooltip[30] = L"A main window";
+		ti.lpszText = tooltip;
+		GetClientRect(hparent, &ti.rect);
+
+		if (!SendMessage(m_hWndTT, TTM_ADDTOOL, 0, (LPARAM)&ti))
+			MessageBox(0, TEXT("Failed: TTM_ADDTOOL"), 0, 0);
+	}
+
 	
 
 private:
