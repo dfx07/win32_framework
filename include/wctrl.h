@@ -387,6 +387,16 @@ public:
 		m_property.m_border_hover_color = col;
 	}
 
+	void SetPadding(int left, int top, int right, int bottom)
+	{
+		m_padding = { left , top , right, bottom };
+	}
+
+	void SetMargin(int left, int top, int right, int bottom)
+	{
+		m_margin = { left , top , right, bottom };
+	}
+
 protected:
 
 	void DrawEraseBackground(GDIplusCtrlRender*	render, Gdiplus::Brush* brush = NULL)
@@ -471,6 +481,9 @@ protected:
 
 protected:
 	PropertyControlUI	m_property;
+
+	CMargin				m_margin;
+	CPadding			m_padding;
 };
 
 ____END_NAMESPACE____

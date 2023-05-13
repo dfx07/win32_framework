@@ -756,9 +756,10 @@ public:
 		NULL_RETURN(m_pRender->render, );
 
 		//Gdiplus::Brush* pBrush = new Gdiplus::SolidBrush(brush);
-
-		m_pRender->render->DrawRectangle(pen, rect);
-
+		if(pen)
+			m_pRender->render->DrawRectangle(pen, rect);
+		if(brush)
+			m_pRender->render->FillRectangle(brush, rect);
 		//delete pBrush;
 	}
 

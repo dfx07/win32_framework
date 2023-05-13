@@ -209,12 +209,43 @@ public:
 	}
 
 public:
-	GDIplusCtrlRender*	m_pRender = nullptr;  // render draw parent
+	GDIplusCtrlRender* m_pRender = nullptr;  // render draw parent
 
 	friend class WindowBase;
 	friend class Window;
 	friend class SubWindow;
 };
+
+/**********************************************************************************
+* ⮟⮟ Class name: Control property - Created: 13/05/2023
+* Base class for window handle inheritance
+***********************************************************************************/
+template<typename T>
+struct Control4Value
+{
+	using _type = T;
+
+public:
+	union { _type top   ;  };
+	union { _type left  ;  };
+	union { _type right ;  };
+	union { _type bottom;  };
+
+public:
+	Control4Value(	_type t = static_cast<_type>(0),
+					_type l = static_cast<_type>(0),
+					_type r = static_cast<_type>(0),
+					_type b = static_cast<_type>(0))
+	{
+		this->top    = t;
+		this->left   = l;
+		this->right  = r;
+		this->bottom = b;
+	}
+};
+
+typedef Control4Value<int> CMargin;
+typedef Control4Value<int> CPadding;
 
 
 ____END_NAMESPACE____

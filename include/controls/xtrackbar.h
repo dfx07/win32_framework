@@ -71,13 +71,13 @@ protected:
 	GdiplusEx::ImageFormat		m_ImgFormat;
 	Gdiplus::Bitmap*			m_image;
 
-
-	typedef Gdiplus::RectF		foxRect;
-	typedef Gdiplus::PointF		foxPoint;
-
 	//////////////////////////////////////////////////////////////////
 	// Struct information 
-	foxRect						m_track_rect;
+
+	Gdiplus::RectF				m_track_rect;
+
+	Gdiplus::RectF				m_rect_value_show;
+	Gdiplus::SizeF				m_rect_value_show_size;
 
 	Gdiplus::PointF				m_start_loc;
 	Gdiplus::PointF				m_track_loc;
@@ -163,13 +163,22 @@ private:
 		m_track_loc.Y = m_track_loc.Y + vec.Y * dis;
 	}
 
-	virtual void UpdateTrackerSize()
+	virtual void UpdateRectTrackerInfo()
 	{
 		m_track_rect.X = m_track_loc.X - m_track_size.Width  / 2;
 		m_track_rect.Y = m_track_loc.Y - m_track_size.Height / 2;
 
 		m_track_rect.Width  = m_track_size.Width;
 		m_track_rect.Height = m_track_size.Height;
+	}
+
+	virtual void UpdateRectValueShowInfo()
+	{
+		m_rect_value_show.X = m_track_loc.X  - m_rect_value_show_size.Width / 2;
+		m_rect_value_show.Y = m_track_loc.Y - m_rect_value_show_size.Height;
+
+		m_rect_value_show.Width  = m_rect_value_show_size.Width;
+		m_rect_value_show.Height = m_rect_value_show_size.Height;
 	}
 
 	virtual void UpdateValue()
@@ -195,7 +204,8 @@ private:
 			MoveTracker(value);
 		}
 
-		this->UpdateTrackerSize();
+		this->UpdateRectTrackerInfo();
+		this->UpdateRectValueShowInfo();
 	}
 
 	virtual void UpdateValue(long x, long y)
@@ -205,11 +215,13 @@ private:
 		float fValuePix  = geo::GetMagnitude(pt - Point2D{ m_start_loc.X, m_start_loc.Y });
 		float fLengthPix = geo::GetMagnitude(Point2D{ m_end_loc.X, m_end_loc.Y } - Point2D{ m_start_loc.X, m_start_loc.Y });
 
+		std::cout << fValuePix << " <> " << fLengthPix << std::endl;
+
 		float fscale = fValuePix / fLengthPix;
 		float value = m_fMinValue + fscale * (m_fMaxValue - m_fMinValue);
 
 		m_fValue = value;
-		std::cout << m_fValue << std::endl;
+		//std::cout << m_fValue << std::endl;
 
 		this->UpdateValue();
 	}
@@ -240,6 +252,19 @@ public:
 	}
 
 private:
+	CRect RecalcActualSizeControl(CRect rect)
+	{
+		CRect ret_rect;
+
+		ret_rect.x		= rect.x - m_margin.left;
+		ret_rect.y		= rect.y - m_margin.top;
+		ret_rect.width	= rect.width  - m_margin.right;
+		ret_rect.height	= rect.height - m_margin.bottom;
+
+		return ret_rect;
+	}
+
+private:
 
 	/*******************************************************************************
 	*! @brief  : Init button control
@@ -250,6 +275,9 @@ private:
 	{
 		DWORD style = WS_CHILD | WS_VISIBLE | SS_OWNERDRAW | SS_NOTIFY;
 
+		// Actual size will be wider when setting
+		m_rect = this->RecalcActualSizeControl(m_rect);
+
 		//m_hWnd = (HWND)CreateWindowW(TRACKBAR_CLASSW, L"Trackbar Control", style,
 		//				(int)m_rect.x,									// x position 
 		//				(int)m_rect.y,									// y position 
@@ -259,6 +287,7 @@ private:
 		//				(HMENU)(UINT_PTR)m_ID,							// menu.
 		//				(HINSTANCE)GetWindowLongPtr(m_hWndPar, GWLP_HINSTANCE),
 		//				NULL);
+
 
 		m_hWnd = (HWND)(HWND)CreateWindow(L"STATIC", L"", style,
 						(int)m_rect.x,									// x position 
@@ -301,6 +330,10 @@ private:
 
 		m_track_size.Width  = 10.f;
 		m_track_size.Height = 20.f;
+
+
+		m_rect_value_show_size.Width  = 20.f;
+		m_rect_value_show_size.Height = 10.f;
 
 		this->SetMinValue(0.f);
 		this->SetMaxValue(100.f);
@@ -404,6 +437,7 @@ private:
 			case WM_LBUTTONUP:
 			{
 				trackbar->m_eState = TrackbarState::Normal;
+				trackbar->Draw(true);
 				break;
 			}
 			case WM_ERASEBKGND:
@@ -614,7 +648,20 @@ protected:
 
 	virtual void DrawTextInfo()
 	{
+		if(m_eState == TrackbarState::MoveTracker)
+		{
+			// Draw panel show value current
+			Gdiplus::Pen penBorderRectValue(Gdiplus::Color(255, 255, 255), 1.f);
+			Gdiplus::SolidBrush brushValueColor(Gdiplus::Color(50, 255, 255, 255));
+			m_pRender->DrawRectangle1(m_rect_value_show, &penBorderRectValue, &brushValueColor);
 
+			// Draw text value current
+			Gdiplus::SolidBrush textValueColor(Gdiplus::Color(255, 255, 255));
+			const int nBuffSize = 20;
+			wchar_t strBuff[nBuffSize];
+			swprintf_s(strBuff, nBuffSize, L"%0.f", m_fValue);
+			m_pRender->DrawTextRect(m_rect_value_show, strBuff, &textValueColor, &m_StringFormat);
+		}
 	}
 
 	virtual void Draw(bool bDraw = false)
@@ -684,14 +731,14 @@ protected:
 			Gdiplus::Pen penLine(Gdiplus::Color(255, 100, 100), 4.f);
 			m_pRender->DrawLineFull(m_start_loc, m_end_loc, &penLine);
 
-			// [1] Draw Text [Min Max]
-			this->DrawTextInfo();
-
-			// [2] Draw Guide line 
+			// [1] Draw Guide line 
 			this->DrawGuideLine();
 
-			// [4] Draw Tracker
+			// [2] Draw Tracker
 			this->DrawTracker();
+
+			// [3] Draw Text [Min Max]
+			this->DrawTextInfo();
 		}
 		m_pRender->EndDrawRect(bDraw);
 	}
