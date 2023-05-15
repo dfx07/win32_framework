@@ -94,6 +94,8 @@ protected:
 	HWND						m_hWndTT;
 	std::wstring				m_strTT;
 
+	CRect						m_actual_rect;
+
 public:
 	Trackbar() : ControlBase(), m_eState(TrackbarState::Normal), 
 		m_sLabel(L""), m_image(NULL),
@@ -256,10 +258,10 @@ private:
 	{
 		CRect ret_rect;
 
-		ret_rect.x		= rect.x - m_margin.left;
-		ret_rect.y		= rect.y - m_margin.top;
-		ret_rect.width	= rect.width  - m_margin.right;
-		ret_rect.height	= rect.height - m_margin.bottom;
+		ret_rect.x		= rect.x + m_margin.left;
+		ret_rect.y		= rect.y + m_margin.top;
+		ret_rect.width	= rect.width  - 2*m_margin.right;
+		ret_rect.height	= rect.height - 2*m_margin.bottom;
 
 		return ret_rect;
 	}
@@ -275,8 +277,10 @@ private:
 	{
 		DWORD style = WS_CHILD | WS_VISIBLE | SS_OWNERDRAW | SS_NOTIFY;
 
+		m_margin = -10.f;
+
 		// Actual size will be wider when setting
-		m_rect = this->RecalcActualSizeControl(m_rect);
+		m_actual_rect = this->RecalcActualSizeControl(m_rect);
 
 		//m_hWnd = (HWND)CreateWindowW(TRACKBAR_CLASSW, L"Trackbar Control", style,
 		//				(int)m_rect.x,									// x position 
@@ -288,12 +292,11 @@ private:
 		//				(HINSTANCE)GetWindowLongPtr(m_hWndPar, GWLP_HINSTANCE),
 		//				NULL);
 
-
 		m_hWnd = (HWND)(HWND)CreateWindow(L"STATIC", L"", style,
-						(int)m_rect.x,									// x position 
-						(int)m_rect.y,									// y position 
-						m_rect.width,									// Button width
-						m_rect.height,									// Button height
+						(int)m_actual_rect.x,							// x position 
+						(int)m_actual_rect.y,							// y position 
+						m_actual_rect.width,							// Button width
+						m_actual_rect.height,							// Button height
 						m_hWndPar,										// Parent window
 						(HMENU)(UINT_PTR)m_ID,							// menu.
 						(HINSTANCE)GetWindowLongPtr(m_hWndPar, GWLP_HINSTANCE),
@@ -717,13 +720,13 @@ protected:
 			//}
 
 			// Fill erase background
-			this->DrawEraseBackground(m_pRender);
+			//this->DrawEraseBackground(m_pRender);
 
-			// Fill rectangle background;
-			this->DrawFillBackground(m_pRender, background_color);
+			//// Fill rectangle background;
+			//this->DrawFillBackground(m_pRender, background_color);
 
-			// Draw rectangle background;
-			this->DrawBorderBackground(m_pRender, pen_color);
+			//// Draw rectangle background;
+			//this->DrawBorderBackground(m_pRender, pen_color);
 
 			SAFE_DELETE(pen_color);
 			SAFE_DELETE(background_color);

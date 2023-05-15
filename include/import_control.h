@@ -16,8 +16,8 @@
 #include "controls/xcheckbox.h"
 #include "controls/xlabel.h"
 #include "controls/xmenucontext.h"
-#include "controls/xtextbox.h"
-#include "controls/xtrackbar.h"
+//#include "controls/xtextbox.h"
+//#include "controls/xtrackbar.h"
 
 #include "wapi.h"
 

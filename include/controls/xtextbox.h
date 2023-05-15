@@ -24,7 +24,7 @@ ___BEGIN_NAMESPACE___
 * ⮟⮟ Class name: Textbox control
 * Textbox control for window
 ***********************************************************************************/
-class Dllexport Textbox : public ControlBase, public ControlRectUI, public RectUI
+class Dllexport Textbox : public ControlBase, public RectUIControl
 {
 	enum { IDC_EFFECT_X1	  = 12003 };
 	enum { WIDTH_DEF		  = 80	  };
@@ -734,15 +734,15 @@ protected:
 			Gdiplus::Rect rect = m_pRender->GetDrawRect();
 
 			// [2] Draw color button state
-			const unsigned int iRadius = m_property.border_radius;
-			const unsigned int iBorderWidth = m_property.border_width;
+			const unsigned int iRadius      = UI_Background.border_radius;
+			const unsigned int iBorderWidth = UI_Background.border_width;
 
 			Gdiplus::Brush* background_color = NULL;
 			Gdiplus::Pen* pen_color = NULL;
 
 			if (m_eStateTB == TB_STATE::TB_NORMAL)
 			{
-				background_color = new Gdiplus::SolidBrush(m_property.m_bk_color.wrefcol);
+				background_color = new Gdiplus::SolidBrush(UI_Background.bk_color.wrefcol);
 				pen_color = new Gdiplus::Pen(Gdiplus::Color(255, 189, 196, 209), iBorderWidth);
 			}
 			else
@@ -751,19 +751,19 @@ protected:
 				pen_color = new Gdiplus::Pen(Gdiplus::Color(255, 21, 120, 214), iBorderWidth);
 			}
 
-			// Fill erase background
-			this->DrawEraseBackground(m_pRender);
+			//// Fill erase background
+			//this->DrawEraseBackground(m_pRender);
 
-			// Fill rectangle background;
-			this->DrawFillBackground(m_pRender, background_color);
+			//// Fill rectangle background;
+			//this->DrawFillBackground(m_pRender, background_color);
 
-			// Draw rectangle background;
-			this->DrawBorderBackground(m_pRender, pen_color);
+			//// Draw rectangle background;
+			//this->DrawBorderBackground(m_pRender, pen_color);
 
 			SAFE_DELETE(pen_color);
 			SAFE_DELETE(background_color);
 
-			Gdiplus::SolidBrush text_color(Gdiplus::Color(m_property.text_color.wrefcol));
+			Gdiplus::SolidBrush text_color(Gdiplus::Color(UI_Text.text_color.wrefcol));
 
 			//Gdiplus::Pen pen_text_color(Gdiplus::Color(m_property.text_color.wrefcol));
 			//m_pRender->DrawRectangle1(m_rect_text, &pen_text_color, nullptr);

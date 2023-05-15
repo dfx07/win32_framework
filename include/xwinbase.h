@@ -912,6 +912,15 @@ public:
 	{
 		NULL_RETURN(control, 0);
 
+		// check control exist
+		auto itFound = std::find(m_ControlList.begin(), m_ControlList.end(), control);
+
+		if (itFound != m_ControlList.end())
+		{
+			assert(0);
+			return 0;
+		}
+
 		// it will initialize later
 		if (m_hWnd == NULL)
 		{

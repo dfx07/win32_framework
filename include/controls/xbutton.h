@@ -20,7 +20,7 @@ ___BEGIN_NAMESPACE___
 * ⮟⮟ Class name: Button control
 * Button control for window
 ***********************************************************************************/
-class Dllexport Button : public ControlBase, public ControlRectUI
+class Dllexport Button : public ControlBase, public RectUIControl
 {
 protected:
 	typedef void(*typeFunButtonEvent)   (WindowBase* window, Button* btn);
@@ -96,17 +96,18 @@ protected:
 
 	virtual void SetDefaultPropertyUI()
 	{
-		m_property.m_bk_color			= std::move(Color4(37, 37, 38));
-		m_property.m_bk_hover_color		= std::move(Color4(66, 66, 68));
-		m_property.m_click_color		= std::move(Color4(53, 53, 54));
+		UI_Background.bk_color				= std::move(Color4(37, 37, 38));
+		UI_Background.bk_hover_color		= std::move(Color4(66, 66, 68));
+		UI_Background.bk_click_color		= std::move(Color4(53, 53, 54));
 
-		m_property.border_radius		= 0;
-		m_property.border_width			= 0;
-		m_property.text_color			= std::move(Color4(255, 255, 255));
-		m_property.text_hover_color		= std::move(Color4(255, 255, 255));
+		UI_Background.border_color			= std::move(Color4(77, 77, 80));
+		UI_Background.border_hover_color	= std::move(Color4(66, 166, 254));
 
-		m_property.m_border_color		= std::move(Color4(77, 77, 80));
-		m_property.m_border_hover_color	= std::move(Color4(66, 166, 254));
+		UI_Background.border_radius			= 0;
+		UI_Background.border_width			= 0;
+
+		UI_Text.text_color					= std::move(Color4(255, 255, 255));
+		UI_Text.text_hover_color			= std::move(Color4(255, 255, 255));
 	}
 
 private:
@@ -133,19 +134,19 @@ private:
 
 		sfunButtonWndProc = (WNDPROC)SetWindowLongPtr(m_hWnd, GWLP_WNDPROC, (LONG_PTR)&ButtonProcHandle);
 
-		m_cur_background_color = m_property.m_bk_color.wrefcol;
-		m_cur_border_color = m_property.m_border_color.wrefcol;
+		m_cur_background_color = UI_Background.bk_color.wrefcol;
+		m_cur_border_color = UI_Background.border_color.wrefcol;
 
 		easing::EaseType eType = easing::EaseType::Sine;
 		easing::EaseMode eMode = easing::EaseMode::In;
 
-		m_easing.AddExec(eType, eMode, S2MS(0.2), m_property.m_bk_color.r, m_property.m_bk_hover_color.r);
-		m_easing.AddExec(eType, eMode, S2MS(0.2), m_property.m_bk_color.g, m_property.m_bk_hover_color.g);
-		m_easing.AddExec(eType, eMode, S2MS(0.2), m_property.m_bk_color.b, m_property.m_bk_hover_color.b);
+		m_easing.AddExec(eType, eMode, S2MS(0.2), UI_Background.bk_color.r, UI_Background.bk_hover_color.r);
+		m_easing.AddExec(eType, eMode, S2MS(0.2), UI_Background.bk_color.g, UI_Background.bk_hover_color.g);
+		m_easing.AddExec(eType, eMode, S2MS(0.2), UI_Background.bk_color.b, UI_Background.bk_hover_color.b);
 
-		m_easing.AddExec(eType, eMode, S2MS(0.2), m_property.m_border_color.r, m_property.m_border_hover_color.r);
-		m_easing.AddExec(eType, eMode, S2MS(0.2), m_property.m_border_color.g, m_property.m_border_hover_color.g);
-		m_easing.AddExec(eType, eMode, S2MS(0.2), m_property.m_border_color.b, m_property.m_border_hover_color.b);
+		m_easing.AddExec(eType, eMode, S2MS(0.2), UI_Background.border_color.r, UI_Background.border_hover_color.r);
+		m_easing.AddExec(eType, eMode, S2MS(0.2), UI_Background.border_color.g, UI_Background.border_hover_color.g);
+		m_easing.AddExec(eType, eMode, S2MS(0.2), UI_Background.border_color.b, UI_Background.border_hover_color.b);
 
 		m_StringFormat.SetAlignment(Gdiplus::StringAlignmentCenter);
 		m_StringFormat.SetLineAlignment(Gdiplus::StringAlignmentCenter);
@@ -191,7 +192,7 @@ private:
 				btn->m_track_leave = true;
 			}
 
-			InvalidateRect(hwndBtn, NULL, FALSE);
+			btn->Draw(TRUE);
 			break;
 		}
 		case WM_MOUSELEAVE:
@@ -199,14 +200,16 @@ private:
 			btn->m_track_leave = false;
 			btn->UpdateState(BtnState::Normal);
 			btn->BeginX1ThemeEffect();
-			InvalidateRect(hwndBtn, NULL, FALSE);
+
+			btn->Draw(TRUE);
 			break;
 		}
 		case WM_MOUSEHOVER:
 		{
 			btn->UpdateState(BtnState::Hover);
 			btn->BeginX1ThemeEffect();
-			InvalidateRect(hwndBtn, NULL, FALSE);
+
+			btn->Draw(TRUE);
 			break;
 		}
 		case WM_TIMER:
@@ -230,7 +233,6 @@ private:
 		}
 		case WM_CTLCOLORBTN:
 		{
-
 			break;
 		}
 		}
@@ -324,8 +326,8 @@ protected:
 			Gdiplus::Rect rect = m_pRender->GetDrawRect();
 
 			// [2] Draw color button state
-			const unsigned int iRadius = m_property.border_radius;
-			const unsigned int iBorderWidth = m_property.border_width;
+			const unsigned int iBorderRadius= UI_Background.border_radius;
+			const unsigned int iBorderWidth = UI_Background.border_width;
 
 			Gdiplus::Brush* background_color = NULL;
 			Gdiplus::Pen* pen_color = NULL;
@@ -334,7 +336,7 @@ protected:
 			{
 				if (m_eState == BtnState::Click)
 				{
-					background_color = new Gdiplus::SolidBrush(m_property.m_click_color.wrefcol);
+					background_color = new Gdiplus::SolidBrush(UI_Background.bk_click_color.wrefcol);
 					pen_color = new Gdiplus::Pen(Gdiplus::Color(255, 98, 162, 228), iBorderWidth);
 				}
 				else if (m_eState == BtnState::Hover)
@@ -352,29 +354,25 @@ protected:
 			{
 				if (m_eState == BtnState::Click)
 				{
-					background_color = new Gdiplus::SolidBrush(m_property.m_click_color.wrefcol);
+					background_color = new Gdiplus::SolidBrush(UI_Background.bk_click_color.wrefcol);
 					pen_color = new Gdiplus::Pen(Gdiplus::Color(255, 98, 162, 228), iBorderWidth);
 				}
 				else if (m_eState == BtnState::Hover)
 				{
-					background_color = new Gdiplus::SolidBrush(m_property.m_bk_hover_color.wrefcol);
-					pen_color = new Gdiplus::Pen(m_property.m_border_hover_color.wrefcol, iBorderWidth);
+					background_color = new Gdiplus::SolidBrush(UI_Background.bk_hover_color.wrefcol);
+					pen_color = new Gdiplus::Pen(UI_Background.border_hover_color.wrefcol, iBorderWidth);
 				}
 				else
 				{
-					background_color = new Gdiplus::SolidBrush(m_property.m_bk_color.wrefcol);
-					pen_color = new Gdiplus::Pen(m_property.m_border_color.wrefcol, iBorderWidth);
+					background_color = new Gdiplus::SolidBrush(UI_Background.bk_color.wrefcol);
+					pen_color = new Gdiplus::Pen(UI_Background.border_color.wrefcol, iBorderWidth);
 				}
 			}
-
 			// Fill erase background
-			this->DrawEraseBackground(m_pRender);
+			this->EraseBackground(m_pRender);
 
-			// Fill rectangle background;
-			this->DrawFillBackground(m_pRender, background_color);
-
-			// Draw rectangle background;
-			this->DrawBorderBackground(m_pRender, pen_color);
+			// Draw rectangle background
+			this->DrawBackground(m_pRender, pen_color, background_color, iBorderRadius);
 
 			SAFE_DELETE(pen_color);
 			SAFE_DELETE(background_color);
@@ -388,7 +386,7 @@ protected:
 			// [3] Draw text for button
 			if (m_eState == BtnState::Hover)
 			{
-				Gdiplus::SolidBrush hover_textcolor(Gdiplus::Color(m_property.text_hover_color.wrefcol));
+				Gdiplus::SolidBrush hover_textcolor(Gdiplus::Color(UI_Text.text_hover_color.wrefcol));
 				m_pRender->DrawTextFullRect(this->m_sLabel.c_str(), &hover_textcolor, &m_StringFormat);
 			}
 			else if (m_eState == BtnState::Click)
@@ -398,7 +396,7 @@ protected:
 			}
 			else
 			{
-				Gdiplus::SolidBrush normal_textcolor(Gdiplus::Color(m_property.text_color.wrefcol));
+				Gdiplus::SolidBrush normal_textcolor(Gdiplus::Color(UI_Text.text_color.wrefcol));
 				m_pRender->DrawTextFullRect(this->m_sLabel.c_str(), &normal_textcolor, &m_StringFormat);
 			}
 		}

@@ -513,6 +513,7 @@ public:
 	GDIplusCtrlRender() : newBmp(NULL), oldBmp(NULL)
 		, m_font_render(NULL)
 		, m_pRender(NULL)
+		, m_smoothMode(Gdiplus::SmoothingMode::SmoothingModeAntiAlias)
 	{
 	}
 
@@ -594,6 +595,32 @@ public:
 		{
 			this->DestroyRender();
 		}
+	}
+
+	void AttachSmoothingMode(Gdiplus::SmoothingMode mode)
+	{
+		NULL_RETURN(m_pRender->render,);
+
+		m_stackSmoothMode.push(m_smoothMode);
+		m_smoothMode = mode;
+
+		m_pRender->render->SetSmoothingMode(m_smoothMode);
+	}
+
+	void DetachSmoothingMode()
+	{
+		NULL_RETURN(m_pRender->render, );
+
+		if (!m_stackSmoothMode.empty())
+		{
+			m_smoothMode = m_stackSmoothMode.top();
+			m_stackSmoothMode.pop();
+		}
+		else
+		{
+			m_smoothMode = Gdiplus::SmoothingMode::SmoothingModeDefault;
+		}
+		m_pRender->render->SetSmoothingMode(m_smoothMode);
 	}
 
 // Function support draw gdiplus
@@ -898,6 +925,10 @@ private:
 	GDIPLUS_DRAW_INFO_PTR		m_pRender;
 	Gdiplus::Font*				m_font_render;
 	std::stack<Gdiplus::Rect>	m_stackRect;
+
+
+	std::stack<Gdiplus::SmoothingMode>	m_stackSmoothMode;
+	Gdiplus::SmoothingMode				m_smoothMode;
 };
 
 /**********************************************************************************

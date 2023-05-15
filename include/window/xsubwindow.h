@@ -14,7 +14,6 @@
 #include "xsystype.h"
 #include "xwinbase.h"
 #include "controls/xbutton.h"
-#include <controls/xcombobox.h>
 
 ___BEGIN_NAMESPACE___
 
@@ -425,12 +424,9 @@ protected:
 			{
 				if (subwin->m_ControlList[i]->GetID() == DrawMenuSize->CtlID)
 				{
-					Combobox* pControl = (Combobox*)subwin->m_ControlList[i];
 					return FALSE;
 				}
 			}
-			
-
 			break;
 		}
 		case WM_CTLCOLORSTATIC:
@@ -486,18 +482,18 @@ public:
 		Button* btn_mini = new Button();
 		btn_mini->SetID(IDC_BTN_MINIMIZE);
 		btn_mini->SetLabel(L"▼");
-		btn_mini->SetPosition(2, 2);
+		btn_mini->SetPosition(1, 1);
 		btn_mini->SetBackgroundColor(m_title_background_color);
-		btn_mini->SetSize(m_height_title_bar , m_height_title_bar -1);
+		btn_mini->SetSize(m_height_title_bar, m_height_title_bar);
 		AddControl(btn_mini);
 
 		// Create button control
 		Button* btn_close = new Button();
 		btn_close->SetID(IDC_BTN_CLOSE);
 		btn_close->SetLabel(L"x");
-		btn_close->SetPosition(pRenderInfo->rect.Width - (m_height_title_bar) - 2, 2);
+		btn_close->SetPosition(pRenderInfo->rect.Width - (m_height_title_bar) - 2, 1);
 		btn_close->SetBackgroundColor(m_title_background_color);
-		btn_close->SetSize(m_height_title_bar, m_height_title_bar -1);
+		btn_close->SetSize(m_height_title_bar, m_height_title_bar);
 		AddControl(btn_close);
 	}
 
@@ -546,7 +542,7 @@ public:
 	*******************************************************************************/
 	void SetColorControl(ControlBase* pControl)
 	{
-		ControlRectUI* pControlRectUI = dynamic_cast<ControlRectUI*>(pControl);
+		RectUIControl* pControlRectUI = dynamic_cast<RectUIControl*>(pControl);
 
 		if (pControlRectUI)
 		{

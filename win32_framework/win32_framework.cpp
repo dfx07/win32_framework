@@ -55,60 +55,26 @@ void Create(WindowBase* win)
     //Button* btn = new Button();
     //btn->SetLabel(L"Button 1");
     //btn->SetSize(100, 24);
-    //btn->SetPosition(10, 50);
-    //btn->SetBorderRadius(2);
-    //btn->SetBorderWidth(1);
+    //btn->SetPosition(10, 40);
+    //btn->SetBorderRadius(5);
+    //btn->SetBorderWidth(3);
     //btn->UseEffect(true);
     //btn->Visible(true);
 
-    Trackbar* track = new Trackbar();
-    track->SetLabel(L"Track bar");
-    track->SetSize(100, 24);
-    track->SetPosition(10, 50);
-    track->SetBorderRadius(2);
-    track->SetBorderWidth(1);
-    //btn->UseEffect(true);
-    track->Visible(true);
+    //Trackbar* track = new Trackbar();
+    //track->SetLabel(L"Track bar");
+    //track->SetSize(100, 24);
+    //track->SetPosition(12, 50);
+    //track->SetBorderRadius(2);
+    //track->SetBorderWidth(1);
+    ////btn->UseEffect(true);
+    //track->Visible(true);
 
+    //Checkbox* chk = new Checkbox();
 
-    //win->AddControl(btn);
-
-    //btn = new Button();
-    //btn->SetLabel(L"Ngô Văn Thường");
-    //btn->SetSize(200, 24);
-    //btn->SetPosition(100, 124);
-    //btn->SetBorderRadius(2);
-    //btn->SetBorderWidth(1);
-    //btn->UseEffect(true);
-    //btn->Visible(true);
-
-    //win->AddControl(btn);
-
-    //btn = new Button();
-    //btn->SetLabel(L"Ngô Văn Thường");
-    //btn->SetSize(200, 24);
-    //btn->SetPosition(100, 150);
-    //btn->SetBorderRadius(2);
-    //btn->SetBorderWidth(1);
-    //btn->UseEffect(true);
-    //btn->Visible(true);
-
-    //win->AddControl(btn);
-
-
-    //btn = new Button();
-    //btn->SetLabel(L"Resize");
-    //btn->SetSize(40, 20);
-    //btn->SetPosition(0, 30);
-    //btn->SetBorderRadius(0);
-    //btn->SetBorderWidth(0);
-    //btn->Visible(true);
-
-    //sub->AddControl(btn);
-    //sub->AddControl(chk);
-
-    //win->AddSubWindow(sub);
-    //win->AddControl(chk);
+    //chk->SetText(L"Check box");
+    //chk->SetPosition(10, 40);
+    //chk->SetSize(100, 20);
 
     //menu = new MenuContext();
     //menu->AddItem(L"Item 1", MF_STRING , NULL);
@@ -126,45 +92,13 @@ void Create(WindowBase* win)
     sub->SetSize(200, 200);
     sub->Visible(true);
 
-    ////Checkbox* chk = new Checkbox();
 
-    ////chk->SetText(L"Check box");
-    ////chk->SetPosition(10, 40);
-    ////chk->SetSize(100, 20);
-    ////sub->AddControl(chk);
-
-    ////Button* btn = new Button();
-    ////btn->SetLabel(L"Resize");
-    ////btn->SetSize(70, 21);
-    ////btn->SetPosition(10, 130);
-    ////btn->SetBorderRadius(2);
-    ////btn->SetBorderWidth(1);
-    ////btn->UseEffect(true);
-    ////sub->AddControl(btn);
-
-    ////btn = new Button();
-    ////btn->SetLabel(L"Button 2");
-    ////btn->SetSize(70, 21);
-    ////btn->SetPosition(90, 90);
-    ////btn->SetBorderRadius(2);
-    ////btn->SetBorderWidth(1);
-    ////btn->Visible(true);
-    ////btn->UseEffect(true);
-    ////sub->AddControl(btn);
-
-    ////Combobox* cbb = new Combobox();
-    ////cbb->AddItem(L"select 1", new int(1));
-    ////cbb->AddItem(L"select 2", new int(2));
-    ////cbb->SetSelect(0);
-    ////cbb->SetPosition(10, 60);
-    ////cbb->SetSize(85, 20);
-    ////sub->AddControl(cbb);
-
-    ////chk = new Checkbox();
-    ////chk->SetText(L"Check box 2");
-    ////chk->SetPosition(10, 80);
-    ////chk->SetSize(100, 20);
-    ////sub->AddControl(chk);
+    Combobox* cbb = new Combobox();
+    cbb->AddItem(L"select 1", new int(1));
+    cbb->AddItem(L"select 2", new int(2));
+    cbb->SetSelect(0);
+    cbb->SetPosition(10, 60);
+    cbb->SetSize(85, 20);
 
     //// draw input value
     //{
@@ -181,7 +115,8 @@ void Create(WindowBase* win)
     //}
 
     //sub->AddControl(btn);
-    sub->AddControl(track);
+    //sub->AddControl(track);
+    sub->AddControl(cbb);
     win->AddSubWindow(sub);
     //Window* pWin = dynamic_cast<Window*>(win);
 

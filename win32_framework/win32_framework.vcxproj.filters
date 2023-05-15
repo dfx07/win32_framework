@@ -65,9 +65,6 @@
     <ClInclude Include="..\include\controls\xlabel.h">
       <Filter>Header Files\ui\controls</Filter>
     </ClInclude>
-    <ClInclude Include="..\include\controls\xcombobox.h">
-      <Filter>Header Files\ui\controls</Filter>
-    </ClInclude>
     <ClInclude Include="..\include\controls\xmenucontext.h">
       <Filter>Header Files\ui\controls</Filter>
     </ClInclude>
@@ -82,9 +79,6 @@
     </ClInclude>
     <ClInclude Include="..\include\graphics\wtext_render.h">
       <Filter>Header Files\graphics</Filter>
-    </ClInclude>
-    <ClInclude Include="..\include\controls\xtextbox.h">
-      <Filter>Header Files\ui\controls</Filter>
     </ClInclude>
     <ClInclude Include="..\include\graphics\gp_camera.h">
       <Filter>Header Files\graphics</Filter>
@@ -116,7 +110,7 @@
     <ClInclude Include="..\include\math\xeasing.h">
       <Filter>Header Files\math</Filter>
     </ClInclude>
-    <ClInclude Include="..\include\controls\xtrackbar.h">
+    <ClInclude Include="..\include\controls\xcombobox.h">
       <Filter>Header Files\ui\controls</Filter>
     </ClInclude>
   </ItemGroup>
