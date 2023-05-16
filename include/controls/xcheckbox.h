@@ -21,68 +21,92 @@ ___BEGIN_NAMESPACE___
 ***********************************************************************************/
 class Dllexport Checkbox : public ControlBase, public RectUIControl
 {
-private:
-	std::wstring		m_sLabel;
-	bool				m_bChecked;
-
-	Gdiplus::Bitmap*	m_image_check;
-	Gdiplus::Bitmap*	m_image_uncheck;
+	enum CHK_EVENT
+	{
+		CBB_EVT_CHECK_CHANGED  = 1002,
+	};
 
 protected:
+	typedef void(*typeFunCheckboxEvent) (Checkbox* btn);
 
-	static WNDPROC& get_proc()
-	{
-		static WNDPROC prevWndProc;
-		return prevWndProc;
-	}
+private:
+	std::wstring			m_sLabel;
+	bool					m_bChecked;
+
+	////////////////////////////////////////////////////////////////////////////////
+	// Image property
+	Gdiplus::Bitmap*		m_image_check;
+	Gdiplus::Bitmap*		m_image_uncheck;
+
+protected:
+	static WNDPROC			sfunCheckboxWndProc;
+
+private:
+	////////////////////////////////////////////////////////////////////////////////
+	// Function property
+	typeFunCheckboxEvent	m_funcCheckChanged = { nullptr };
 
 public:
-	Checkbox(const wchar_t* text = L""): ControlBase()
+	Checkbox(const wchar_t* text = L"", bool bCheck = false): ControlBase(), 
+		m_image_check(NULL), m_image_uncheck(NULL)
 	{
-		m_sLabel = text;
-		m_bChecked = false;
+		m_sLabel	= text;
+		m_bChecked	= bCheck;
 
 		this->SetDefaultPropertyUI();
 	}
 
 	~Checkbox()
 	{
-		delete m_image_check;
-		delete m_image_uncheck;
+		SAFE_DELETE(m_image_check);
+		SAFE_DELETE(m_image_uncheck);
 	}
 
 	virtual ControlType GetType() { return ControlType::CHECKBOX; }
 
 public:
+	/*******************************************************************************
+	*! @brief  : set function event : checkbox changed
+	*! @return : true : ok | false : not ok
+	*! @author : thuong.nv          - [Date] : 05/03/2023
+	*******************************************************************************/
+	void SetCheckEvent(typeFunCheckboxEvent fun)
+	{
+		m_funcCheckChanged = fun;
+	}
 
-	/***************************************************************************
+	/*******************************************************************************
 	*! @brief  : Set text lable
 	*! @return : true : ok | false : not ok
 	*! @author : thuong.nv          - [Date] : 05/03/2023
-	***************************************************************************/
+	*******************************************************************************/
 	void SetText(const wchar_t* text = L"")
 	{
 		m_sLabel = text;
+
+		CHECK_RETURN(m_hWnd == NULL || !m_pRender, );
+
+		::InvalidateRect(m_hWnd, NULL, FALSE);
 	}
 
-	/***************************************************************************
+	/*******************************************************************************
 	*! @brief  : CalcTextSize
 	*! @return : true : ok | false : not ok
 	*! @author : thuong.nv          - [Date] : 05/03/2023
-	***************************************************************************/
+	*******************************************************************************/
 	void SetCheck(bool bCheck)
 	{
 		m_bChecked = bCheck;
 		NULL_RETURN(m_hWnd, );
 
-		InvalidateRect(m_hWnd, NULL, FALSE);
+		::InvalidateRect(m_hWnd, NULL, FALSE);
 	}
 
-	/***************************************************************************
+	/*******************************************************************************
 	*! @brief  : CalcTextSize
 	*! @return : true : ok | false : not ok
 	*! @author : thuong.nv          - [Date] : 05/03/2023
-	***************************************************************************/
+	*******************************************************************************/
 	bool Checked()
 	{
 		return m_bChecked;
@@ -90,11 +114,11 @@ public:
 
 protected:
 
-	/***************************************************************************
+	/*******************************************************************************
 	*! @brief  : CalcTextSize
 	*! @return : true : ok | false : not ok
 	*! @author : thuong.nv          - [Date] : 05/03/2023
-	***************************************************************************/
+	*******************************************************************************/
 	void CalcTextSize(int width, int height)
 	{
 		SIZE size;
@@ -111,27 +135,26 @@ protected:
 
 	virtual void SetDefaultPropertyUI()
 	{
-		//m_property.m_bk_color		= std::move(Color4(59, 91, 179));
-		//m_property.m_bk_hover_color	= std::move(Color4(229, 241, 255));
-		//m_property.m_click_color	= std::move(Color4(201, 224, 247));
+		UI_Background.bk_color			= std::move(Color4(59, 91, 179));
+		UI_Background.bk_hover_color	= std::move(Color4(229, 241, 255));
+		UI_Background.bk_click_color	= std::move(Color4(201, 224, 247));
+		UI_Background.border_radius		= 0;
+		UI_Background.border_width		= 0;
 
-		//m_property.border_radius = 0;
-		//m_property.border_width  = 0;
-		//m_property.text_color	 = std::move(Color4(255, 255, 255));
-		//m_property.text_hover_color = std::move(Color4(0, 0, 0));
+		UI_Text.text_color				= std::move(Color4(255, 255, 255));
+		UI_Text.text_hover_color		= std::move(Color4(0, 0, 0));
 	}
 
 protected:
 
-	/***************************************************************************
+	/*******************************************************************************
 	*! @brief  : OnInitControl
 	*! @return : true : ok | false : not ok
 	*! @author : thuong.nv          - [Date] : 05/03/2023
-	***************************************************************************/
+	*******************************************************************************/
 	virtual int OnInitControl()
 	{
 		DWORD style = WS_VISIBLE | WS_CHILD | BS_AUTOCHECKBOX | BS_OWNERDRAW;
-		//style = ~WS_VISIBLE;
 
 		CalcTextSize(m_rect.width, m_rect.height);
 
@@ -139,12 +162,14 @@ protected:
 								(int)m_rect.x, (int)m_rect.y,		// x, y
 								m_rect.width, m_rect.height,		// width / height
 								m_hWndPar,							// Handle parent
-								(HMENU)(UINT_PTR)m_ID,						// ID
+								(HMENU)(UINT_PTR)m_ID,				// ID
 								NULL, NULL);
 
 		NULL_RETURN(m_hWnd, 0);
 
-		get_proc() = (WNDPROC)SetWindowLongPtr(m_hWnd, GWLP_WNDPROC, (LONG_PTR)&CheckBoxProcHandle);
+		this->LoadResource();
+
+		sfunCheckboxWndProc = (WNDPROC)SetWindowLongPtr(m_hWnd, GWLP_WNDPROC, (LONG_PTR)&CheckBoxProcHandle);
 
 		return 1;
 	}
@@ -156,59 +181,81 @@ protected:
 
 		switch (uMsg)
 		{
-		case WM_MOUSEMOVE:
-		{
-			//InvalidateRect(hwndChk, NULL, FALSE);
-			break;
+			case WM_MOUSEMOVE:
+			{
+				break;
+			}
+			case WM_MOUSELEAVE:
+			{
+				break;
+			}
+			case WM_TIMER:
+			{
+				break;
+			}
+			case WM_LBUTTONDOWN:
+			{
+				break;
+			}
+			case WM_RBUTTONUP:
+			case WM_LBUTTONUP:
+			{
+				chk->OnProcessMessage(CBB_EVT_CHECK_CHANGED, 0L, 0L);
+				break;
+			}
+			case WM_COMMAND:
+			{
+				break;
+			}
+			case WM_ERASEBKGND:
+			{
+				return TRUE;
+			}
+			case WM_CTLCOLORBTN:
+			{
+				break;
+			}
 		}
-		case WM_MOUSELEAVE:
-		{
-			//InvalidateRect(hwndChk, NULL, FALSE);
-			break;
-		}
-		case WM_TIMER:
-		{
-			break;
-		}
-		case WM_LBUTTONDOWN:
-		{
-			chk->UpdateCheck();
-		}
-		case WM_RBUTTONUP:
-		case WM_LBUTTONUP:
-		{
-			break;
-		}
-		case WM_COMMAND:
-		{
-			break;
-		}
-		case WM_ERASEBKGND:
-			return TRUE;
-		case WM_CTLCOLORBTN:
-		{
-			break;
-		}
-
-		}
-		return CallWindowProc(get_proc(), hwndChk, uMsg, wParam, lParam);
+		return CallWindowProc(sfunCheckboxWndProc, hwndChk, uMsg, wParam, lParam);
 	}
+
 protected:
-
-	void UpdateCheck()
+	/*******************************************************************************
+	*! @brief  : Cập nhật thông tin stype của window 
+	*! @return : void
+	*! @author : thuong.nv          - [Date] : 05/03/2023
+	*******************************************************************************/
+	int OnProcessMessage(UINT msgID, WPARAM wParam, LPARAM lParam)
 	{
-		m_bChecked = !m_bChecked;
-		this->Draw(m_pRender);
-	}
-
-public:
-	void CreateColorButton()
-	{
-		if (!m_image_uncheck)
+		switch (msgID)
 		{
-			m_image_uncheck = Gdiplus::Bitmap::FromFile(L"resources/chk_uncheck.png", false);
-			m_image_check = Gdiplus::Bitmap::FromFile(L"resources/chk_check.png", false);
+			case CBB_EVT_CHECK_CHANGED:
+			{
+				m_bChecked = !m_bChecked;
+				this->Draw(true);
+				CHECK_RUN_FUNCTION(m_funcCheckChanged, this);
+
+				break;
+			}
+			default:
+				break;
 		}
+
+		return 0;
+	}
+public:
+	/*******************************************************************************
+	*! @brief  : Load resource after after initialize
+	*! @return : true : ok | false : not ok
+	*! @author : thuong.nv          - [Date] : 05/03/2023
+	*******************************************************************************/
+	void LoadResource()
+	{
+		SAFE_DELETE(m_image_uncheck);
+		SAFE_DELETE(m_image_check);
+
+		m_image_uncheck = Gdiplus::Bitmap::FromFile(L"resources/chk_uncheck.png", false);
+		m_image_check   = Gdiplus::Bitmap::FromFile(L"resources/chk_check.png", false);
 	}
 
 	virtual void Draw(bool bDraw = false)
@@ -219,19 +266,18 @@ public:
 		{
 			Gdiplus::Rect rect = m_pRender->GetDrawRect();
 
-			this->CreateColorButton();
-
 			// [2] Draw color button state
-			const unsigned int iRadius     = UI_Background.border_radius;
-			const unsigned int iBorderWidth = UI_Background.border_width;
+			auto iBorderRadius = UI_Background.border_radius;
+			auto iBorderWidth  = UI_Background.border_width;
 
-			// Fill rectangle background;
-			rect = m_pRender->GetDrawRect();
-			rect.X += 2;
-			rect.Y += 2;
-			rect.Width -= iBorderWidth + 3;
-			rect.Height -= iBorderWidth + 3;
-			m_pRender->DrawRectangle(rect, nullptr, UI_Background.bk_color.wrefcol, iRadius);
+			Gdiplus::Pen* pPen = new Gdiplus::Pen(UI_Background.border_color.wrefcol, iBorderWidth);
+			Gdiplus::Brush* pBrush = new Gdiplus::SolidBrush(UI_Background.bk_color.wrefcol);
+
+			// Fill erase background
+			this->EraseBackground(m_pRender);
+
+			// Draw rectangle background
+			this->DrawBackground(m_pRender, pPen, pBrush, iBorderRadius);
 
 			// [2] Draw image check
 			if (m_bChecked)
@@ -255,6 +301,9 @@ public:
 				}
 			}
 
+			SAFE_DELETE(pPen);
+			SAFE_DELETE(pBrush);
+
 			// [3] Draw text for button
 			Gdiplus::StringFormat format;
 			format.SetAlignment(Gdiplus::StringAlignmentNear);
@@ -266,6 +315,9 @@ public:
 		m_pRender->EndDrawRect(bDraw);
 	}
 };
+
+WNDPROC Checkbox::sfunCheckboxWndProc = NULL;
+
 ____END_NAMESPACE____
 
 #endif // !XCHECKBOX_H

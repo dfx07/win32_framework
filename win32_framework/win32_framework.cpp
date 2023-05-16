@@ -70,11 +70,13 @@ void Create(WindowBase* win)
     ////btn->UseEffect(true);
     //track->Visible(true);
 
-    //Checkbox* chk = new Checkbox();
+    Checkbox* chk = new Checkbox();
 
-    //chk->SetText(L"Check box");
-    //chk->SetPosition(10, 40);
-    //chk->SetSize(100, 20);
+    chk->SetText(L"Check box");
+    chk->SetPosition(10, 30);
+    chk->SetSize(100, 20);
+    chk->SetBorderWidth(0);
+    chk->SetBorderRadius(2);
 
     //menu = new MenuContext();
     //menu->AddItem(L"Item 1", MF_STRING , NULL);
@@ -85,12 +87,6 @@ void Create(WindowBase* win)
     //menu->Insert(mn2);
 
     //win->AddControl(menu);
-
-    SubWindow* sub = new SubWindow();
-    sub->SetTitle(L"sub window");
-    sub->SetPosition(20, 20);
-    sub->SetSize(200, 200);
-    sub->Visible(true);
 
 
     Combobox* cbb = new Combobox();
@@ -114,9 +110,16 @@ void Create(WindowBase* win)
     //    sub->AddControl(textbox);
     //}
 
+    SubWindow* sub = new SubWindow();
+    sub->SetTitle(L"sub window");
+    sub->SetPosition(20, 20);
+    sub->SetSize(200, 200);
+    sub->Visible(true);
+
     //sub->AddControl(btn);
     //sub->AddControl(track);
     sub->AddControl(cbb);
+    sub->AddControl(chk);
     win->AddSubWindow(sub);
     //Window* pWin = dynamic_cast<Window*>(win);
 
