@@ -96,7 +96,7 @@ void Create(WindowBase* win)
     Combobox* cbb = new Combobox();
     cbb->AddItem(L"select 1", new int(1));
     cbb->AddItem(L"select 2", new int(2));
-    cbb->SetSelect(0);
+    cbb->Select(0);
     cbb->SetPosition(10, 60);
     cbb->SetSize(85, 20);
 

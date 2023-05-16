@@ -818,7 +818,7 @@ public:
 
 		if (brush)
 			funcFillRoundRectangle(m_pRender->render, brush, rect, radius);
-		if (pen)
+		if (pen && pen->GetWidth() > 0)
 			funcDrawRoundRectangle(m_pRender->render, pen, rect, radius);
 	}
 
@@ -828,7 +828,7 @@ public:
 
 		if(brush)
 			funcFillRoundRectangle(m_pRender->render, brush, m_pRender->rect, radius);
-		if(pen)
+		if(pen && pen->GetWidth() > 0)
 			funcDrawRoundRectangle(m_pRender->render, pen, m_pRender->rect, radius);
 	}
 

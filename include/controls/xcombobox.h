@@ -39,14 +39,9 @@ class Dllexport Combobox : public ControlBase, public RectUIControl
 		DROPDOWN,
 	};
 
-	struct BTN_DROPDOWN
-	{
-		Gdiplus::Rect	rect;
-	};
-
 	struct CBB_ITEM
 	{
-		std::wstring	text = L""; // dữ liệu text hiển thị trên cbb
+		std::wstring	text = L"";  // dữ liệu text hiển thị trên cbb
 		void*			data = NULL; // dữ liêu của item tự định nghĩa và kiểm soát
 
 		Gdiplus::Rect	rect;
@@ -76,8 +71,9 @@ private:
 	void(*m_EventSelectedChangedFun)(Combobox*) = NULL;
 
 public:
-	Combobox(int _x = 0, int _y = 0, int _width = WIDTH_DEF,
-		int _height = HEIGHT_DEF) :ControlBase()
+	Combobox(	int _x = 0, int _y = 0,
+				int _width	= WIDTH_DEF,
+				int _height = HEIGHT_DEF) :ControlBase()
 	{
 		m_rect.x		= _x;
 		m_rect.y		= _y;
@@ -96,50 +92,27 @@ public:
 
 	~Combobox()
 	{
-		for (int i = 0; i < m_items.size(); i++)
-		{
-			delete m_items[i].data;
-		}
+		m_hWnd = 0;
+		this->RemoveAllItem();
 	}
 
 	virtual ControlType GetType() { return static_cast<ControlType>(ControlType::COMBOBOX); }
 
 private:
-
+	/*******************************************************************************
+	*! @brief  : update all item and recalc item rectangle
+	*! @return : void
+	*! @author : thuong.nv          - [Date] : 16/03/2023
+	*******************************************************************************/
 	void UpdateItems()
 	{
 		NULL_RETURN(m_hWnd, );
 
-		this->RecalRectItems();
-	}
+		this->RecalcRectItems();
 
-	void UpdateSelect(int iSelect)
-	{
-		NULL_RETURN(m_hWnd, );
-		if (iSelect >= 0 && iSelect < m_items.size())
-		{
-			m_iSelected = iSelect;
-		}
-		else
-		{
-			assert(0);
-		}
-	}
+		NULL_RETURN(m_pRender, );
 
-	//===================================================================================
-	// Lấy ra chỉ số được select  : nó sẽ được lưu trữ  vào biến seleted                 
-	//===================================================================================
-	int GetSelectIndexItem()
-	{
-		if (!m_hWnd)
-		{
-			m_iSelected = -1;
-		}
-		else
-		{
-			m_iSelected = (int)SendMessage(m_hWnd, CB_GETCURSEL, NULL, NULL);
-		}
-		return m_iSelected;
+		this->Draw(true);
 	}
 
 public:
@@ -148,9 +121,24 @@ public:
 		m_EventSelectedChangedFun = fun;
 	}
 
-	void SetSelect(int index)
+	/*******************************************************************************
+	*! @brief  : Set select item index
+	*! @return : void
+	*! @author : thuong.nv          - [Date] : 16/03/2023
+	*******************************************************************************/
+	void Select(int index)
 	{
+		if (index < 0 || index >= m_items.size())
+		{
+			assert(0);
+			return;
+		}
+
 		m_iSelected = index;
+
+		NULL_RETURN(m_hWnd, );
+
+		this->Draw(true);
 	}
 
 	void TextEdit(bool bEn)
@@ -158,14 +146,12 @@ public:
 		m_bEditText = bEn;
 	}
 
-	void SetMinItemVisiable(int iMinVisible)
-	{
-		if (!m_hWnd) return;
-		SendMessage((m_hWnd), CB_SETMINVISIBLE, (WPARAM)iMinVisible, 0);
-	}
-
-	// Chú ý cần clone và tạo data bằng new 
-	void AddItem(std::wstring text, void* data = NULL)
+	/*******************************************************************************
+	*! @brief  : add item - note : clone and use new function when create data
+	*! @return : void
+	*! @author : thuong.nv          - [Date] : 16/03/2023
+	*******************************************************************************/
+	void AddItem(const wchar_t* text, void* data = NULL)
 	{
 		CBB_ITEM    item;
 		item.text = text;
@@ -177,13 +163,13 @@ public:
 	//===================================================================================
 	// Xóa một item được chỉ định bằng text : tất cả các item có text sẽ bị xóa          
 	//===================================================================================
-	void RemoveItem(std::wstring text)
+	void RemoveItem(const wchar_t* text)
 	{
 		for (auto it = m_items.begin(); it != m_items.end(); /*it++*/)
 		{
-			if (it->text == text)
+			if (wcscmp(text, it->text.c_str()) == 0)
 			{
-				delete it->data;
+				SAFE_DELETE(it->data);
 				it = m_items.erase(it);
 			}
 			else ++it;
@@ -222,17 +208,11 @@ public:
 		UpdateItems();
 	}
 
-	//===================================================================================
-	// Xóa toàn bộ item đang co trong combobxo                                           
-	//===================================================================================
-	void SelectItem(int sel)
-	{
-		UpdateSelect(sel);
-	}
-
-	//===================================================================================
-	// Lấy text của item dựa vào index                                                   
-	//===================================================================================
+	/*******************************************************************************
+	*! @brief  : Get text value item 
+	*! @return : std::wstring
+	*! @author : thuong.nv          - [Date] : 16/03/2023
+	*******************************************************************************/
 	std::wstring GetItemText(int index)
 	{
 		if (index < 0 || index >= m_items.size())
@@ -243,9 +223,11 @@ public:
 		return m_items[index].text;
 	}
 
-	//===================================================================================
-	// Lấy giá trị của item                                                              
-	//===================================================================================
+	/*******************************************************************************
+	*! @brief  : Get data value item - note : don't delete the data
+	*! @return : void *
+	*! @author : thuong.nv          - [Date] : 16/03/2023
+	*******************************************************************************/
 	void* GetItemData(int index)
 	{
 		if (index < 0 || index >= m_items.size())
@@ -254,44 +236,6 @@ public:
 		}
 
 		return m_items[index].data;
-	}
-
-	//===================================================================================
-	// Lấy giá trị text của item selected                                                
-	//===================================================================================
-	std::wstring GetSelectText()
-	{
-		GetSelectIndexItem();
-		if (m_iSelected < 0 || m_iSelected >= m_items.size())
-		{
-			return L"";
-		}
-
-		return m_items[m_iSelected].text;
-	}
-
-	//===================================================================================
-	// Lấy dữ liệu item đang select                                                      
-	//===================================================================================
-	void* GetSelectData()
-	{
-		GetSelectIndexItem();
-
-		if (m_iSelected < 0 || m_iSelected >= m_items.size())
-		{
-			return NULL;
-		}
-
-		return m_items[m_iSelected].data;
-	}
-
-	//===================================================================================
-	// Lấy chỉ số của item selected                                                      
-	//===================================================================================
-	int GetSelectIndex()
-	{
-		GetSelectIndexItem();
-		return m_iSelected;
 	}
 
 protected:
@@ -346,14 +290,14 @@ protected:
 			}
 			case WM_LBUTTONUP:
 			{
-				//btn->m_eState = btn->m_eOldState;
 				break;
 			}
 			case WM_ERASEBKGND:
+			{
 				return TRUE;
+			}
 			case WM_CTLCOLORBTN:
 			{
-
 				break;
 			}
 		}
@@ -379,7 +323,7 @@ protected:
 	static LRESULT CALLBACK DropdownProcHandle(HWND hwndBtn, UINT uMsg, WPARAM wParam, LPARAM lParam)
 	{
 		Combobox* cbb = (Combobox*)::GetWindowLongPtr(hwndBtn, GWLP_USERDATA);
-		NULL_RETURN(cbb, 0);
+		NULL_RETURN(cbb, 0L);
 
 		if (wParam == PROCESS_MSG)
 		{
@@ -481,7 +425,12 @@ protected:
 		return -1;
 	}
 
-	void RecalRectItems()
+	/*******************************************************************************
+	*! @brief  : Recalculate title bar information
+	*! @return : void
+	*! @author : thuong.nv          - [Date] : 16/05/2023
+	*******************************************************************************/
+	void RecalcRectItems()
 	{
 		auto rect = this->GetRect(m_hWndDropDown, true);
 
@@ -492,7 +441,12 @@ protected:
 		}
 	}
 
-	void RecalTitleBarInfo()
+	/*******************************************************************************
+	*! @brief  : Recalculate title bar information
+	*! @return : void
+	*! @author : thuong.nv          - [Date] : 16/05/2023
+	*******************************************************************************/
+	void RecalcTitleBarInfo()
 	{
 		auto rect = this->GetRect(true);
 
@@ -507,42 +461,45 @@ protected:
 		m_rect_titlebar.Width	-=(int) iBorderWidth/2;
 		m_rect_titlebar.Height	-=(int) iBorderWidth/2;
 
-		m_rect_btn_dropdown.X = (m_rect_titlebar.X + m_rect_titlebar.Width) - (m_rect_titlebar.Height);
-		m_rect_btn_dropdown.Y = m_rect_titlebar.Y;
-		m_rect_btn_dropdown.Width  = m_rect_titlebar.Height - (int)UI_Background.border_width/2;
-		m_rect_btn_dropdown.Height = m_rect_titlebar.Height;
+		m_rect_btn_dropdown.X		=(m_rect_titlebar.X + m_rect_titlebar.Width) - (m_rect_titlebar.Height);
+		m_rect_btn_dropdown.Y		= m_rect_titlebar.Y;
+		m_rect_btn_dropdown.Width	= m_rect_titlebar.Height - (int)UI_Background.border_width/2;
+		m_rect_btn_dropdown.Height	= m_rect_titlebar.Height;
 	}
 
 protected:
+	/*******************************************************************************
+	*! @brief  : Oninit control function create window handle
+	*! @return : int : number control created
+	*! @author : thuong.nv          - [Date] : 16/05/2023
+	*******************************************************************************/
 	virtual int OnInitControl()
 	{
-		DWORD style = WS_CHILD | WS_VISIBLE | CBS_OWNERDRAWVARIABLE;
+		DWORD style = WS_CHILD | WS_VISIBLE | BS_OWNERDRAW;
 
-		if (m_bEditText) style |= CBS_DROPDOWN;
-		else			 style |= CBS_DROPDOWNLIST;
+		//if (m_bEditText) style |= CBS_DROPDOWN;
+		//else			 style |= CBS_DROPDOWNLIST;
 
-		m_hWnd = CreateWindow(L"Combobox", NULL, style, (int)m_rect.x, (int)m_rect.y,	// x, y
-								m_rect.width, m_rect.height,	// chiều rộng / chiều cao
-								m_hWndPar,						// handle parent
+		m_hWnd = CreateWindow(L"BUTTON", NULL, style, (int)m_rect.x, (int)m_rect.y,
+								m_rect.width, m_rect.height, m_hWndPar,
 								(HMENU)(UINT_PTR)m_ID,
 								NULL, NULL);
 		style = 0;
 		style = WS_CHILD | WS_VISIBLE | BS_OWNERDRAW;
 
+		// try use static control but it alway draw paint
 		m_hWndDropDown = CreateWindow(L"BUTTON", NULL, style,
 										(int)m_rect.x, (int)m_rect.y + m_rect.height + UI_Background.border_width,
 										m_rect.width, m_rect.height * static_cast<int>(m_items.size()),
 										m_hWndPar, NULL, NULL, NULL);
 		NULL_RETURN(m_hWnd, 0);
 
-		Send_Message(CB_SETITEMHEIGHT, -1, m_rect.height - 6);
-
 		sfunComboboxWndProc = (WNDPROC)SetWindowLongPtr(m_hWnd, GWLP_WNDPROC, (LONG_PTR)&ComboboxProcHandle);
 		sfunDropDownProc = (WNDPROC)SetWindowLongPtr(m_hWndDropDown, GWLP_WNDPROC, (LONG_PTR)&DropdownProcHandle);
 
 		SetWindowLongPtr(m_hWndDropDown, GWLP_USERDATA, (LONG_PTR)this);
 
-		this->RecalTitleBarInfo();
+		this->RecalcTitleBarInfo();
 
 		UpdateItems();
 
@@ -587,9 +544,7 @@ protected:
 			}
 			case CBB_EVT_CLICK_DROPDOWN:
 			{
-				m_iSelected = lParam;
-
-				if (m_iSelected >= 0)
+				if (lParam >= 0)
 				{
 					m_eState = CBB_State::NORMAL;
 
@@ -597,7 +552,11 @@ protected:
 
 					this->Draw(true);
 
-					CHECK_RUN_FUNCTION(m_EventSelectedChangedFun, this);
+					if (m_iSelected != lParam) // selected changed
+					{
+						m_iSelected = lParam;
+						CHECK_RUN_FUNCTION(m_EventSelectedChangedFun, this);
+					}
 				}
 
 				break;
@@ -612,18 +571,23 @@ protected:
 
 public:
 
+	/*******************************************************************************
+	*! @brief  : Draw title bar and button dropdown
+	*! @return : void
+	*! @author : thuong.nv          - [Date] : 05/03/2023
+	*******************************************************************************/
 	void OnDrawTitleBar()
 	{
 		// [1] Draw border title bar
-		int iBorderWidth  = UI_Background.border_width;
-		int iBorderRadius = UI_Background.border_radius;
+		auto iBorderWidth  = UI_Background.border_width;
+		auto iBorderRadius = UI_Background.border_radius;
 
 		Gdiplus::Rect rect = m_rect_titlebar;
 
-		// [4] Draw drop down icon combobox
+		// [2] Draw drop down icon combobox
 		Gdiplus::SolidBrush brush_dropdown({ 255, 123, 0 });
-		m_pRender->DrawRectangle(m_rect_btn_dropdown, nullptr, &brush_dropdown, iBorderRadius);
-		m_pRender->DrawRectangle(m_rect_btn_dropdown, UI_Background.border_color.wrefcol, nullptr, iBorderWidth, iBorderRadius);
+		Gdiplus::Pen pen_border_dropdown(UI_Background.border_color.wrefcol, iBorderWidth);
+		m_pRender->DrawRectangle(m_rect_btn_dropdown, &pen_border_dropdown, &brush_dropdown, iBorderRadius);
 
 		Gdiplus::StringFormat format;
 		format.SetAlignment(Gdiplus::StringAlignmentCenter);
@@ -638,7 +602,7 @@ public:
 		const wchar_t* strSelect = L"";
 		strSelect = m_items[m_iSelected].text.c_str();
 
-		// [5] Draw text for combobox
+		// [3] Draw text for combobox
 		format.SetAlignment(Gdiplus::StringAlignmentNear);
 		format.SetLineAlignment(Gdiplus::StringAlignmentCenter);
 
@@ -662,9 +626,8 @@ public:
 
 		if (index == m_iItemHover)
 		{
-			std::wstring temp = L"ᐅ " + m_items[index].text;
 			Gdiplus::SolidBrush text_color(Gdiplus::Color(255, 0, 0));
-			m_pRender->DrawTextRect(rect_item, temp.c_str(), &text_color, &format, { 5 ,0 });
+			m_pRender->DrawTextRect(rect_item, m_items[index].text.c_str(), &text_color, &format, { 5 ,0 });
 		}
 		else
 		{
