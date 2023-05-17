@@ -52,14 +52,14 @@ private:
 protected:
 	virtual void SetDefaultPropertyUI()
 	{
-		//m_property.m_bk_color		= std::move(Color4(59, 91, 179));
-		//m_property.m_bk_hover_color	= std::move(Color4(229, 241, 255));
-		//m_property.m_click_color	= std::move(Color4(201, 224, 247));
+		UI_Background.bk_color			= std::move(Color4(59, 91, 179));
+		UI_Background.bk_hover_color	= std::move(Color4(229, 241, 255));
+		UI_Background.bk_click_color	= std::move(Color4(201, 224, 247));
+		UI_Background.border_radius		= 0;
+		UI_Background.border_width		= 0;
 
-		//m_property.border_radius		= 0;
-		//m_property.border_width			= 1;
-		//m_property.text_color			= std::move(Color4(255, 255, 255));
-		//m_property.text_hover_color		= std::move(Color4(0, 0, 0));
+		UI_Text.text_color				= std::move(Color4(255, 255, 255));
+		UI_Text.text_hover_color		= std::move(Color4(0, 0, 0));
 	}
 
 public:
@@ -86,14 +86,18 @@ public:
 		this->Draw(true);
 	}
 
+	std::wstring GetText()
+	{
+		return m_text;
+	}
+
 public:
 	virtual int OnInitControl()
 	{
 		DWORD style = WS_VISIBLE | WS_CHILD | SS_OWNERDRAW;
 		this->CalcTextSize(m_rect.width, m_rect.height);
 
-		m_hWnd = CreateWindow(L"STATIC", m_text.c_str(), style,		// style + control name
-					(int)m_rect.x, (int)m_rect.y,					// x, y
+		m_hWnd = CreateWindow(L"STATIC", m_text.c_str(), style, (int)m_rect.x, (int)m_rect.y, // x, y
 					m_rect.width, m_rect.height,					// width / height
 					m_hWndPar,										// Handle parent
 					(HMENU)(UINT_PTR)m_ID,							// ID
@@ -117,12 +121,8 @@ public:
 		{
 			Gdiplus::Rect rect = m_pRender->GetDrawRect();
 
-			//// [2] Draw color button state
-			//const unsigned int iRadius		= m_property.border_radius;
-			//const unsigned int iBorderWidth = m_property.border_width;
-
-			//// Fill erase background
-			//this->DrawEraseBackground(m_pRender);
+			// Fill erase background
+			this->EraseBackground(m_pRender);
 
 			Gdiplus::SolidBrush text_color(Gdiplus::Color(UI_Text.text_color.wrefcol));
 			m_pRender->DrawTextFullRect(m_text.c_str(), &text_color, &m_format);

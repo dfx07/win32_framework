@@ -14,6 +14,7 @@
 #include "xcontrolbase.h"
 #include "math/xeasing.h"
 #include "math/xgeometry.h"
+#include <vector>
 
 ___BEGIN_NAMESPACE___
 
@@ -21,17 +22,23 @@ ___BEGIN_NAMESPACE___
 * ⮟⮟ Class name: Trackbar control
 * Trackbar control for window
 ***********************************************************************************/
-class Dllexport Trackbar : public ControlBase, public ControlRectUI
+class Dllexport Trackbar : public ControlBase, public RectUIControl
 {
 protected:
-	typedef void(*typeFunButtonEvent)   (WindowBase* window, Trackbar* btn);
+	typedef void(*typeFunTrackbarEvent)   (Trackbar* track);
 
 protected:
+	enum CTB_EVENT
+	{
+		CTB_EVT_TRACKER_CLICK	= 1002,
+		CTB_EVT_UPDATE_TRACKER	= 1003,
+	};
+
 	enum class TrackbarState
 	{
-		Normal     ,
-		MoveTracker,
-		Click,
+		Normal		,
+		MoveTracker	,
+		Click		,
 	};
 
 	enum { IDC_EFFECT_X1	  = 12003 };
@@ -40,6 +47,13 @@ protected:
 
 	enum { TIME_UPDATE_EFFECT = USER_TIMER_MINIMUM  };
 
+
+	struct GuideLineData
+	{
+		float value;
+		bool  bMajor;
+	};
+
 private:
 	bool				m_track_leave;
 	bool				m_bUseEffect = false;
@@ -47,34 +61,29 @@ private:
 	static WNDPROC		sfunTrackbarWndProc;
 
 protected:
-	std::wstring		m_sLabel;
-	TrackbarState		m_eState;
-	TrackbarState		m_eOldState;
+	TrackbarState				m_eState;
 
-	//////////////////////////////////////////////////////////////////
+	////////////////////////////////////////////////////////////////////////////////
 	// Effect (animation)
 	easing::EasingEngine		m_easing;
 	Gdiplus::Color				m_cur_background_color;
 	Gdiplus::Color				m_cur_border_color;
 
-	//////////////////////////////////////////////////////////////////
+	////////////////////////////////////////////////////////////////////////////////
 	// Event Function
-	typeFunButtonEvent			m_EventFun		 = NULL;
-	typeFunButtonEvent			m_EventFunEnter	 = NULL;
-	typeFunButtonEvent			m_EventFunLeave	 = NULL;
+	typeFunTrackbarEvent		m_funcTrackbarChanged = {nullptr};
 
 protected:
 
-	//////////////////////////////////////////////////////////////////
+	////////////////////////////////////////////////////////////////////////////////
 	// Property
 	Gdiplus::StringFormat		m_StringFormat;
-	GdiplusEx::ImageFormat		m_ImgFormat;
-	Gdiplus::Bitmap*			m_image;
 
-	//////////////////////////////////////////////////////////////////
+	////////////////////////////////////////////////////////////////////////////////
 	// Struct information 
 
 	Gdiplus::RectF				m_track_rect;
+	std::vector<Gdiplus::PointF>m_triangle_track;
 
 	Gdiplus::RectF				m_rect_value_show;
 	Gdiplus::SizeF				m_rect_value_show_size;
@@ -83,6 +92,7 @@ protected:
 	Gdiplus::PointF				m_track_loc;
 	Gdiplus::SizeF				m_track_size;
 	Gdiplus::PointF				m_end_loc;
+	float						m_track_thickness;
 
 	float						m_fValue;
 	float						m_fMinValue;
@@ -91,52 +101,50 @@ protected:
 
 	int							m_iModeGuide;
 
-	HWND						m_hWndTT;
-	std::wstring				m_strTT;
-
 	CRect						m_actual_rect;
 
+	std::vector<GuideLineData> m_guideline_list;
+
 public:
-	Trackbar() : ControlBase(), m_eState(TrackbarState::Normal), 
-		m_sLabel(L""), m_image(NULL),
-		m_track_leave(false),
-		m_eOldState(TrackbarState::Normal)
+	Trackbar() : ControlBase(), m_eState(TrackbarState::Normal), m_track_leave(false)
 	{
 		m_rect.x	  = 0;
 		m_rect.y	  = 0;
 		m_rect.width  = WIDTH_DEF;
 		m_rect.height = HEIGHT_DEF;
 
+		m_track_thickness = 2.f;
+
 		this->SetDefaultPropertyUI();
 	}
 
 	~Trackbar()
 	{
-		delete m_image;
+
 	}
 
 	virtual ControlType GetType() { return static_cast<ControlType>(ControlType::BUTTON); }
-	void SetLabel(std::wstring lab) { m_sLabel = lab; }
 
 protected:
 
 	virtual void SetDefaultPropertyUI()
 	{
-		m_property.m_bk_color			= std::move(Color4(37, 37, 38));
-		m_property.m_bk_hover_color		= std::move(Color4(66, 66, 68));
-		m_property.m_click_color		= std::move(Color4(53, 53, 54));
+		UI_Background.bk_color			= std::move(Color4(59, 91, 179));
+		UI_Background.bk_hover_color	= std::move(Color4(229, 241, 255));
+		UI_Background.bk_click_color	= std::move(Color4(201, 224, 247));
+		UI_Background.border_radius		= 0;
+		UI_Background.border_width		= 0;
 
-		m_property.border_radius		= 0;
-		m_property.border_width			= 0;
-		m_property.text_color			= std::move(Color4(255, 255, 255));
-		m_property.text_hover_color		= std::move(Color4(255, 255, 255));
-
-		m_property.m_border_color		= std::move(Color4(77, 77, 80));
-		m_property.m_border_hover_color	= std::move(Color4(66, 166, 254));
+		UI_Text.text_color				= std::move(Color4(255, 255, 255));
+		UI_Text.text_hover_color		= std::move(Color4(0, 0, 0));
 	}
 
 private:
-
+	/*******************************************************************************
+	*! @brief  : Function support
+	*! @return : {*_*}
+	*! @author : thuong.nv          - [Date] : 18/03/2023
+	*******************************************************************************/
 	Gdiplus::PointF GetNormalVectorTracker()
 	{
 		Gdiplus::PointF v = m_end_loc - m_start_loc;
@@ -165,6 +173,35 @@ private:
 		m_track_loc.Y = m_track_loc.Y + vec.Y * dis;
 	}
 
+	Gdiplus::PointF GetPositionFromValue(float value)
+	{
+		if (value <= m_fMinValue)
+		{
+			return m_start_loc;
+		}
+
+		if (value >= m_fMinValue)
+		{
+			return m_end_loc;
+		}
+
+		auto vec = GetNormalVectorTracker();
+
+		float dis = value - m_fMinValue;
+
+		Gdiplus::PointF loc;
+
+		loc.X = m_track_loc.X + vec.X * dis;
+		loc.Y = m_track_loc.Y + vec.Y * dis;
+
+		return loc;
+	}
+
+	/*******************************************************************************
+	*! @brief  : Update rect draw information
+	*! @return : {*_*}
+	*! @author : thuong.nv          - [Date] : 18/03/2023
+	*******************************************************************************/
 	virtual void UpdateRectTrackerInfo()
 	{
 		m_track_rect.X = m_track_loc.X - m_track_size.Width  / 2;
@@ -172,6 +209,15 @@ private:
 
 		m_track_rect.Width  = m_track_size.Width;
 		m_track_rect.Height = m_track_size.Height;
+
+		m_triangle_track.clear();
+
+		float fWidthTrack   = 10.f;
+		float fHeightTrack  = 10.f;
+
+		m_triangle_track.emplace_back(Gdiplus::PointF{ m_track_loc.X, m_track_loc.Y });
+		m_triangle_track.emplace_back(Gdiplus::PointF{ m_track_loc.X - fWidthTrack/2, m_track_loc.Y + fHeightTrack });
+		m_triangle_track.emplace_back(Gdiplus::PointF{ m_track_loc.X + fWidthTrack/2, m_track_loc.Y + fHeightTrack });
 	}
 
 	virtual void UpdateRectValueShowInfo()
@@ -183,8 +229,17 @@ private:
 		m_rect_value_show.Height = m_rect_value_show_size.Height;
 	}
 
-	virtual void UpdateValue()
+	/*******************************************************************************
+	*! @brief  : update value and recalc draw value when the value update
+	*! @return : CRect
+	*! @author : thuong.nv          - [Date] : 18/03/2023
+	*******************************************************************************/
+	virtual void UpdateValue(float value)
 	{
+		float fOldValue = m_fValue;
+
+		m_fValue = value;
+
 		if (m_fValue <= m_fMinValue)
 		{
 			m_fValue = m_fMinValue;
@@ -208,26 +263,18 @@ private:
 
 		this->UpdateRectTrackerInfo();
 		this->UpdateRectValueShowInfo();
+
+		if (std::fabs(fOldValue - m_fValue) <= 0.0001f)
+		{
+			CHECK_RUN_FUNCTION(m_funcTrackbarChanged, this);
+		}
 	}
 
-	virtual void UpdateValue(long x, long y)
-	{
-		Point2D pt;
-		geo::GetPerpPoint2Segment({ m_start_loc.X, m_start_loc.Y }, { m_end_loc.X, m_end_loc.Y }, { x , y }, &pt, true);
-		float fValuePix  = geo::GetMagnitude(pt - Point2D{ m_start_loc.X, m_start_loc.Y });
-		float fLengthPix = geo::GetMagnitude(Point2D{ m_end_loc.X, m_end_loc.Y } - Point2D{ m_start_loc.X, m_start_loc.Y });
-
-		std::cout << fValuePix << " <> " << fLengthPix << std::endl;
-
-		float fscale = fValuePix / fLengthPix;
-		float value = m_fMinValue + fscale * (m_fMaxValue - m_fMinValue);
-
-		m_fValue = value;
-		//std::cout << m_fValue << std::endl;
-
-		this->UpdateValue();
-	}
-
+	/*******************************************************************************
+	*! @brief  : Check point inside track
+	*! @return : CRect
+	*! @author : thuong.nv          - [Date] : 18/03/2023
+	*******************************************************************************/
 	virtual bool InsideTracker(long x, long y)
 	{
 		return m_track_rect.Contains(x, y);
@@ -246,24 +293,98 @@ public:
 
 	void SetValue(float value)
 	{
-		m_fValue = value;
+		NULL_RETURN(m_hWnd, );
+
+		this->UpdateValue(value);
+	}
+
+	void SetThickness(float value)
+	{
+		m_track_thickness = value;
 
 		NULL_RETURN(m_hWnd, );
 
-		this->UpdateValue();
+		this->Draw(true);
 	}
 
 private:
+
+	/*******************************************************************************
+	*! @brief  : Recalculater value size window handle when use margin
+	*! @return : CRect
+	*! @author : thuong.nv          - [Date] : 18/03/2023
+	*******************************************************************************/
 	CRect RecalcActualSizeControl(CRect rect)
 	{
 		CRect ret_rect;
 
-		ret_rect.x		= rect.x + m_margin.left;
-		ret_rect.y		= rect.y + m_margin.top;
+		ret_rect.x		= rect.x	  +   m_margin.left;
+		ret_rect.y		= rect.y	  +   m_margin.top;
 		ret_rect.width	= rect.width  - 2*m_margin.right;
 		ret_rect.height	= rect.height - 2*m_margin.bottom;
 
 		return ret_rect;
+	}
+
+	/*******************************************************************************
+	*! @brief  : Recalculater guidede data = value + draw
+	*! @return : void
+	*! @author : thuong.nv          - [Date] : 18/03/2023
+	*******************************************************************************/
+	void RecalcGuideLine()
+	{
+		m_guideline_list.clear();
+
+		float fmin = m_fMinValue;
+		float fmax = m_fMaxValue;
+
+		m_guideline_list.emplace_back(GuideLineData{ m_fMinValue , true});
+		m_guideline_list.emplace_back(GuideLineData{ m_fMaxValue , true});
+	}
+
+protected:
+	/*******************************************************************************
+	*! @brief  : Process message event
+	*! @return : void
+	*! @author : thuong.nv          - [Date] : 18/03/2023
+	*******************************************************************************/
+	int OnProcessMessage(UINT msgID, WPARAM wParam, LPARAM lParam)
+	{
+		switch (msgID)
+		{
+			case CTB_EVT_TRACKER_CLICK:
+			{
+				m_eState = TrackbarState::MoveTracker;
+
+				this->Draw(true);
+
+				break;
+			}
+			case CTB_EVT_UPDATE_TRACKER:
+			{
+				long x = static_cast<long>(wParam);
+				long y = static_cast<long>(lParam);
+
+				Point2D pt;
+				geo::GetPerpPoint2Segment({ m_start_loc.X, m_start_loc.Y }, { m_end_loc.X, m_end_loc.Y }, { x , y }, &pt, true);
+				float fValuePix  = geo::GetMagnitude(pt - Point2D{ m_start_loc.X, m_start_loc.Y });
+				float fLengthPix = geo::GetMagnitude(Point2D{ m_end_loc.X, m_end_loc.Y } - Point2D{ m_start_loc.X, m_start_loc.Y });
+
+				float value = m_fMinValue + (fValuePix / fLengthPix) * (m_fMaxValue - m_fMinValue);
+
+				this->UpdateValue(value);
+
+				this->Draw(true);
+
+				break;
+			}
+			default:
+			{
+				break;
+			}
+		}
+
+		return 0;
 	}
 
 private:
@@ -277,20 +398,10 @@ private:
 	{
 		DWORD style = WS_CHILD | WS_VISIBLE | SS_OWNERDRAW | SS_NOTIFY;
 
-		m_margin = -10.f;
+		m_margin = { -10.f, -11.f, -11.f , -10.f};
 
 		// Actual size will be wider when setting
 		m_actual_rect = this->RecalcActualSizeControl(m_rect);
-
-		//m_hWnd = (HWND)CreateWindowW(TRACKBAR_CLASSW, L"Trackbar Control", style,
-		//				(int)m_rect.x,									// x position 
-		//				(int)m_rect.y,									// y position 
-		//				m_rect.width,									// Button width
-		//				m_rect.height,									// Button height
-		//				m_hWndPar,										// Parent window
-		//				(HMENU)(UINT_PTR)m_ID,							// menu.
-		//				(HINSTANCE)GetWindowLongPtr(m_hWndPar, GWLP_HINSTANCE),
-		//				NULL);
 
 		m_hWnd = (HWND)(HWND)CreateWindow(L"STATIC", L"", style,
 						(int)m_actual_rect.x,							// x position 
@@ -306,27 +417,11 @@ private:
 
 		sfunTrackbarWndProc = (WNDPROC)SetWindowLongPtr(m_hWnd, GWLP_WNDPROC, (LONG_PTR)&TrackbarProcHandle);
 
-		CreateMyTooltip(m_hWnd);
-
-		m_cur_background_color = m_property.m_bk_color.wrefcol;
-		m_cur_border_color = m_property.m_border_color.wrefcol;
-
-		//easing::EaseType eType = easing::EaseType::Sine;
-		//easing::EaseMode eMode = easing::EaseMode::In;
-
-		//m_easing.AddExec(eType, eMode, S2MS(0.2), m_property.m_bk_color.r, m_property.m_bk_hover_color.r);
-		//m_easing.AddExec(eType, eMode, S2MS(0.2), m_property.m_bk_color.g, m_property.m_bk_hover_color.g);
-		//m_easing.AddExec(eType, eMode, S2MS(0.2), m_property.m_bk_color.b, m_property.m_bk_hover_color.b);
-
-		//m_easing.AddExec(eType, eMode, S2MS(0.2), m_property.m_border_color.r, m_property.m_border_hover_color.r);
-		//m_easing.AddExec(eType, eMode, S2MS(0.2), m_property.m_border_color.g, m_property.m_border_hover_color.g);
-		//m_easing.AddExec(eType, eMode, S2MS(0.2), m_property.m_border_color.b, m_property.m_border_hover_color.b);
+		m_cur_background_color = UI_Background.bk_color.wrefcol;
+		m_cur_border_color     = UI_Background.border_color.wrefcol;
 
 		m_StringFormat.SetAlignment(Gdiplus::StringAlignmentCenter);
 		m_StringFormat.SetLineAlignment(Gdiplus::StringAlignmentCenter);
-
-		m_ImgFormat.SetVerticalAlignment(GdiplusEx::ImageAlignment::ImageAlignmentNear);
-		m_ImgFormat.SetHorizontalAlignment(GdiplusEx::ImageAlignment::ImageAlignmentCenter);
 
 		m_start_loc = Gdiplus::PointF((Gdiplus::REAL)m_rect.x, (Gdiplus::REAL)(m_rect.y + m_rect.height / 2));
 		m_end_loc = Gdiplus::PointF((Gdiplus::REAL)(m_rect.x + m_rect.width), (Gdiplus::REAL)(m_rect.y + m_rect.height / 2));
@@ -334,12 +429,13 @@ private:
 		m_track_size.Width  = 10.f;
 		m_track_size.Height = 20.f;
 
-
 		m_rect_value_show_size.Width  = 20.f;
 		m_rect_value_show_size.Height = 10.f;
 
 		this->SetMinValue(0.f);
 		this->SetMaxValue(100.f);
+
+		this->RecalcGuideLine();
 
 		this->SetValue(25.f);
 
@@ -377,50 +473,7 @@ private:
 				{
 					if (trackbar->GetCursorPosInParent(x, y))
 					{
-						trackbar->UpdateValue(x, y);
-						trackbar->Draw(true);
-					}
-				}
-				break;
-			}
-			//case WM_MOUSELEAVE:
-			//{
-			//	btn->m_track_leave = false;
-			//	btn->UpdateState(BtnState::Normal);
-			//	btn->BeginX1ThemeEffect();
-			//	InvalidateRect(hwndBtn, NULL, FALSE);
-			//	break;
-			//}
-			//case WM_MOUSEHOVER:
-			//{
-			//	btn->UpdateState(BtnState::Hover);
-			//	btn->BeginX1ThemeEffect();
-			//	InvalidateRect(hwndBtn, NULL, FALSE);
-			//	break;
-			//}
-			//case WM_TIMER:
-			//{
-			//	btn->OnTimer(wParam);
-			//	break;
-			//}
-			case WM_NOTIFY :
-			{
-				NMHDR* pnm = reinterpret_cast<NMHDR*>(lParam);
-				if (pnm->hwndFrom == trackbar->m_hWndTT)
-				{
-					std::cout << pnm->code << std::endl;
-					switch (pnm->code)
-					{
-					case TTN_SHOW:
-						return trackbar->OnToolTipShow(pnm);
-					case TTN_POP:
-					{
-						std::cout << "hide" << std::endl;
-						return TRUE;
-					}
-						
-					//case NM_CUSTOMDRAW:
-					//	return trackbar->OnToolTipCustomDraw((NMTTCUSTOMDRAW*)pnm);
+						trackbar->OnProcessMessage(CTB_EVT_UPDATE_TRACKER, (WPARAM)x, (LPARAM)y);
 					}
 				}
 				break;
@@ -431,8 +484,7 @@ private:
 				{
 					if (trackbar->InsideTracker(x, y))
 					{
-						trackbar->m_eState = TrackbarState::MoveTracker;
-						
+						trackbar->OnProcessMessage(CTB_EVT_TRACKER_CLICK, 0L, 0L);
 					}
 				}
 				break;
@@ -455,110 +507,6 @@ private:
 
 		return CallWindowProc(sfunTrackbarWndProc, hwndTrack, uMsg, wParam, lParam);
 	}
-
-private:
-
-	// Determine the required size of the client area of the tooltip
-	BOOL GetToolTipContentSize(SIZE* psz)
-	{
-		BOOL ret = FALSE;
-
-		HDC hdc = GetDC(m_hWndTT);
-		if (hdc != NULL)
-		{
-			HFONT hfontTT = (HFONT)SendMessage(m_hWndTT, WM_GETFONT, 0, 0);
-			HFONT hfontTTOld = (HFONT)SelectObject(hdc, hfontTT);
-			if (hfontTTOld != NULL)
-			{
-				SIZE szText;
-				if (GetTextExtentPoint32(hdc, m_strTT.c_str(), lstrlen(m_strTT.c_str()), &szText))
-				{
-					psz->cx = szText.cx;
-					psz->cy = szText.cy;
-					ret = TRUE;
-				}
-
-				SelectObject(hdc, hfontTTOld);
-			}
-
-			ReleaseDC(m_hWndTT, hdc);
-		}
-
-		return ret;
-	}
-
-	// Determine the required client rectangle of the tooltip to fit the
-	// text
-	BOOL GetToolTipContentRect(RECT* prc)
-	{
-		BOOL ret = FALSE;
-
-		SIZE sz;
-		if (GetToolTipContentSize(&sz))
-		{
-			if (GetWindowRect(m_hWndTT, prc))
-			{
-				prc->right = prc->left + sz.cx;
-				prc->bottom = prc->top + sz.cy;
-				ret = TRUE;
-			}
-		}
-
-		return ret;
-	}
-
-	//https://www.stevenengelhardt.com/2007/08/29/custom-drawn-win32-tooltips/
-
-	LRESULT OnToolTipShow(NMHDR* pnm)
-	{
-		std::cout << "show tool tip" << std::endl;
-		LRESULT ret = 0;
-		RECT rc;
-
-		if (GetToolTipContentRect(&rc))
-		{
-			// Adjust the rectangle to be the proper size to contain the
-			// content
-			if (SendMessage(m_hWndTT, TTM_ADJUSTRECT, TRUE, (LPARAM)&rc))
-			{
-				
-
-
-				if (SetWindowPos(m_hWndTT, NULL, m_track_loc.X, m_track_loc.Y, 100, 24,
-					SWP_NOZORDER | SWP_NOACTIVATE))
-				{
-					ret = TRUE;
-				}
-			}
-		}
-
-		return ret;
-	}
-
-	void CreateMyTooltip(HWND hparent)
-	{
-		m_hWndTT = CreateWindowEx(WS_EX_TOPMOST, TOOLTIPS_CLASS, NULL,
-			WS_POPUP | TTS_NOPREFIX | TTS_ALWAYSTIP, 0, 0, 0, 0, hparent, NULL, (HINSTANCE)GetWindowLongPtr(m_hWndPar, GWLP_HINSTANCE), NULL);
-
-		TTTOOLINFO ti = { 0 };
-
-		//ti.cbSize = sizeof(TTTOOLINFO);
-		//*********************************************************
-		// Specific settings for specific compiler options (Unicode/VC2013)
-		//*********************************************************
-		ti.cbSize = TTTOOLINFOW_V2_SIZE;
-
-		ti.uFlags = TTF_SUBCLASS;
-		ti.hwnd = hparent;
-		wchar_t tooltip[30] = L"A main window";
-		ti.lpszText = tooltip;
-		GetClientRect(hparent, &ti.rect);
-
-		if (!SendMessage(m_hWndTT, TTM_ADDTOOL, 0, (LPARAM)&ti))
-			MessageBox(0, TEXT("Failed: TTM_ADDTOOL"), 0, 0);
-	}
-
-	
 
 private:
 	//void BeginX1ThemeEffect()
@@ -637,27 +585,64 @@ private:
 
 protected:
 
+	virtual void DrawLineValue()
+	{
+		// Draw line rangle
+		Gdiplus::Pen penLine(Gdiplus::Color(255, 100, 100), m_track_thickness);
+		m_pRender->DrawLineFull(m_start_loc, m_end_loc, &penLine);
+
+		// Draw rangle line value
+		Gdiplus::Pen penLineValue(Gdiplus::Color(0, 255, 0), m_track_thickness);
+		m_pRender->DrawLineFull(m_start_loc, m_track_loc, &penLineValue);
+	}
+
 	virtual void DrawTracker()
 	{
 		Gdiplus::SolidBrush brushTracker(Gdiplus::Color(255, 100, 100));
 		Gdiplus::Pen penTracker(Gdiplus::Color(255, 100, 100), 1.f);
-		m_pRender->DrawRectangle1(m_track_rect, &penTracker, &brushTracker);
+
+		if (m_triangle_track.size() < 3)
+			return;
+
+		m_pRender->DrawTriangle(m_triangle_track[0], m_triangle_track[1], m_triangle_track[2], &penTracker, &brushTracker);
 	}
 
 	virtual void DrawGuideLine()
 	{
+		Gdiplus::Pen penLineValue(Gdiplus::Color(0, 255, 0), m_track_thickness);
 
+		const int nMaxBuff = 10;
+		wchar_t buff[nMaxBuff];
+		Gdiplus::Rect rect_text_guideline;
+
+		Gdiplus::SolidBrush guideline_text_color(UI_Text.text_color.wrefcol);
+
+		for (int i = 0; i < m_guideline_list.size(); i++)
+		{
+			auto& guideline = m_guideline_list[i];
+
+			float fLengthGuideLine = guideline.bMajor ? 4.f: 2.f;
+
+			auto point_value = GetPositionFromValue(guideline.value);
+			m_pRender->DrawLine({ point_value.X, point_value.Y + m_track_thickness/2}, { point_value.X, point_value.Y - fLengthGuideLine }, penLineValue);
+
+			swprintf_s(buff, nMaxBuff, L"%0.f", guideline.value);
+
+			auto rect_text = m_pRender->MeasureString(buff, wcslen(buff) +1, &m_StringFormat);
+
+			rect_text_guideline.X		= point_value.X - rect_text.Width/2;
+			rect_text_guideline.Y		= point_value.Y - fLengthGuideLine - rect_text.Height;
+			rect_text_guideline.Width	= rect_text.Width;
+			rect_text_guideline.Height	= rect_text.Height;
+
+			m_pRender->DrawTextRect(rect_text_guideline, buff, &guideline_text_color, &m_StringFormat);
+		}
 	}
 
 	virtual void DrawTextInfo()
 	{
 		if(m_eState == TrackbarState::MoveTracker)
 		{
-			// Draw panel show value current
-			Gdiplus::Pen penBorderRectValue(Gdiplus::Color(255, 255, 255), 1.f);
-			Gdiplus::SolidBrush brushValueColor(Gdiplus::Color(50, 255, 255, 255));
-			m_pRender->DrawRectangle1(m_rect_value_show, &penBorderRectValue, &brushValueColor);
-
 			// Draw text value current
 			Gdiplus::SolidBrush textValueColor(Gdiplus::Color(255, 255, 255));
 			const int nBuffSize = 20;
@@ -676,63 +661,22 @@ protected:
 			Gdiplus::Rect rect = m_pRender->GetDrawRect();
 
 			// [2] Draw color button state
-			const unsigned int iRadius = m_property.border_radius;
-			const unsigned int iBorderWidth = m_property.border_width;
+			auto iBorderRadius = UI_Background.border_radius;
+			auto iBorderWidth  = UI_Background.border_width;
 
-			Gdiplus::Brush* background_color = NULL;
-			Gdiplus::Pen* pen_color = NULL;
-
-			//if (m_bUseEffect)
-			//{
-			//	if (m_eState == TrackbarState::Click)
-			//	{
-			//		background_color = new Gdiplus::SolidBrush(m_property.m_click_color.wrefcol);
-			//		pen_color = new Gdiplus::Pen(Gdiplus::Color(255, 98, 162, 228), iBorderWidth);
-			//	}
-			//	else if (m_eState == TrackbarState::Hover)
-			//	{
-			//		background_color = new Gdiplus::SolidBrush(m_cur_background_color);
-			//		pen_color = new Gdiplus::Pen(m_cur_border_color, iBorderWidth);
-			//	}
-			//	else
-			//	{
-			//		background_color = new Gdiplus::SolidBrush(m_cur_background_color);
-			//		pen_color = new Gdiplus::Pen(m_cur_border_color, iBorderWidth);
-			//	}
-			//}
-			//else
-			//{
-			//	if (m_eState == TrackbarState::Click)
-			//	{
-			//		background_color = new Gdiplus::SolidBrush(m_property.m_click_color.wrefcol);
-			//		pen_color = new Gdiplus::Pen(Gdiplus::Color(255, 98, 162, 228), iBorderWidth);
-			//	}
-			//	else if (m_eState == TrackbarState::Hover)
-			//	{
-			//		background_color = new Gdiplus::SolidBrush(m_property.m_bk_hover_color.wrefcol);
-			//		pen_color = new Gdiplus::Pen(m_property.m_border_hover_color.wrefcol, iBorderWidth);
-			//	}
-			//	else
-			//	{
-			//		background_color = new Gdiplus::SolidBrush(m_property.m_bk_color.wrefcol);
-			//		pen_color = new Gdiplus::Pen(m_property.m_border_color.wrefcol, iBorderWidth);
-			//	}
-			//}
+			Gdiplus::Brush* background_color = new Gdiplus::SolidBrush(UI_Background.bk_color.wrefcol);
+			Gdiplus::Pen* pen_color = new Gdiplus::Pen(UI_Background.border_color.wrefcol, iBorderWidth);
 
 			// Fill erase background
-			//this->DrawEraseBackground(m_pRender);
+			this->EraseBackground(m_pRender);
 
-			//// Fill rectangle background;
-			//this->DrawFillBackground(m_pRender, background_color);
-
-			//// Draw rectangle background;
-			//this->DrawBorderBackground(m_pRender, pen_color);
+			// Draw rectangle background
+			this->DrawBackground(m_pRender, pen_color, nullptr, iBorderRadius);
 
 			SAFE_DELETE(pen_color);
 			SAFE_DELETE(background_color);
 
-			Gdiplus::Pen penLine(Gdiplus::Color(255, 100, 100), 4.f);
-			m_pRender->DrawLineFull(m_start_loc, m_end_loc, &penLine);
+			this->DrawLineValue();
 
 			// [1] Draw Guide line 
 			this->DrawGuideLine();
@@ -747,40 +691,10 @@ protected:
 	}
 
 public:
-	virtual void Event(WindowBase* window, WORD _id, WORD _event)
+
+	void SetEventChangeValue(typeFunTrackbarEvent fun)
 	{
-		NULL_RETURN(m_EventFun, );
-
-		m_EventFun(window, this);
-	}
-
-	void SetEvent(void(*mn)(WindowBase*, Trackbar*))
-	{
-		m_EventFun = mn;
-	}
-
-	//void UpdateState(BtnState state, bool free_oldstate = false)
-	//{
-	//	m_eOldState = (free_oldstate) ? BtnState::Normal : m_eState;
-
-	//	if ( m_EventFunEnter && state == BtnState::Hover)
-	//	{
-	//		m_EventFunEnter(NULL, this);
-	//	}
-	//	else if (m_EventFunLeave && state == BtnState::Normal)
-	//	{
-	//		m_EventFunLeave(NULL, this);
-	//	}
-	//	m_eState = state;
-	//}
-
-	void SetEventEnterCallBack(void(*fun)(WindowBase* window, Trackbar* btn))
-	{
-		this->m_EventFunEnter = fun;
-	}
-	void SetEventLeaveCallBack(void(*fun)(WindowBase* window, Trackbar* btn))
-	{
-		this->m_EventFunLeave = fun;
+		m_funcTrackbarChanged = fun;
 	}
 
 	void UseEffect(bool bUseEffect)

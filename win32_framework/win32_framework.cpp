@@ -61,14 +61,13 @@ void Create(WindowBase* win)
     //btn->UseEffect(true);
     //btn->Visible(true);
 
-    //Trackbar* track = new Trackbar();
-    //track->SetLabel(L"Track bar");
-    //track->SetSize(100, 24);
-    //track->SetPosition(12, 50);
-    //track->SetBorderRadius(2);
-    //track->SetBorderWidth(1);
-    ////btn->UseEffect(true);
-    //track->Visible(true);
+    Trackbar* track = new Trackbar();
+    track->SetSize(100, 24);
+    track->SetPosition(12, 100);
+    track->SetBorderRadius(2);
+    track->SetBorderWidth(0);
+    //btn->UseEffect(true);
+    track->Visible(true);
 
     Checkbox* chk = new Checkbox();
 
@@ -117,7 +116,7 @@ void Create(WindowBase* win)
     sub->Visible(true);
 
     //sub->AddControl(btn);
-    //sub->AddControl(track);
+    sub->AddControl(track);
     sub->AddControl(cbb);
     sub->AddControl(chk);
     win->AddSubWindow(sub);

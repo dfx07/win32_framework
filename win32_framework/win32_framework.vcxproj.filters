@@ -113,5 +113,8 @@
     <ClInclude Include="..\include\controls\xcombobox.h">
       <Filter>Header Files\ui\controls</Filter>
     </ClInclude>
+    <ClInclude Include="..\include\controls\xtrackbar.h">
+      <Filter>Header Files\ui\controls</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

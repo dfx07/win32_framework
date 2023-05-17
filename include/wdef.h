@@ -778,6 +778,19 @@ public:
 		return rect;
 	}
 
+	void DrawTriangle(const Gdiplus::PointF& p1, const Gdiplus::PointF& p2, const Gdiplus::PointF& p3,
+					  const Gdiplus::Pen* pen, const Gdiplus::Brush* brush)
+	{
+		NULL_RETURN(m_pRender->render, );
+
+		Gdiplus::PointF points[] = { p1, p2, p3 };
+
+		if (pen)
+			m_pRender->render->DrawPolygon(pen, points, 3);
+		if (brush)
+			m_pRender->render->FillPolygon(brush, points, 3);
+	}
+
 	void DrawRectangle1(const Gdiplus::RectF& rect, const Gdiplus::Pen* pen, const Gdiplus::Brush* brush)
 	{
 		NULL_RETURN(m_pRender->render, );
