@@ -37,6 +37,23 @@
 	#define Dllexport
 #endif
 
+#undef assert
+#ifdef _UNICODE
+#       define concate(s1, s2)      s1 ## s2
+#else
+#       define concate(s1, s2)      s2
+#endif
+
+#       define frefix_f(s)          concate(L,s)
+
+#ifdef _DEBUG
+#       define assert(f)            _ASSERT(f)
+#       define assert_m(f, msg)     _ASSERT_EXPR(f , frefix_f(msg))
+#else
+#       define assert(f) 
+#       define assert_m(f, msg)
+#endif
+
 #define S2MS(s)						(s  * 1000)  /*Convert second -> millisecond*/
 #define MS2S(ms)					(ms / 1000)  /*Convert millisecond -> second*/
 

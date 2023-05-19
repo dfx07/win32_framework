@@ -12,54 +12,10 @@
 #define XGEOMETRY_H
 
 #include "xsysdef.h"
-#include "xmath.h"
-
-#include <iostream>
-#include <math.h>
-#include <algorithm>
-#include <vector>
-#include <assert.h>
-
-#define USE_GLM
-
-#ifdef USE_GLM
-	#include "glm/glm.hpp"
-#else
-	//#include "glm/glm.hpp"
-#endif
-
-#undef TRUE
-	#define TRUE    true
-#undef FALSE
-	#define FALSE   false
-#undef ASSERT
-	#define ASSERT(expr)  assert(expr)
+#include "xgeotype.h"
 
 
-#define GEO_EPSILON			0.001f  // same
 #define GEO_XY_EPSILON		0.0001f
-
-typedef float		FLOAT;
-typedef int			BOOL;
-typedef int			INT;
-
-///////////////////////////////////////////////////////////////////////////////////
-// Define use GLM
-#ifdef USE_GLM
-	typedef glm::vec2			Vec2D;
-	typedef glm::vec2			Point2D;
-	typedef glm::vec3			Vec3D;
-	typedef std::vector<Vec2D>	VecPoint2D;
-	typedef fox::tagRect2D		Rect2D;
-///////////////////////////////////////////////////////////////////////////////////
-// Define use User define
-#else
-	typedef fox::tagVec2D		Vec2D;
-	typedef fox::tagVec2D		Point2D;
-	typedef fox::tagVec3D		Vec3D;
-	typedef std::vector<Vec2D>	VecPoint2D;
-	typedef fox::tagRect2D		Rect2D;
-#endif
 
 
 ___BEGIN_NAMESPACE___
@@ -314,7 +270,7 @@ BOOL IsPointInPolygon(const Point2D& pt, const VecPoint2D& poly)
 {
 	if (poly.size() < 3)
 	{
-		ASSERT(0);
+		assert(0);
 		return FALSE;
 	}
 
@@ -578,7 +534,7 @@ INT IntersectLine2Polygon(const Point2D&	 ptLine1,	 //[in] Point on the line
 {
 	if (poly.size() < 3)
 	{
-		ASSERT(0);
+		assert(0);
 		return 0;
 	}
 
@@ -646,7 +602,7 @@ INT IntersectSegment2Polygon(const Point2D&		pt1,	//[in] Point on the line
 {
 	if (poly.size() < 3)
 	{
-		ASSERT(0);
+		assert(0);
 		return FALSE;
 	}
 
@@ -688,7 +644,7 @@ BOOL IsInsidePolygon(const VecPoint2D& poly1, const VecPoint2D& poly2)
 {
 	if (poly1.size() < 3 || poly2.size() < 3)
 	{
-		ASSERT(0);
+		assert(0);
 		return FALSE;
 	}
 
@@ -728,7 +684,7 @@ INT GetRelation2Polygon(const VecPoint2D& vecPoly1, const VecPoint2D& vecPoly2)
 {
 	if (vecPoly1.size() < 3 || vecPoly2.size() < 3)
 	{
-		ASSERT(0);
+		assert(0);
 		return -1;
 	}
 
@@ -854,7 +810,7 @@ INT GetPerpPoint2Segment(const  Point2D& ptSeg1, const Point2D& ptSeg2,
 	FLOAT fDot1 = GetDotProduct(ptSeg2 - ptSeg1, ptPer - ptSeg1);
 	FLOAT fDot2 = GetDotProduct(ptSeg1 - ptSeg2, ptPer - ptSeg2);
 
-	if (fDot1 >= GEO_EPSILON && fDot2 >= GEO_EPSILON)
+	if (fDot1 >= MATH_EPSILON && fDot2 >= MATH_EPSILON)
 	{
 		iRet = 1;
 	}

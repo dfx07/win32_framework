@@ -1,25 +1,25 @@
 ////////////////////////////////////////////////////////////////////////////////////
 /*!*********************************************************************************
-* @Copyright (C) 2021-2022 thuong.nv <thuong.nv.mta@gmail.com>
+* @Copyright (C) 2021-2023 thuong.nv <thuong.nv.mta@gmail.com>
 *            All rights reserved.
 ************************************************************************************
-* @file     xmath.h
-* @create   Nov 15, 2023
-* @brief    Math
+* @file     gp_shader.h
+* @create   May 19, 2023
+* @brief    Use OpenGL shader
 * @note     For conditions of distribution and use, see copyright notice in readme.txt
 ************************************************************************************/
-#ifndef XMATH_H
-#define XMATH_H
+
+#ifndef GP_GEOMETRY_RENDER_H
+#define GP_GEOMETRY_RENDER_H
 
 #include "xsysdef.h"
+#include <vector>
+#include "glm/glm.hpp"
 
-///////////////////////////////////////////////////////////////////////////////////
-// Define math
-#undef PI
-	#define PI					 3.14159265359	/* PI	  */
-#undef HPI
-	#define HPI					 1.57079632679	/* Haft PI*/
-#undef MATH_EPSILON
-	#define MATH_EPSILON		 0.001f			/* epsilon*/
+#include <GL/glew.h>
 
-#endif // XMATH_H
+___BEGIN_NAMESPACE___
+
+____END_NAMESPACE____
+
+#endif // !GP_GEOMETRY_RENDER_H

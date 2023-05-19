@@ -152,12 +152,14 @@
     <ClInclude Include="..\include\controls\xtrackbar.h" />
     <ClInclude Include="..\include\graphics\gp_camera.h" />
     <ClInclude Include="..\include\graphics\gp_geometry_render.h" />
+    <ClInclude Include="..\include\graphics\gp_shader.h" />
     <ClInclude Include="..\include\graphics\wtext_render.h" />
     <ClInclude Include="..\include\import_control.h" />
     <ClInclude Include="..\include\import_gl.h" />
     <ClInclude Include="..\include\math\xalgorithm.h" />
     <ClInclude Include="..\include\math\xeasing.h" />
     <ClInclude Include="..\include\math\xgeometry.h" />
+    <ClInclude Include="..\include\math\xgeotype.h" />
     <ClInclude Include="..\include\math\xmath.h" />
     <ClInclude Include="..\include\wapi.h" />
     <ClInclude Include="..\include\wctrl.h" />

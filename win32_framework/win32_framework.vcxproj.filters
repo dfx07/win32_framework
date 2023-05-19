@@ -116,5 +116,11 @@
     <ClInclude Include="..\include\controls\xtrackbar.h">
       <Filter>Header Files\ui\controls</Filter>
     </ClInclude>
+    <ClInclude Include="..\include\graphics\gp_shader.h">
+      <Filter>Header Files\graphics</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\math\xgeotype.h">
+      <Filter>Header Files\math</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>
