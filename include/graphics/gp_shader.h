@@ -12,13 +12,12 @@
 #ifndef GP_GEOMETRY_RENDER_H
 #define GP_GEOMETRY_RENDER_H
 
-#include "xsysdef.h"
-#include <vector>
-#include "glm/glm.hpp"
-
+#include "math/xgeotype.h"
 #include <GL/glew.h>
 
 ___BEGIN_NAMESPACE___
+
+
 
 ____END_NAMESPACE____
 

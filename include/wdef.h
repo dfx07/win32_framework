@@ -239,81 +239,84 @@ private:
 * Class name  : Color define
 * Brief : Provides type and define common function time
 ***********************************************************************************/
-struct Color4
+namespace GdiplusEx
 {
-public:
-	void set(float r = 255.f,
-			 float g = 255.f,
-			 float b = 255.f,
-			 float a = 255.f)
+	struct Color4
 	{
-		this->r = r;
-		this->g = g;
-		this->b = b;
-		this->a = a;
-		wrefcol = Gdiplus::Color::MakeARGB(a, r, g, b);
-	}
+	public:
+		void set(float r = 255.f,
+				 float g = 255.f,
+				 float b = 255.f,
+				 float a = 255.f)
+		{
+			this->r = r;
+			this->g = g;
+			this->b = b;
+			this->a = a;
+			wrefcol = Gdiplus::Color::MakeARGB(a, r, g, b);
+		}
 
-	Color4(	float r =  255.f,
-			float g =  255.f,
-			float b =  255.f,
-			float a =  255.f)
+		Color4(	float r =  255.f,
+				float g =  255.f,
+				float b =  255.f,
+				float a =  255.f)
+		{
+			this->set(r, g, b, a);
+		}
+
+		~Color4()
+		{
+
+		}
+
+		const Color4& operator=(const Color4& color)
+		{
+			this->r = color.r;
+			this->g = color.g;
+			this->b = color.b;
+			this->a = color.a;
+			this->wrefcol = color.wrefcol;
+
+			return *this;
+		}
+
+	public:
+		float			r;
+		float			g;
+		float			b;
+		float			a;
+
+		Gdiplus::ARGB   wrefcol;
+	};
+
+	struct Color3
 	{
-		this->set(r, g, b, a);
-	}
+	public:
+		void set(float r = 255.f,
+				 float g = 255.f,
+				 float b = 255.f)
+		{
+			this->r = r;
+			this->g = g;
+			this->b = b;
+			wrefcol = Gdiplus::Color::MakeARGB(255, r, g, b);
+		}
 
-	~Color4()
-	{
+		Color3( float r = 255.f,
+				float g = 255.f,
+				float b = 255.f)
+		{
+			this->set(r, g, b);
+		}
 
-	}
+	public:
+		float	 r;
+		float	 g;
+		float	 b;
 
-	const Color4& operator=(const Color4& color)
-	{
-		this->r = color.r;
-		this->g = color.g;
-		this->b = color.b;
-		this->a = color.a;
-		this->wrefcol = color.wrefcol;
-
-		return *this;
-	}
-
-public:
-	float			r;
-	float			g;
-	float			b;
-	float			a;
-
-	Gdiplus::ARGB   wrefcol;
-};
-
-struct Color3
-{
-public:
-	void set(float r = 255.f,
-			 float g = 255.f,
-			 float b = 255.f)
-	{
-		this->r = r;
-		this->g = g;
-		this->b = b;
-		wrefcol = Gdiplus::Color::MakeARGB(255, r, g, b);
-	}
-
-	Color3( float r = 255.f,
-			float g = 255.f,
-			float b = 255.f)
-	{
-		this->set(r, g, b);
-	}
-
-public:
-	float	 r;
-	float	 g;
-	float	 b;
-
-	Gdiplus::ARGB wrefcol;
-};
+		Gdiplus::ARGB wrefcol;
+	};
+}
 
 /**********************************************************************************
 * Class name  : GdiplusEx define

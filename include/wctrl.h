@@ -329,27 +329,29 @@ typedef Control4Value<float> CPadding;
 ***********************************************************************************/
 class Dllexport RectUIControl
 {
-protected:
+public:
+	using Color = GdiplusEx::Color4;
 
+protected:
 	typedef struct tagBackgroundUI
 	{
 		UINT		 border_radius      = 0;
 		UINT		 border_width       = 0;
 
-		Color4		 bk_erase_color     = { 255, 255, 255, 255 };
-		Color4		 bk_color           = { 255, 255, 255, 255 };
-		Color4		 bk_hover_color     = { 255,   0,   0, 255 };
-		Color4		 bk_click_color     = { 0  , 255,   0, 255 };
+		Color		 bk_erase_color     = { 255, 255, 255, 255 };
+		Color		 bk_color           = { 255, 255, 255, 255 };
+		Color		 bk_hover_color     = { 255,   0,   0, 255 };
+		Color		 bk_click_color     = { 0  , 255,   0, 255 };
 
-		Color4		 border_color       = { 255, 255, 255, 255 };
-		Color4		 border_hover_color = { 255, 255, 255, 255 };
+		Color		 border_color       = { 255, 255, 255, 255 };
+		Color		 border_hover_color = { 255, 255, 255, 255 };
 
 	} BackgroundProperty;
 
 	typedef struct tagTextUI
 	{
-		Color4		 text_color         = { 255, 255, 255, 255 };
-		Color4		 text_hover_color   = { 255, 255, 255, 255 };
+		Color		 text_color         = { 255, 255, 255, 255 };
+		Color		 text_hover_color   = { 255, 255, 255, 255 };
 
 	} TextProperty;
 
@@ -370,32 +372,32 @@ public:
 		UI_Background.border_radius = iWidth;
 	}
 
-	void SetBackgroundColor(const Color4 cl)
+	void SetBackgroundColor(const Color cl)
 	{
 		UI_Background.bk_color = cl;
 	}
 
-	void SetEraseBackgroundColor(const Color4& cl)
+	void SetEraseBackgroundColor(const Color& cl)
 	{
 		UI_Background.bk_erase_color = cl;
 	}
 
-	void SetBackgroundHoverColor(const Color4& cl)
+	void SetBackgroundHoverColor(const Color& cl)
 	{
 		UI_Background.bk_hover_color = cl;
 	}
 
-	void SetBackgroundClickColor(const Color4& cl)
+	void SetBackgroundClickColor(const Color& cl)
 	{
 		UI_Background.bk_click_color = cl;
 	}
 
-	void SetBorderColor(const Color4& col)
+	void SetBorderColor(const Color& col)
 	{
 		UI_Background.border_color = col;
 	}
 
-	void SetBorderHoverColor(const Color4& col)
+	void SetBorderHoverColor(const Color& col)
 	{
 		UI_Background.border_hover_color = col;
 	}
@@ -403,12 +405,12 @@ public:
 	////////////////////////////////////////////////////////////////////////////////
 	// Text Property setter
 
-	void SetTextColor(const Color4& cl)
+	void SetTextColor(const Color& cl)
 	{
 		UI_Text.text_color = cl;
 	}
 
-	void SetTextHoverColor(const Color4& cl)
+	void SetTextHoverColor(const Color& cl)
 	{
 		UI_Text.text_hover_color = cl;
 	}

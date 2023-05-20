@@ -23,6 +23,8 @@ ___BEGIN_NAMESPACE___
 ***********************************************************************************/
 class Dllexport SubWindow : public WindowBase , public WindowEvent
 {
+	using Color = GdiplusEx::Color4;
+
 protected:
 	enum ControlID
 	{
@@ -454,8 +456,8 @@ protected:
 	}
 
 private:
-	fox::Color4			m_bk_color;
-	fox::Color4			m_title_background_color;
+	Color			m_bk_color;
+	Color			m_title_background_color;
 
 //==================================================================================
 //⮟⮟ Triển hàm thao tác từ bên ngoài tác động vào Window class                     

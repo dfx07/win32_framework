@@ -39,6 +39,7 @@ Point2D			Move(const Point2D& pt, const Vec2D& vn, const FLOAT fDistance);
 Vec2D			Rotate(const Vec2D& v, const FLOAT fDegree);
 Point2D			RotatePoint(const Point2D& ptPivot, const Point2D& ptRotate, const FLOAT fDegree);
 
+////////////////////////////////////////////////////////////////////////////////////
 //-----------------------------------------------------------------------------------
 // Geometry function
 //-----------------------------------------------------------------------------------
@@ -64,9 +65,10 @@ INT				GetPerpPoint2Segment(const Point2D& ptSeg1, const Point2D& ptSeg2, const 
 
 BOOL			IsPointInRay(const Point2D& pt, const Vec2D& vn, const Point2D& ptc);                 // ray  = 1 point + unit vector
 
-//--------------------------------------------------------------------------------------
+////////////////////////////////////////////////////////////////////////////////////
+//----------------------------------------------------------------------------------
 // Support function
-//--------------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------
 BOOL			IsEqual(const FLOAT fVal1, const FLOAT fVal2, const FLOAT fEpsilon);
 VecPoint2D		ConvertRectF2Points(const Rect2D& rect);
 FLOAT			ConvertRadToDeg(const FLOAT fRad);
@@ -899,9 +901,7 @@ FLOAT ConvertDegToRad(const FLOAT fDegree)
 {
 	return fDegree * float(PI) / 180.f;
 }
-
-
-____END_NAMESPACE____
+_____END_SECTION_____
 
 ____END_NAMESPACE____
 

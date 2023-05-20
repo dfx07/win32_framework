@@ -96,18 +96,18 @@ protected:
 
 	virtual void SetDefaultPropertyUI()
 	{
-		UI_Background.bk_color				= std::move(Color4(37, 37, 38));
-		UI_Background.bk_hover_color		= std::move(Color4(66, 66, 68));
-		UI_Background.bk_click_color		= std::move(Color4(53, 53, 54));
+		UI_Background.bk_color				= std::move(Color(37, 37, 38));
+		UI_Background.bk_hover_color		= std::move(Color(66, 66, 68));
+		UI_Background.bk_click_color		= std::move(Color(53, 53, 54));
 
-		UI_Background.border_color			= std::move(Color4(77, 77, 80));
-		UI_Background.border_hover_color	= std::move(Color4(66, 166, 254));
+		UI_Background.border_color			= std::move(Color(77, 77, 80));
+		UI_Background.border_hover_color	= std::move(Color(66, 166, 254));
 
 		UI_Background.border_radius			= 0;
 		UI_Background.border_width			= 0;
 
-		UI_Text.text_color					= std::move(Color4(255, 255, 255));
-		UI_Text.text_hover_color			= std::move(Color4(255, 255, 255));
+		UI_Text.text_color					= std::move(Color(255, 255, 255));
+		UI_Text.text_hover_color			= std::move(Color(255, 255, 255));
 	}
 
 private:

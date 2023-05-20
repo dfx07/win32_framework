@@ -11,45 +11,11 @@
 #ifndef GP_GEOMETRY_RENDER_H
 #define GP_GEOMETRY_RENDER_H
 
-#include "xsysdef.h"
-#include <vector>
-#include "glm/glm.hpp"
-
+#include "math/xgeotype.h"
 #include <GL/glew.h>
 
 
 ___BEGIN_NAMESPACE___
-
-struct VERTEX_3D {
-	glm::vec3 pt;
-	glm::vec3 color;
-
-public:
-	VERTEX_3D()
-	{
-		pt    = { 0.f, 0.f, 0.f };
-		color = { 0.f, 0.f, 0.f };
-	}
-
-	VERTEX_3D(glm::vec3& pt, glm::vec3 c = {1.f, 1.f, 1.f})
-	{
-		this->pt = pt;
-		this->color = c;
-	}
-
-	//VERTEX_3D(glm::vec3& pt)
-	//{
-	//	this->pt = pt;
-	//	this->color = { 1.f, 1.f, 1.f };
-	//}
-
-	VERTEX_3D& operator=(const glm::vec3& pt)
-	{
-		this->pt = pt;
-		this->color = { 1.f, 1.f, 1.f };
-		return *this;
-	}
-};
 
 /**********************************************************************************
 * ⮟⮟ Class name: GeometryRender
@@ -57,19 +23,23 @@ public:
 ***********************************************************************************/
 class GeometryRender
 {
-	using Vec3D   = glm::vec3;
-	using Color3D = glm::vec3;
-
 	template<typename T>
 	using CacheData   = std::vector<T>;
 
-	using BufferData  = std::vector<float>;
+	template<typename T>
+	using BufferData  = std::vector<T>;
+
+	template<typename T>
+	using PointList = std::vector<T>;
+
+	typedef PointList<Point2D> PointList2D;
+	typedef PointList<Point3D> PointList3D;
 
 protected:
 
 	typedef struct tagPointData
 	{
-		Vec3D	m_pt;
+		Point3D	m_pt;
 		Vec3D	m_color;
 		float	m_fSize;
 
@@ -77,40 +47,40 @@ protected:
 
 	typedef struct tagLineData
 	{
-		Vec3D	 m_pt1;
-		Vec3D	 m_pt2;
-		Color3D	 m_color1;
-		Color3D	 m_color2;
+		Point3D	 m_pt1;
+		Point3D	 m_pt2;
+		Color3	 m_color1;
+		Color3	 m_color2;
 
 		float	 m_width;
 	} LineData;
 
 	typedef struct tagTrigData
 	{
-		Vec3D	 m_pt1;
-		Vec3D	 m_pt2;
-		Vec3D	 m_pt3;
-		Color3D	 m_color1;
-		Color3D	 m_color2;
-		Color3D	 m_color3;
+		Point3D	 m_pt1;
+		Point3D	 m_pt2;
+		Point3D	 m_pt3;
+		Color3	 m_color1;
+		Color3	 m_color2;
+		Color3	 m_color3;
 
 	} TrigData;
 
 	typedef struct tagQuaData
 	{
-		Vec3D	 m_pt1;
-		Vec3D	 m_pt2;
-		Vec3D	 m_pt3;
-		Color3D	 m_color1;
-		Color3D	 m_color2;
-		Color3D	 m_color3;
+		Point3D	 m_pt1;
+		Point3D	 m_pt2;
+		Point3D	 m_pt3;
+		Color3	 m_color1;
+		Color3	 m_color2;
+		Color3	 m_color3;
 
 	} QuaData;
 
 	typedef struct tagPolyData
 	{
-		std::vector<Vec3D>	m_ptList;
-		Color3D				m_color;
+		PointList3D		m_ptList;
+		Color3			m_color;
 	} PolyData;
 
 public:
@@ -139,7 +109,7 @@ public:
 		m_vecRectData.push_back({{ vt1.pt, vt2.pt, vt3.pt, vt4.pt }, vt1.color});
 	}
 
-	virtual void AddRectangle2D(float x, float y, float z, float width, float height, Color3D color = {1.f ,1.f, 1.f})
+	virtual void AddRectangle2D(float x, float y, float z, float width, float height, Color3 color = {1.f ,1.f, 1.f})
 	{
 		Vec3D pt1 = { x			, y			, z};
 		Vec3D pt2 = { x + width , y			, z};
@@ -278,10 +248,10 @@ public:
 	CacheData<PolyData>		m_vecRectData;
 
 	// Render data
-	BufferData				m_LineDataRender;
-	BufferData				m_TrigDataRender;
-	BufferData				m_PointDataRender;
-	BufferData				m_RectDataRender;
+	BufferData<FLOAT>		m_LineDataRender;
+	BufferData<FLOAT>		m_TrigDataRender;
+	BufferData<FLOAT>		m_PointDataRender;
+	BufferData<FLOAT>		m_RectDataRender;
 };
 
 ____END_NAMESPACE____

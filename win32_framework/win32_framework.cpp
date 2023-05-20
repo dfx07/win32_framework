@@ -133,13 +133,13 @@ void Create(WindowBase* win)
     cam2D.UpdateMatrix();
 
 
-    glm::vec3 p1 = { -100 ,  100, 0.f };
-    glm::vec3 p2 = {  100 ,  100, 0.f };
-    glm::vec3 p3 = {  100 , -100, 0.f };
-    glm::vec3 p4 = { -100 , -100, 0.f };
+    Vec3D p1 = { -100 ,  100, 0.f };
+    Vec3D p2 = {  100 ,  100, 0.f };
+    Vec3D p3 = {  100 , -100, 0.f };
+    Vec3D p4 = { -100 , -100, 0.f };
 
-    glm::vec3 c1 = {  1 , 1, 0 };
-    glm::vec3 c2 = {  0 , 0, 1 };
+    Vec3D c1 = {  1 , 1, 0 };
+    Vec3D c2 = {  0 , 0, 1 };
 
     //render.AddLine(VERTEX_3D(p1, c1), VERTEX_3D(p2, c2));
     render.AddRectangle(p1, p2, p3, p4);
