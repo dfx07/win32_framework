@@ -338,6 +338,7 @@ public:
 	{
 		this->pt	= pt;
 		this->color = c;
+		this->texture = tx;
 	}
 
 	VERTEX_3D& operator=(const Point3D& pt)
