@@ -8,16 +8,15 @@
 * @brief    Camera define
 * @note     For conditions of distribution and use, see copyright notice in readme.txt
 ************************************************************************************/
-#ifndef GPCAMERA_H
-#define GPCAMERA_H
+#ifndef GP_CAMERA_H
+#define GP_CAMERA_H
 
-#include "xsysdef.h"
-
+#include "math/xgeotype.h"
 #include <GL/glew.h>
-#include <glm/glm.hpp>
+
 #include <glm/gtc/type_ptr.hpp>
-#include <glm/gtx/vector_angle.hpp>
 #include <glm/gtc/matrix_transform.hpp>
+
 
 ___BEGIN_NAMESPACE___
 
@@ -40,11 +39,6 @@ enum class CameraMode
 ***********************************************************************************/
 class Camera
 {
-protected:
-    using Vec2D  = glm::vec2;
-    using Vec3D  = glm::vec3;
-    using Mat4   = glm::mat4;
-
 protected:
     Vec3D           m_position;     // Vị trí camera
     Vec3D           m_direction;    // Hướng camera trỏ tới (ngược hướng với hướng camera thực tế) - Nó nên là vector đơn vị (normal)
@@ -86,6 +80,10 @@ public:
     virtual void UseMatrix(CameraMode mode = CameraMode::CMODE_NORMAL) const = 0;
     virtual void LoadMatrix(GLuint program) const = 0;
 
+    virtual Mat4& GetViewMatrix() { return m_viewMat; }
+    virtual Mat4& GetProjMatrix() { return m_projMat; }
+    virtual Mat4& GetModelMatrix(){ return m_modelMat;}
+
 public:
     /*******************************************************************************
     *! @brief  : Chuyển đổi từ tọa độ [Trái trên] sang tọa độ tại [Trung tâm] trên view
@@ -118,16 +116,6 @@ public:
     }
 
 public:
-
-    glm::mat4 GetViewMatrix()
-    {
-        return m_viewMat;
-    }
-
-    glm::mat4 GetProjectionMatrix() const
-    {
-        return m_projMat;
-    }
 
     void InitView(int width, int height, float _near, float _far)
     {

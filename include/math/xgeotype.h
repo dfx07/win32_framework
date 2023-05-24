@@ -12,7 +12,8 @@
 #define XGEOTYPE_H
 
 #include "xmath.h"
-#include "glm/glm.hpp"
+#include <glm/glm.hpp>
+
 #include <vector>
 
 ___BEGIN_NAMESPACE___
@@ -301,6 +302,7 @@ typedef int			INT;
 	typedef glm::vec3				Point3D;
 	typedef glm::vec3				Color3;
 	typedef fox::tagRect<FLOAT>		Rect2D;
+	typedef glm::mat4				Mat4;
 
 /////////////////////////////////////////////////////////////////////////////////////
 /***********************************************************************************/
@@ -312,6 +314,7 @@ typedef int			INT;
 	typedef fox::tagVec<3, FLOAT>	Point3D;
 	typedef fox::tagVec<3, FLOAT>	Color3;
 	typedef fox::tagRect<FLOAT>		Rect2D;
+
 #endif
 typedef std::vector<Vec2D>		VecPoint2D;
 

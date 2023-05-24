@@ -8,15 +8,14 @@
 * @brief    Use OpenGL shader
 * @note     For conditions of distribution and use, see copyright notice in readme.txt
 ************************************************************************************/
-
-#ifndef GP_GEOMETRY_RENDER_H
-#define GP_GEOMETRY_RENDER_H
+#ifndef GP_SHADER_H
+#define GP_SHADER_H
 
 #include "math/xgeotype.h"
-#include <iostream>
-#include <io.h>
-#include <memory>
 #include <GL/glew.h>
+
+#include <glm/gtc/type_ptr.hpp>
+#include <xsysutils.h>
 
 ___BEGIN_NAMESPACE___
 
@@ -31,7 +30,7 @@ protected:
     };
 
 private:
-    static constexpr const wchar_t* strLogFile = L"ShaderLog/build.log";
+    static constexpr const wchar_t* strLogFile = L"shader_build.log";
     GLuint          m_programID;
 
 public:
@@ -110,8 +109,11 @@ protected:
         if (bClear || !bExist)
         {
             FILE* file = _wfsopen(path, L"wb", SH_DENYNO);
-            fwrite("/////////////////// SHADER LOG ///////////////////////", sizeof(char), NULL, file);
-            fclose(file);
+            if (file)
+            {
+                fwrite("/////////////////// SHADER LOG ///////////////////////", sizeof(char), NULL, file);
+                fclose(file);
+            }
         }
 
         FILE* file = _wfsopen(path, L"ab", SH_DENYNO);
@@ -159,20 +161,33 @@ public:
         }
 
         // read geometry shader file
-        nLength = read_file(pathGeometry, &buff);
-        geoBuff = (nLength > 0) ? static_cast<char*>(buff) : NULL;
+        if (pathGeometry != NULL)
+        {
+            nLength = read_file(pathGeometry, &buff);
+            geoBuff = (nLength > 0) ? static_cast<char*>(buff) : NULL;
 
-        geoShaderID = CreateShader(ShaderType::GEOMETRY, geoBuff, nLength);
-        if (geoShaderID <= 0)
+            geoShaderID = CreateShader(ShaderType::GEOMETRY, geoBuff, nLength);
+            if (geoShaderID <= 0)
+            {
+                glDeleteShader(vertexShaderID);
+                glDeleteShader(fragShaderID);
+                return false;
+            }
+        }
+
+        m_programID = LinkProgam(vertexShaderID, fragShaderID, geoShaderID);
+        if (m_programID <= 0)
         {
             glDeleteShader(vertexShaderID);
             glDeleteShader(fragShaderID);
+            glDeleteShader(geoShaderID);
             return false;
         }
 
         return true;
     }
 
+private:
     /***********************************************************************************
     *! @brief  : write log = print and save file
     *! @param  : [in] message   : message
@@ -187,13 +202,15 @@ public:
 
         if (bOutFile)
         {
-            int nMesLenght = length;
-            if (nMesLenght <= 0)
+            int nMesLength = length;
+            if (nMesLength <= 0)
             {
-                nMesLenght = strlen(message);
+                nMesLength = strlen(message);
             }
+            std::wstring strPath = get_current_directory_execute();
+            strPath.append(strLogFile);
 
-            write_log_file(strLogFile, message, nMesLenght, false);
+            write_log_file(strPath.c_str(), message, nMesLength, false);
         }
     }
 
@@ -216,37 +233,81 @@ public:
 
         constexpr const unsigned int nMesLogSize = 1024;
         char MessageLog[nMesLogSize];
+        memset(MessageLog, 0, nMesLogSize);
 
         memset(LogBuff, 0, nLogBuffSize);
 
         glGetShaderiv(iShaderID, GL_COMPILE_STATUS, &bSuccess);
         glGetShaderiv(iShaderID, GL_SHADER_TYPE, &iShaderType);
+
+        const size_t nLengthShaderType = 20;
+        char strShaderType[nLengthShaderType];
+        switch (iShaderType)
+        {
+            case GL_VERTEX_SHADER:
+                memcpy_s(strShaderType, nLengthShaderType, "VERTEX", 7);
+                break;
+            case GL_FRAGMENT_SHADER:
+                memcpy_s(strShaderType, nLengthShaderType, "FRAGMENT", 9);
+                break;
+            case GL_GEOMETRY_SHADER:
+                memcpy_s(strShaderType, nLengthShaderType, "GEOMETRY", 9);
+                break;
+            default:
+                memcpy_s(strShaderType, nLengthShaderType, "UNDEFINE", 9);
+                break;
+        }
+
         if (!bSuccess)
         {
             glGetShaderInfoLog(iShaderID, nLogBuffSize, NULL, LogBuff);
+            snprintf(MessageLog, nMesLogSize, ">>>> ERROR::SHADER::%s::COMPILATION_FAILED\n%s\n ", strShaderType, LogBuff);
+            PrintMessageLog(MessageLog, 0, bPrintLog);
+        }
+        else
+        {
+            snprintf(MessageLog, nMesLogSize, "[OK] Built shader [%s] done . \n", strShaderType);
+            PrintMessageLog(MessageLog, 0, bPrintLog);
+        }
 
-            const size_t nLengthShaderType = 20;
-            char strShaderType[nLengthShaderType];
+        return bSuccess ? true : false;
+    }
 
-            switch (iShaderType)
-            {
-                case GL_VERTEX_SHADER:
-                    memcpy_s(strShaderType, nLengthShaderType, "VERTEX", 7);
-                    break;
-                case GL_FRAGMENT_SHADER:
-                    memcpy_s(strShaderType, nLengthShaderType, "FRAGMENT", 9);
-                    break;
-                case GL_GEOMETRY_SHADER:
-                    memcpy_s(strShaderType, nLengthShaderType, "GEOMETRY", 9);
-                    break;
-                default:
-                    memcpy_s(strShaderType, nLengthShaderType, "UNDEFINE", 9);
-                    break;
-            }
-            snprintf(MessageLog, nMesLogSize, ">>>> ERROR::SHADER::%s::COMPILATION_FAILED\n %s \n ", strShaderType, LogBuff);
+        /***********************************************************************************
+    *! @brief  : Create shader when openGL exist
+    *! @param  : [in] type   : path source vertex shader file
+    *! @param  : [in] source : path source frament shader file
+    *! @param  : [in] length : path source geometry shader file
+    *! @return : void
+    *! @author : thuong.nv          - [Date] : 06/03/2023
+    ***********************************************************************************/
+    bool CheckStatusProgram(unsigned int iProgramID, bool bPrintLog = false)
+    {
+        int bSuccess = 1;
+        int iShaderType = 0;
 
-            PrintMessageLog(MessageLog, nMesLogSize, bPrintLog);
-        };
+        constexpr const unsigned int nLogBuffSize = 512;
+        char LogBuff[nLogBuffSize];
+
+        constexpr const unsigned int nMesLogSize = 1024;
+        char MessageLog[nMesLogSize];
+        memset(MessageLog, 0, nMesLogSize);
+
+        memset(LogBuff, 0, nLogBuffSize);
+
+        glGetProgramiv(iProgramID, GL_LINK_STATUS, &bSuccess);
+        if (!bSuccess)
+        {
+            glGetProgramInfoLog(iProgramID, nLogBuffSize, NULL, LogBuff);
+            snprintf(MessageLog, nMesLogSize, ">>>> ERROR::PROGRAM::COMPILATION_FAILED\n%s\n ", LogBuff);
+
+            PrintMessageLog(MessageLog, 0, bPrintLog);
+        }
+        else
+        {
+            snprintf(MessageLog, nMesLogSize, "[OK] Built program done . \n");
+            PrintMessageLog(MessageLog, 0, bPrintLog);
+        }
 
         return bSuccess ? true : false;
     }
@@ -337,6 +398,44 @@ public:
         return iShaderID;
     }
 
+        /***********************************************************************************
+    *! @brief  : Create shader when openGL exist
+    *! @param  : [in] type   : path source vertex shader file
+    *! @param  : [in] source : path source frament shader file
+    *! @param  : [in] length : path source geometry shader file
+    *! @return : void
+    *! @author : thuong.nv          - [Date] : 06/03/2023
+    ***********************************************************************************/
+    unsigned int LinkProgam(unsigned int vertexID, unsigned int fragID, unsigned int geoID)
+    {
+        unsigned int iProgamID = 0;
+        bool bOutLogFile = true;
+
+        iProgamID = glCreateProgram();
+
+        if (iProgamID > 0)
+        {
+            if(vertexID > 0) glAttachShader(iProgamID, vertexID);
+            if(fragID > 0)   glAttachShader(iProgamID, fragID);
+            if(geoID > 0)    glAttachShader(iProgamID, geoID);
+
+            glLinkProgram(iProgamID);
+
+            if (!CheckStatusProgram(iProgamID, bOutLogFile))
+            {
+                glDeleteProgram(iProgamID);
+            }
+        }
+        else
+        {
+            iProgamID = 0;
+            PrintMessageLog("[FAILED] glCreateProgram failed", NULL, true);
+        }
+
+        return iProgamID;
+    }
+
+public:
     bool IsOK()
     {
         return (m_programID > 0) ? true : false;
@@ -349,16 +448,37 @@ public:
 
     void UnUse()
     {
-        glUseProgram(m_programID);
+        glUseProgram(0);
     }
 
-    void SetUniformValue(const char* name, int value)
+    void SetUniformValue(const char* name, float value)
     {
+        if (m_programID <= 0)
+            return;
 
+        GLint LocID = glGetUniformLocation(m_programID, name);
+
+        if (LocID >= 0)
+        {
+            glUniform1f(LocID, value);
+        }
+    }
+
+    void SetUniformMat4(const char* name, const Mat4& mat)
+    {
+        if (m_programID <= 0)
+            return;
+
+        GLint LocID = glGetUniformLocation(m_programID, name);
+
+        if (LocID >= 0)
+        {
+            glUniformMatrix4fv(LocID, 1, GL_FALSE, glm::value_ptr(mat));
+        }
     }
 };
 
 
 ____END_NAMESPACE____
 
-#endif // !GP_GEOMETRY_RENDER_H
+#endif // !GP_SHADER_H

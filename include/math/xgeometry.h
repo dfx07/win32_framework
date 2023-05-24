@@ -11,12 +11,10 @@
 #ifndef XGEOMETRY_H
 #define XGEOMETRY_H
 
-#include "xsysdef.h"
 #include "xgeotype.h"
 
 
 #define GEO_XY_EPSILON		0.0001f
-
 
 ___BEGIN_NAMESPACE___
 

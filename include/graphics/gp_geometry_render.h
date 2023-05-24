@@ -14,14 +14,13 @@
 #include "math/xgeotype.h"
 #include <GL/glew.h>
 
-
 ___BEGIN_NAMESPACE___
 
 /**********************************************************************************
 * ⮟⮟ Class name: GeometryRender
 * Base class for window handle inheritance
 ***********************************************************************************/
-class GeometryRender
+class Dllexport GeometryRender
 {
 	template<typename T>
 	using CacheData   = std::vector<T>;

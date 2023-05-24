@@ -13,6 +13,6 @@
 
 #include "graphics/gp_camera.h"
 #include "graphics/gp_geometry_render.h"
-
+#include "graphics/gp_shader.h"
 
 #endif // !IMPORT_GL_H

@@ -463,8 +463,26 @@ auto get_folder_path(IN const T& fpath, IN const int bCheckExist = false)
     return T(path);
 }
 
-/////////////////////////////////////////////////////////////////////////////////////////////////
-// ================================== HANDLE - CRASH ==========================================//
+/***********************************************************************************
+*! @brief  : Get the folder execute file
+*! @param  : void
+*! @return : path exec
+*! @author : thuong.nv  - [Date] : 25/05/2023
+*! @note   : N/A
+************************************************************************************/
+std::wstring get_current_directory_execute()
+{
+    WCHAR path[MAX_PATH];
+    GetModuleFileName(NULL, path, MAX_PATH);
+
+    std::wstring strPathModule = path;
+    std::wstring strPath = get_folder_path(strPathModule, false);
+
+    return strPath;
+}
+
+/////////////////////////////////////////////////////////////////////////////////////
+// ================================== HANDLE - CRASH ==============================//
 // define function create dump file
 
 #include <Dbghelp.h>

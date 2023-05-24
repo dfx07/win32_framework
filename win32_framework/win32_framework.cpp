@@ -11,6 +11,8 @@ using namespace fox;
 MenuContext* menu = NULL;
 Camera2D     cam2D;
 
+Shader       shader;
+
 GeometryRender render;
 
 struct Component
@@ -132,7 +134,6 @@ void Create(WindowBase* win)
 
     cam2D.UpdateMatrix();
 
-
     Vec3D p1 = { -100 ,  100, 0.f };
     Vec3D p2 = {  100 ,  100, 0.f };
     Vec3D p3 = {  100 , -100, 0.f };
@@ -144,6 +145,11 @@ void Create(WindowBase* win)
     //render.AddLine(VERTEX_3D(p1, c1), VERTEX_3D(p2, c2));
     render.AddRectangle(p1, p2, p3, p4);
     render.UpdateRenderData();
+}
+
+void CreatedDone()
+{
+    shader.Create(L"shader/vertex.glsl", L"shader/fragment.glsl");
 }
 
 void MouseButton(WindowBase* win, int button, int action)
@@ -173,9 +179,22 @@ void Draw(WindowBase* win)
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glClearColor(120.0 / 255.0, 139.f / 255.0, 201.0 / 255.0, 1.0);
 
-    cam2D.UseMatrix();
+    shader.Use();
 
-    render.Draw();
+    Mat4& proj = cam2D.GetProjMatrix();
+    Mat4& view = cam2D.GetViewMatrix();
+
+    shader.SetUniformMat4("proj_matrix", proj);
+    shader.SetUniformMat4("view_matrix", view);
+
+    glBegin(GL_LINES);
+    {
+        glVertex3f(-100, 100, 0.f);
+        glVertex3f( 100, 100, 0.f);
+    }
+    glEnd();
+
+    shader.UnUse();
 }
 
 void Resize(WindowBase* win)
@@ -204,6 +223,8 @@ int main()
     window->SetOnMouseButtonfunc(MouseButton);
 
     window = create_window(window);
+
+    CreatedDone();
 
     while (!window->closed())
     {
