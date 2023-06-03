@@ -462,6 +462,27 @@ public:
         {
             glUniform1f(LocID, value);
         }
+        else
+        {
+            assert(0);
+        }
+    }
+
+    void SetUniformVec2(const char* name, Vec2D vec)
+    {
+        if (m_programID <= 0)
+            return;
+
+        GLint LocID = glGetUniformLocation(m_programID, name);
+
+        if (LocID >= 0)
+        {
+            glUniform2f(LocID, vec.x, vec.y);
+        }
+        else
+        {
+            assert(0);
+        }
     }
 
     void SetUniformMat4(const char* name, const Mat4& mat)
@@ -474,6 +495,10 @@ public:
         if (LocID >= 0)
         {
             glUniformMatrix4fv(LocID, 1, GL_FALSE, glm::value_ptr(mat));
+        }
+        else
+        {
+            assert(0);
         }
     }
 };

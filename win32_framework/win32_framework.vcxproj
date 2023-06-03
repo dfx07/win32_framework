@@ -168,9 +168,14 @@
     <ClInclude Include="..\include\window\xwindow.h" />
     <ClInclude Include="..\include\xcontrolbase.h" />
     <ClInclude Include="..\include\xsysdef.h" />
+    <ClInclude Include="..\include\xsyslogger.h" />
     <ClInclude Include="..\include\xsystype.h" />
     <ClInclude Include="..\include\xsysutils.h" />
     <ClInclude Include="..\include\xwinbase.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="shader\fragment.glsl" />
+    <None Include="shader\vertex.glsl" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

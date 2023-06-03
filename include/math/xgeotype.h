@@ -23,6 +23,9 @@ ___BEGIN_NAMESPACE___
 
 template<int dimention, typename T> struct tagVec;
 
+/////////////////////////////////////////////////////////////////////////////////////
+/***********************************************************************************/
+// TYPE BASE VEC DEFINE
 template<typename T>
 struct tagVec<2, T>
 {
@@ -250,6 +253,38 @@ public:
 	}
 };
 
+
+/////////////////////////////////////////////////////////////////////////////////////
+/***********************************************************************************/
+// Define base type
+typedef float		FLOAT;
+typedef int			BOOL;
+typedef int			INT;
+
+/////////////////////////////////////////////////////////////////////////////////////
+/***********************************************************************************/
+// Define use GLM library
+#ifdef GLM_SETUP_INCLUDED
+	typedef glm::vec2				Vec2D;
+	typedef glm::vec2				Point2D;
+	typedef glm::vec3				Vec3D;
+	typedef glm::vec3				Point3D;
+	typedef glm::vec3				Color3;
+	typedef glm::mat4				Mat4;
+/////////////////////////////////////////////////////////////////////////////////////
+/***********************************************************************************/
+// Define use User define
+#else
+	typedef fox::tagVec<2, FLOAT>	Vec2D;
+	typedef fox::tagVec<2, FLOAT>	Point2D;
+	typedef fox::tagVec<3, FLOAT>	Vec3D;
+	typedef fox::tagVec<3, FLOAT>	Point3D;
+	typedef fox::tagVec<3, FLOAT>	Color3;
+#endif
+
+/////////////////////////////////////////////////////////////////////////////////////
+/***********************************************************************************/
+// RECTANGLE DEFINE
 template<typename T>
 struct tagRect
 {
@@ -271,7 +306,7 @@ public:
 
 	template<typename U>
 	tagRect<T>(const U& _x, const U& _y, const U& w, const U& h) :
-			x(static_cast<T>(_x)), y(static_cast<T>(_x)),
+			x(static_cast<T>(_x)), y(static_cast<T>(_y)),
 			width(static_cast<T>(w)), height(static_cast<T>(h))
 	{
 
@@ -283,40 +318,31 @@ public:
 		return  ((_x >= x && _x <= x + width) &&
 				(_y >= y && _y <= y + height));
 	}
+
+	Vec2D TopLeft()
+	{
+		return Vec2D(x, y);
+	}
+
+	Vec2D TopRight()
+	{
+		return Vec2D(x + width, y);
+	}
+
+	Vec2D BottomLeft()
+	{
+		return Vec2D(x, y - height);
+	}
+
+	Vec2D BottomRight()
+	{
+		return Vec2D(x + width, y - height);
+	}
 };
 
-/////////////////////////////////////////////////////////////////////////////////////
-/***********************************************************************************/
-// Define base type
-typedef float		FLOAT;
-typedef int			BOOL;
-typedef int			INT;
-
-/////////////////////////////////////////////////////////////////////////////////////
-/***********************************************************************************/
-// Define use GLM library
-#ifdef GLM_SETUP_INCLUDED
-	typedef glm::vec2				Vec2D;
-	typedef glm::vec2				Point2D;
-	typedef glm::vec3				Vec3D;
-	typedef glm::vec3				Point3D;
-	typedef glm::vec3				Color3;
-	typedef fox::tagRect<FLOAT>		Rect2D;
-	typedef glm::mat4				Mat4;
-
-/////////////////////////////////////////////////////////////////////////////////////
-/***********************************************************************************/
-// Define use User define
-#else
-	typedef fox::tagVec<2, FLOAT>	Vec2D;
-	typedef fox::tagVec<2, FLOAT>	Point2D;
-	typedef fox::tagVec<3, FLOAT>	Vec3D;
-	typedef fox::tagVec<3, FLOAT>	Point3D;
-	typedef fox::tagVec<3, FLOAT>	Color3;
-	typedef fox::tagRect<FLOAT>		Rect2D;
-
-#endif
+typedef fox::tagRect<FLOAT>		Rect2D;
 typedef std::vector<Vec2D>		VecPoint2D;
+typedef std::vector<Vec3D>		VecPoint3D;
 
 
 /////////////////////////////////////////////////////////////////////////////////////
@@ -352,7 +378,6 @@ public:
 		return *this;
 	}
 };
-
 
 ____END_NAMESPACE____
 

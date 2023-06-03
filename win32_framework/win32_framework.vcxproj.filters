@@ -34,6 +34,9 @@
     <Filter Include="Header Files\api">
       <UniqueIdentifier>{cd9d79ae-022a-4c37-a802-6dd9b52c5813}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Resource Files\Shader">
+      <UniqueIdentifier>{a6da2e43-6288-4c75-a2ca-80a678983d55}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="win32_framework.cpp">
@@ -122,5 +125,16 @@
     <ClInclude Include="..\include\math\xgeotype.h">
       <Filter>Header Files\math</Filter>
     </ClInclude>
+    <ClInclude Include="..\include\xsyslogger.h">
+      <Filter>Header Files\system</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="shader\fragment.glsl">
+      <Filter>Resource Files\Shader</Filter>
+    </None>
+    <None Include="shader\vertex.glsl">
+      <Filter>Resource Files\Shader</Filter>
+    </None>
   </ItemGroup>
 </Project>

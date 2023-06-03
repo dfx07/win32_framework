@@ -52,82 +52,86 @@ ComponentList ReadFile(const char* filedata)
     return comp_list;
 }
 
+Vec2D vResolution;
+VecPoint3D vRectVertexDrawData;
+VecPoint2D vRectCoordDrawData;
+
 void Create(WindowBase* win)
 {
-    //Button* btn = new Button();
-    //btn->SetLabel(L"Button 1");
-    //btn->SetSize(100, 24);
-    //btn->SetPosition(10, 40);
-    //btn->SetBorderRadius(5);
-    //btn->SetBorderWidth(3);
-    //btn->UseEffect(true);
-    //btn->Visible(true);
+    ////Button* btn = new Button();
+    ////btn->SetLabel(L"Button 1");
+    ////btn->SetSize(100, 24);
+    ////btn->SetPosition(10, 40);
+    ////btn->SetBorderRadius(5);
+    ////btn->SetBorderWidth(3);
+    ////btn->UseEffect(true);
+    ////btn->Visible(true);
 
-    Trackbar* track = new Trackbar();
-    track->SetSize(100, 24);
-    track->SetPosition(12, 100);
-    track->SetBorderRadius(2);
-    track->SetBorderWidth(0);
-    //btn->UseEffect(true);
-    track->Visible(true);
+    //Trackbar* track = new Trackbar();
+    //track->SetSize(100, 24);
+    //track->SetPosition(12, 100);
+    //track->SetBorderRadius(2);
+    //track->SetBorderWidth(0);
+    ////btn->UseEffect(true);
+    //track->Visible(true);
 
-    Checkbox* chk = new Checkbox();
+    //Checkbox* chk = new Checkbox();
 
-    chk->SetText(L"Check box");
-    chk->SetPosition(10, 30);
-    chk->SetSize(100, 20);
-    chk->SetBorderWidth(0);
-    chk->SetBorderRadius(2);
+    //chk->SetText(L"Check box");
+    //chk->SetPosition(10, 30);
+    //chk->SetSize(100, 20);
+    //chk->SetBorderWidth(0);
+    //chk->SetBorderRadius(2);
 
-    //menu = new MenuContext();
-    //menu->AddItem(L"Item 1", MF_STRING , NULL);
-    //menu->AddItem(L"Item 2", MF_STRING , NULL);
-    //MenuContext* mn2 = new MenuContext(L"Item 3");
-    //mn2->AddItem(L"Item 3.1", MF_STRING, NULL);
-    //mn2->AddItem(L"Item 3.2", MF_STRING, NULL);
-    //menu->Insert(mn2);
+    ////menu = new MenuContext();
+    ////menu->AddItem(L"Item 1", MF_STRING , NULL);
+    ////menu->AddItem(L"Item 2", MF_STRING , NULL);
+    ////MenuContext* mn2 = new MenuContext(L"Item 3");
+    ////mn2->AddItem(L"Item 3.1", MF_STRING, NULL);
+    ////mn2->AddItem(L"Item 3.2", MF_STRING, NULL);
+    ////menu->Insert(mn2);
 
-    //win->AddControl(menu);
+    ////win->AddControl(menu);
 
 
-    Combobox* cbb = new Combobox();
-    cbb->AddItem(L"select 1", new int(1));
-    cbb->AddItem(L"select 2", new int(2));
-    cbb->Select(0);
-    cbb->SetPosition(10, 60);
-    cbb->SetSize(85, 20);
+    //Combobox* cbb = new Combobox();
+    //cbb->AddItem(L"select 1", new int(1));
+    //cbb->AddItem(L"select 2", new int(2));
+    //cbb->Select(0);
+    //cbb->SetPosition(10, 60);
+    //cbb->SetSize(85, 20);
 
-    //// draw input value
-    //{
-    //    Label* label = new Label();
-    //    label->SetText(L"Input value:");
-    //    label->SetPosition(5, 102);
-    //    sub->AddControl(label);
+    ////// draw input value
+    ////{
+    ////    Label* label = new Label();
+    ////    label->SetText(L"Input value:");
+    ////    label->SetPosition(5, 102);
+    ////    sub->AddControl(label);
 
-    //    Textbox* textbox = new Textbox();
-    //    textbox->SetPosition(90, 100);
-    //    textbox->SetText(L"");
-    //    textbox->SetSize(100, 20);
-    //    sub->AddControl(textbox);
-    //}
+    ////    Textbox* textbox = new Textbox();
+    ////    textbox->SetPosition(90, 100);
+    ////    textbox->SetText(L"");
+    ////    textbox->SetSize(100, 20);
+    ////    sub->AddControl(textbox);
+    ////}
 
-    SubWindow* sub = new SubWindow();
-    sub->SetTitle(L"sub window");
-    sub->SetPosition(20, 20);
-    sub->SetSize(200, 200);
-    sub->Visible(true);
+    //SubWindow* sub = new SubWindow();
+    //sub->SetTitle(L"sub window");
+    //sub->SetPosition(20, 20);
+    //sub->SetSize(200, 200);
+    //sub->Visible(true);
 
-    //sub->AddControl(btn);
-    sub->AddControl(track);
-    sub->AddControl(cbb);
-    sub->AddControl(chk);
-    win->AddSubWindow(sub);
-    //Window* pWin = dynamic_cast<Window*>(win);
+    ////sub->AddControl(btn);
+    //sub->AddControl(track);
+    //sub->AddControl(cbb);
+    //sub->AddControl(chk);
+    //win->AddSubWindow(sub);
+    ////Window* pWin = dynamic_cast<Window*>(win);
 
-    //if (pWin)
-    //{
-    //    pWin->SetCamera()
-    //}
+    ////if (pWin)
+    ////{
+    ////    pWin->SetCamera()
+    ////}
 
     cam2D.InitView(win->GetWidth(), win->GetHeight(), 0.1f, 1000.f);
     cam2D.SetUpCamera({ 0.f, 0.f, 8.f }, { 0.f, 0.f, 1.f });
@@ -135,7 +139,7 @@ void Create(WindowBase* win)
     cam2D.UpdateMatrix();
 
     Vec3D p1 = { -100 ,  100, 0.f };
-    Vec3D p2 = {  100 ,  100, 0.f };
+    Vec3D p2 = {  50 ,  100, 0.f };
     Vec3D p3 = {  100 , -100, 0.f };
     Vec3D p4 = { -100 , -100, 0.f };
 
@@ -145,11 +149,57 @@ void Create(WindowBase* win)
     //render.AddLine(VERTEX_3D(p1, c1), VERTEX_3D(p2, c2));
     render.AddRectangle(p1, p2, p3, p4);
     render.UpdateRenderData();
+
+
+    int width  = win->GetWidth();
+    int height = win->GetHeight();
+
+    vResolution = Vec2D(width, height);
+    Rect2D rectDraw = Rect2D(100, -100, 100, 100);
+
+    Vec2D vertx1 = rectDraw.TopLeft();
+    Vec2D vertx2 = rectDraw.TopRight();
+    Vec2D vertx3 = rectDraw.BottomLeft();
+    Vec2D vertx4 = rectDraw.BottomRight();
+
+    vRectVertexDrawData.push_back({vertx1, 0.f}); vRectCoordDrawData.push_back({0, 1});
+    vRectVertexDrawData.push_back({vertx2, 0.f}); vRectCoordDrawData.push_back({1, 1});
+    vRectVertexDrawData.push_back({vertx3, 0.f}); vRectCoordDrawData.push_back({0, 0});
+    vRectVertexDrawData.push_back({vertx3, 0.f}); vRectCoordDrawData.push_back({0, 0});
+    vRectVertexDrawData.push_back({vertx2, 0.f}); vRectCoordDrawData.push_back({1, 1});
+    vRectVertexDrawData.push_back({vertx4, 0.f}); vRectCoordDrawData.push_back({1, 0});
 }
+
+GLuint vaoID;
+GLuint vboID;
+GLuint tboID;
 
 void CreatedDone()
 {
     shader.Create(L"shader/vertex.glsl", L"shader/fragment.glsl");
+
+    //glFrontFace(GL_CCW);
+    //glCullFace(GL_FRONT);
+
+    glGenVertexArrays(1, &vaoID);
+    glGenBuffers(1, &vboID);
+    glGenBuffers(1, &tboID);
+
+    //glEnable(GL_MULTISAMPLE);
+
+    glBindVertexArray(vaoID);
+    {
+        glBindBuffer(GL_ARRAY_BUFFER, vboID);                                                                                 // <---.
+        glBufferData(GL_ARRAY_BUFFER, vRectVertexDrawData.size() * sizeof(Vec3D), &vRectVertexDrawData[0].x, GL_STATIC_DRAW); //     |
+        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vec3D), (void*)0);                                             //-->--'
+        glEnableVertexAttribArray(0);
+
+        glBindBuffer(GL_ARRAY_BUFFER, tboID);                                                                               // <---.
+        glBufferData(GL_ARRAY_BUFFER, vRectCoordDrawData.size() * sizeof(Vec2D), &vRectCoordDrawData[0], GL_STATIC_DRAW);   //     |
+        glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE,sizeof(Vec2D), (void*)0);                                            //-->--'
+        glEnableVertexAttribArray(1);
+    }
+    glBindVertexArray(0);
 }
 
 void MouseButton(WindowBase* win, int button, int action)
@@ -173,28 +223,31 @@ void Keyboard(WindowBase* win)
     }
 }
 
-
 void Draw(WindowBase* win)
 {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glClearColor(120.0 / 255.0, 139.f / 255.0, 201.0 / 255.0, 1.0);
 
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+    // Use shader draw : vertex and fragment shader
     shader.Use();
-
-    Mat4& proj = cam2D.GetProjMatrix();
-    Mat4& view = cam2D.GetViewMatrix();
-
-    shader.SetUniformMat4("proj_matrix", proj);
-    shader.SetUniformMat4("view_matrix", view);
-
-    glBegin(GL_LINES);
     {
-        glVertex3f(-100, 100, 0.f);
-        glVertex3f( 100, 100, 0.f);
-    }
-    glEnd();
+        Mat4& proj = cam2D.GetProjMatrix();
+        Mat4& view = cam2D.GetViewMatrix();
 
-    shader.UnUse();
+        shader.SetUniformMat4("projmat", proj);
+        shader.SetUniformMat4("viewmat", view);
+
+        shader.SetUniformVec2("resolution", vResolution);
+
+        glBindVertexArray(vaoID);
+        glDrawArrays(GL_TRIANGLES, 0, 6);
+    }
+
+    //cam2D.UseMatrix();
+    //render.Draw();
 }
 
 void Resize(WindowBase* win)
@@ -213,6 +266,7 @@ int main()
     WindowSetting setting;
     setting.m_bWriteInfo = true;
     setting.m_iModeDraw = 0;
+    setting.m_iAntialiasing = 2;
 
     Window *window = new Window(L"OpenGL", 100 ,100, 640, 480, &setting);
     window->SetOnDrawfunc(Draw);
