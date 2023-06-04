@@ -53,6 +53,7 @@ ComponentList ReadFile(const char* filedata)
 }
 
 Vec2D vResolution;
+Vec2D vSize;
 VecPoint3D vRectVertexDrawData;
 VecPoint2D vRectCoordDrawData;
 
@@ -134,12 +135,12 @@ void Create(WindowBase* win)
     ////}
 
     cam2D.InitView(win->GetWidth(), win->GetHeight(), 0.1f, 1000.f);
-    cam2D.SetUpCamera({ 0.f, 0.f, 8.f }, { 0.f, 0.f, 1.f });
+    cam2D.SetUpCamera({ 0.f, 0.f, 1.f }, { 0.f, 0.f, 1.f });
 
     cam2D.UpdateMatrix();
 
     Vec3D p1 = { -100 ,  100, 0.f };
-    Vec3D p2 = {  50 ,  100, 0.f };
+    Vec3D p2 = {  100 ,  100, 0.f };
     Vec3D p3 = {  100 , -100, 0.f };
     Vec3D p4 = { -100 , -100, 0.f };
 
@@ -155,7 +156,9 @@ void Create(WindowBase* win)
     int height = win->GetHeight();
 
     vResolution = Vec2D(width, height);
-    Rect2D rectDraw = Rect2D(100, -100, 100, 100);
+    vSize = Vec2D(200, 200);
+
+    Rect2D rectDraw = Rect2D(10, 10, vSize);
 
     Vec2D vertx1 = rectDraw.TopLeft();
     Vec2D vertx2 = rectDraw.TopRight();
@@ -174,6 +177,9 @@ GLuint vaoID;
 GLuint vboID;
 GLuint tboID;
 
+Vec2D p1;
+Vec2D p2;
+
 void CreatedDone()
 {
     shader.Create(L"shader/vertex.glsl", L"shader/fragment.glsl");
@@ -185,7 +191,7 @@ void CreatedDone()
     glGenBuffers(1, &vboID);
     glGenBuffers(1, &tboID);
 
-    //glEnable(GL_MULTISAMPLE);
+    glEnable(GL_MULTISAMPLE);
 
     glBindVertexArray(vaoID);
     {
@@ -223,6 +229,33 @@ void Keyboard(WindowBase* win)
     }
 }
 
+float RectSDF(Vec2D p, Vec2D b, float r)
+{
+    Vec2D d = abs(p) - b + Vec2D(r);
+    return glm::min(glm::max(d.x, d.y), 0.f) + length(glm::max(d, 0.f)) - r;
+}
+
+void MouseScroll(WindowBase* win)
+{
+    int zDelta = win->GetMouseScroll();
+    float sensitive = 1.1f;
+    long x, y;
+    win->GetCursorPos(x, y);
+
+    cam2D.ZoomTo(x, y, zDelta* sensitive);
+    cam2D.UpdateMatrix();
+}
+
+void MouseMove(WindowBase* win)
+{
+   long x, y;
+   win->GetCursorPosCenter(x, y);
+
+   float a= RectSDF(Vec2D(x, y) - Vec2D(0, 0), Vec2D(100, 100), 50);
+
+   std::cout << x <<":" << y <<"=" << a << std::endl;
+}
+
 void Draw(WindowBase* win)
 {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -241,10 +274,17 @@ void Draw(WindowBase* win)
         shader.SetUniformMat4("viewmat", view);
 
         shader.SetUniformVec2("resolution", vResolution);
+        shader.SetUniformVec2("btn_size", vSize);
 
         glBindVertexArray(vaoID);
         glDrawArrays(GL_TRIANGLES, 0, 6);
     }
+
+    glBegin(GL_LINE);
+    {
+
+    }
+    glEnd();
 
     //cam2D.UseMatrix();
     //render.Draw();
@@ -275,6 +315,8 @@ int main()
     window->SetOnKeyboardfunc(Keyboard);
     window->SetOnResizefunc(Resize);
     window->SetOnMouseButtonfunc(MouseButton);
+    window->SetOnMouseScrollfunc(MouseScroll);
+    window->SetOnMouseMovefunc(MouseMove);
 
     window = create_window(window);
 

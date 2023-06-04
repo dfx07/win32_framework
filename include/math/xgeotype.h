@@ -312,6 +312,14 @@ public:
 
 	}
 
+	template<typename U>
+	tagRect<T>(const U& _x, const U& _y, const Vec2D& _size) :
+		x(static_cast<T>(_x)), y(static_cast<T>(_y)),
+		width(static_cast<T>(_size.x)), height(static_cast<T>(_size.y))
+	{
+
+	}
+
 	template<typename A, typename B>
 	bool Contain(const A& _x, const B& _y)
 	{
