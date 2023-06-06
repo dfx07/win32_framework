@@ -11,7 +11,7 @@
 #ifndef XBUTTON_H
 #define XBUTTON_H
 
-#include "xcontrolbase.h"
+#include "xwcontrol.h"
 #include "math/xeasing.h"
 
 ___BEGIN_NAMESPACE___
@@ -20,7 +20,7 @@ ___BEGIN_NAMESPACE___
 * ⮟⮟ Class name: Button control
 * Button control for window
 ***********************************************************************************/
-class Dllexport Button : public ControlBase, public RectUIControl
+class Dllexport Button : public Control, public RectUIControl
 {
 protected:
 	typedef void(*typeFunButtonEvent)   (WindowBase* window, Button* btn);
@@ -72,7 +72,7 @@ protected:
 	Gdiplus::Bitmap*			m_image;
 
 public:
-	Button() : ControlBase(), m_eState(BtnState::Normal), m_sLabel(L""), m_image(NULL),
+	Button() : Control(), m_eState(BtnState::Normal), m_sLabel(L""), m_image(NULL),
 		m_track_leave(false),
 		m_eOldState(BtnState::Normal)
 	{

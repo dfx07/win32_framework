@@ -1,5 +1,5 @@
 ﻿
-#include "import_control.h"
+#include "import_ctrlgdi.h"
 #include "import_gl.h"
 
 ____USE_NAMESPACE____

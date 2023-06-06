@@ -11,7 +11,7 @@
 #ifndef XTEXTBOX_H
 #define XTEXTBOX_H
 
-#include "xcontrolbase.h"
+#include "xwcontrol.h"
 #include "math/xeasing.h"
 #include <list>
 
@@ -24,7 +24,7 @@ ___BEGIN_NAMESPACE___
 * ⮟⮟ Class name: Textbox control
 * Textbox control for window
 ***********************************************************************************/
-class Dllexport Textbox : public ControlBase, public RectUIControl
+class Dllexport Textbox : public Control, public RectUIControl
 {
 	enum { IDC_EFFECT_X1	  = 12003 };
 	enum { WIDTH_DEF		  = 80	  };
@@ -73,7 +73,7 @@ protected:
 	Gdiplus::Bitmap*	m_image;
 
 public:
-	Textbox() : ControlBase(), m_stext(L""), m_image(NULL)
+	Textbox() : Control(), m_stext(L""), m_image(NULL)
 	{
 		m_rect.x	  = 0;
 		m_rect.y	  = 0;

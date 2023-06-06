@@ -13,7 +13,7 @@
 
 #include "xsystype.h"
 #include "xwinbase.h"
-#include "controls/xbutton.h"
+#include "controls/CGDIPlus/xbutton.h"
 
 ___BEGIN_NAMESPACE___
 
@@ -204,7 +204,7 @@ protected:
 	*! @return : void
 	*! @author : thuong.nv          - [Date] : 05/03/2023
 	*******************************************************************************/
-	int ProcessEventDefault(ControlBase* pControl)
+	int ProcessEventDefault(Control* pControl)
 	{
 		NULL_RETURN(pControl, 0);
 
@@ -402,7 +402,7 @@ protected:
 			HWND hwndControl = (HWND)lParam;  // handle of control
 			if (hwndControl)
 			{
-				auto pControl = (ControlBase*)(GetWindowLongPtr(hwndControl, GWLP_USERDATA));
+				auto pControl = (Control*)(GetWindowLongPtr(hwndControl, GWLP_USERDATA));
 				if (!subwin->ProcessEventDefault(pControl))
 				{
 					pControl->OnCommand(subwin, wID, wEvt);
@@ -414,7 +414,7 @@ protected:
 		{
 			WORD wID = LOWORD(wParam); // item, control, or accelerator identifier
 			LPDRAWITEMSTRUCT pdis = (LPDRAWITEMSTRUCT)lParam;
-			auto pControl = (ControlBase*)(GetWindowLongPtr(pdis->hwndItem, GWLP_USERDATA));
+			auto pControl = (Control*)(GetWindowLongPtr(pdis->hwndItem, GWLP_USERDATA));
 			if (pControl) pControl->Draw(true);
 			return TRUE;
 		}
@@ -542,7 +542,7 @@ public:
 	*! @return : true : ok | false : not ok
 	*! @author : thuong.nv          - [Date] : 05/03/2023
 	*******************************************************************************/
-	void SetColorControl(ControlBase* pControl)
+	void SetColorControl(Control* pControl)
 	{
 		RectUIControl* pControlRectUI = dynamic_cast<RectUIControl*>(pControl);
 
@@ -609,7 +609,7 @@ public:
 	*! @return : true : ok | false : not ok
 	*! @author : thuong.nv          - [Date] : 05/03/2023
 	*******************************************************************************/
-	virtual int AddControl(ControlBase* pControl)
+	virtual int AddControl(Control* pControl)
 	{
 		NULL_RETURN(pControl, 0);
 

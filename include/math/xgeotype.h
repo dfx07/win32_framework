@@ -270,6 +270,7 @@ typedef int			INT;
 	typedef glm::vec3				Vec3D;
 	typedef glm::vec3				Point3D;
 	typedef glm::vec3				Color3;
+	typedef glm::vec4				Color4;
 	typedef glm::mat4				Mat4;
 /////////////////////////////////////////////////////////////////////////////////////
 /***********************************************************************************/

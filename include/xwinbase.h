@@ -11,8 +11,7 @@
 #ifndef XWINBASE_H
 #define XWINBASE_H
 
-#include "wctrl.h"
-#include "xcontrolbase.h"
+#include "controls/CGDIPlus/xwcontrol.h"
 
 #include <string>
 #include <map>
@@ -504,7 +503,7 @@ public:
 	} WindowStatus;
 
 	typedef std::stack<WindowStatus>	WindowStatusLog;
-	typedef std::vector<ControlBase*>	ControlList;
+	typedef std::vector<Control*>	ControlList;
 	typedef std::vector<WindowBase*>	ChildWindowList;
 	typedef std::map<int, bool>			MapStatus;
 
@@ -908,7 +907,7 @@ public:
 	*! @return : true : ok | false : not ok
 	*! @author : thuong.nv          - [Date] : 05/03/2023
 	***************************************************************************/
-	virtual int AddControl(ControlBase* control)
+	virtual int AddControl(Control* control)
 	{
 		NULL_RETURN(control, 0);
 

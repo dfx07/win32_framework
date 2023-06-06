@@ -11,7 +11,7 @@
 #ifndef XTRACKBAR_H
 #define XTRACKBAR_H
 
-#include "xcontrolbase.h"
+#include "xwcontrol.h"
 #include "math/xeasing.h"
 #include "math/xgeometry.h"
 #include <vector>
@@ -22,7 +22,7 @@ ___BEGIN_NAMESPACE___
 * ⮟⮟ Class name: Trackbar control
 * Trackbar control for window
 ***********************************************************************************/
-class Dllexport Trackbar : public ControlBase, public RectUIControl
+class Dllexport Trackbar : public Control, public RectUIControl
 {
 protected:
 	typedef void(*typeFunTrackbarEvent)   (Trackbar* track);
@@ -106,7 +106,7 @@ protected:
 	std::vector<GuideLineData> m_guideline_list;
 
 public:
-	Trackbar() : ControlBase(), m_eState(TrackbarState::Normal), m_track_leave(false)
+	Trackbar() : Control(), m_eState(TrackbarState::Normal), m_track_leave(false)
 	{
 		m_rect.x	  = 0;
 		m_rect.y	  = 0;

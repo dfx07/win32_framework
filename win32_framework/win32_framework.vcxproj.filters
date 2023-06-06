@@ -37,6 +37,15 @@
     <Filter Include="Resource Files\Shader">
       <UniqueIdentifier>{a6da2e43-6288-4c75-a2ca-80a678983d55}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\ui\controls\CGDIPlus">
+      <UniqueIdentifier>{5fed6094-80d3-4cf6-b457-c080a537acc2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\ui\controls\CGL">
+      <UniqueIdentifier>{ed0e4da3-7d8d-4c84-b417-d68c08e53b8d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\ui\controls\CProperty">
+      <UniqueIdentifier>{2e3342d4-46d7-4f61-8f62-39ad0dfd6327}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="win32_framework.cpp">
@@ -59,18 +68,6 @@
     <ClInclude Include="..\include\wapi.h">
       <Filter>Header Files\ui</Filter>
     </ClInclude>
-    <ClInclude Include="..\include\controls\xbutton.h">
-      <Filter>Header Files\ui\controls</Filter>
-    </ClInclude>
-    <ClInclude Include="..\include\controls\xcheckbox.h">
-      <Filter>Header Files\ui\controls</Filter>
-    </ClInclude>
-    <ClInclude Include="..\include\controls\xlabel.h">
-      <Filter>Header Files\ui\controls</Filter>
-    </ClInclude>
-    <ClInclude Include="..\include\controls\xmenucontext.h">
-      <Filter>Header Files\ui\controls</Filter>
-    </ClInclude>
     <ClInclude Include="..\include\window\xwindow.h">
       <Filter>Header Files\ui\window</Filter>
     </ClInclude>
@@ -86,14 +83,11 @@
     <ClInclude Include="..\include\graphics\gp_camera.h">
       <Filter>Header Files\graphics</Filter>
     </ClInclude>
-    <ClInclude Include="..\include\import_control.h">
+    <ClInclude Include="..\include\import_ctrlgdi.h">
       <Filter>Header Files\api</Filter>
     </ClInclude>
     <ClInclude Include="..\include\import_gl.h">
       <Filter>Header Files\api</Filter>
-    </ClInclude>
-    <ClInclude Include="..\include\xcontrolbase.h">
-      <Filter>Header Files\ui\controls</Filter>
     </ClInclude>
     <ClInclude Include="..\include\xwinbase.h">
       <Filter>Header Files\ui\window</Filter>
@@ -113,12 +107,6 @@
     <ClInclude Include="..\include\math\xeasing.h">
       <Filter>Header Files\math</Filter>
     </ClInclude>
-    <ClInclude Include="..\include\controls\xcombobox.h">
-      <Filter>Header Files\ui\controls</Filter>
-    </ClInclude>
-    <ClInclude Include="..\include\controls\xtrackbar.h">
-      <Filter>Header Files\ui\controls</Filter>
-    </ClInclude>
     <ClInclude Include="..\include\graphics\gp_shader.h">
       <Filter>Header Files\graphics</Filter>
     </ClInclude>
@@ -127,6 +115,57 @@
     </ClInclude>
     <ClInclude Include="..\include\xsyslogger.h">
       <Filter>Header Files\system</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\import_ctrgl.h">
+      <Filter>Header Files\api</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\controls\CGDIPlus\xbutton.h">
+      <Filter>Header Files\ui\controls\CGDIPlus</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\controls\CGDIPlus\xcheckbox.h">
+      <Filter>Header Files\ui\controls\CGDIPlus</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\controls\CGDIPlus\xcombobox.h">
+      <Filter>Header Files\ui\controls\CGDIPlus</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\controls\CGDIPlus\xlabel.h">
+      <Filter>Header Files\ui\controls\CGDIPlus</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\controls\CGDIPlus\xmenucontext.h">
+      <Filter>Header Files\ui\controls\CGDIPlus</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\controls\CGDIPlus\xtextbox.h">
+      <Filter>Header Files\ui\controls\CGDIPlus</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\controls\CGDIPlus\xtrackbar.h">
+      <Filter>Header Files\ui\controls\CGDIPlus</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\controls\CGL\xuibutton.h">
+      <Filter>Header Files\ui\controls\CGL</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\controls\CGL\xuipanel.h">
+      <Filter>Header Files\ui\controls\CGL</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\controls\CGL\xuilabel.h">
+      <Filter>Header Files\ui\controls\CGL</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\controls\xpanelbase.h">
+      <Filter>Header Files\ui\controls\CProperty</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\controls\xbuttonbase.h">
+      <Filter>Header Files\ui\controls\CProperty</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\controls\CGDIPlus\xwcontrol.h">
+      <Filter>Header Files\ui\controls\CGDIPlus</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\controls\CGL\xuicontrol.h">
+      <Filter>Header Files\ui\controls\CGL</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\controls\xcontrolbase.h">
+      <Filter>Header Files\ui\controls\CProperty</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\controls\CGL\UIFrame\xelemdrawer.h">
+      <Filter>Header Files\ui\controls\CGL</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

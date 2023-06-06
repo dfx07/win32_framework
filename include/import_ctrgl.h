@@ -3,22 +3,15 @@
 * @Copyright (C) 2021-2023 thuong.nv <thuong.nv.mta@gmail.com>
 *            All rights reserved.
 ************************************************************************************
-* @file     import_control.h
-* @create   Nov 15, 2022
-* @brief    Include file control window
+* @file     import_ctrgl.h
+* @create   April 22, 2023
+* @brief    Include control use OpenGL
 * @note     For conditions of distribution and use, see copyright notice in readme.txt
 ***********************************************************************************/
-#ifndef IMPORT_CONTROL_H
-#define IMPORT_CONTROL_H
+#ifndef IMPORT_CTRGL_H
+#define IMPORT_CTRGL_H
 
-#include "controls/xbutton.h"
-#include "controls/xcombobox.h"
-#include "controls/xcheckbox.h"
-#include "controls/xlabel.h"
-#include "controls/xmenucontext.h"
-//#include "controls/xtextbox.h"
-#include "controls/xtrackbar.h"
+#include "controls/CGL/xglpanel.h"
+#include "controls/CGL/xglbutton.h"
 
-#include "wapi.h"
-
-#endif // !IMPORT_CONTROL_H
+#endif // !IMPORT_CTRGL_H

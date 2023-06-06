@@ -11,14 +11,14 @@
 #ifndef XMENU_CONTEXT_H
 #define XMENU_CONTEXT_H
 
-#include "xcontrolbase.h"
+#include "xwcontrol.h"
 #include <unordered_map>
 #include <memory>
 
 ___BEGIN_NAMESPACE___
 
 class WindowBase;
-class ControlBase;
+class Control;
 
 /**********************************************************************************
 * ⮟⮟ Class name: MenuItemBase
@@ -27,7 +27,7 @@ class ControlBase;
 class Dllexport MenuItemBase
 {
 protected:
-	typedef void(*typeEventFun)(ControlBase* ctrl);
+	typedef void(*typeEventFun)(Control* ctrl);
 
 public:
 	virtual int GetItemType() = 0;
@@ -52,7 +52,7 @@ public:
 * ⮟⮟ Class name: MenuContext control
 * MenuContext control for window
 ***********************************************************************************/
-class Dllexport MenuContext : public ControlBase , public MenuItemBase
+class Dllexport MenuContext : public Control, public MenuItemBase
 {
 	enum { MAX_MENU_ITEM  = 10};
 	typedef	 MenuItemBase* ItemPtr;
@@ -67,7 +67,7 @@ protected:
 	std::wstring	m_sLabel;
 
 public:
-	MenuContext(const wchar_t* label = L"") : ControlBase(),
+	MenuContext(const wchar_t* label = L"") : Control(),
 		m_hMenu(NULL)
 	{
 		m_sLabel = label;

@@ -144,17 +144,28 @@
     <ClCompile Include="win32_framework.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\include\controls\xbutton.h" />
-    <ClInclude Include="..\include\controls\xcheckbox.h" />
-    <ClInclude Include="..\include\controls\xcombobox.h" />
-    <ClInclude Include="..\include\controls\xlabel.h" />
-    <ClInclude Include="..\include\controls\xmenucontext.h" />
-    <ClInclude Include="..\include\controls\xtrackbar.h" />
+    <ClInclude Include="..\include\controls\CGDIPlus\xbutton.h" />
+    <ClInclude Include="..\include\controls\CGDIPlus\xcheckbox.h" />
+    <ClInclude Include="..\include\controls\CGDIPlus\xcombobox.h" />
+    <ClInclude Include="..\include\controls\CGDIPlus\xlabel.h" />
+    <ClInclude Include="..\include\controls\CGDIPlus\xmenucontext.h" />
+    <ClInclude Include="..\include\controls\CGDIPlus\xtextbox.h" />
+    <ClInclude Include="..\include\controls\CGDIPlus\xtrackbar.h" />
+    <ClInclude Include="..\include\controls\CGDIPlus\xwcontrol.h" />
+    <ClInclude Include="..\include\controls\CGL\UIFrame\xelemdrawer.h" />
+    <ClInclude Include="..\include\controls\CGL\xuibutton.h" />
+    <ClInclude Include="..\include\controls\CGL\xuilabel.h" />
+    <ClInclude Include="..\include\controls\CGL\xuipanel.h" />
+    <ClInclude Include="..\include\controls\CGL\xuicontrol.h" />
+    <ClInclude Include="..\include\controls\xbuttonbase.h" />
+    <ClInclude Include="..\include\controls\xcontrolbase.h" />
+    <ClInclude Include="..\include\controls\xpanelbase.h" />
     <ClInclude Include="..\include\graphics\gp_camera.h" />
     <ClInclude Include="..\include\graphics\gp_geometry_render.h" />
     <ClInclude Include="..\include\graphics\gp_shader.h" />
     <ClInclude Include="..\include\graphics\wtext_render.h" />
-    <ClInclude Include="..\include\import_control.h" />
+    <ClInclude Include="..\include\import_ctrlgdi.h" />
+    <ClInclude Include="..\include\import_ctrgl.h" />
     <ClInclude Include="..\include\import_gl.h" />
     <ClInclude Include="..\include\math\xalgorithm.h" />
     <ClInclude Include="..\include\math\xeasing.h" />
@@ -166,7 +177,6 @@
     <ClInclude Include="..\include\wdef.h" />
     <ClInclude Include="..\include\window\xsubwindow.h" />
     <ClInclude Include="..\include\window\xwindow.h" />
-    <ClInclude Include="..\include\xcontrolbase.h" />
     <ClInclude Include="..\include\xsysdef.h" />
     <ClInclude Include="..\include\xsyslogger.h" />
     <ClInclude Include="..\include\xsystype.h" />

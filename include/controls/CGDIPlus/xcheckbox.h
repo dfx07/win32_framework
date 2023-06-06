@@ -11,7 +11,7 @@
 #ifndef XCHECKBOX_H
 #define XCHECKBOX_H
 
-#include "xcontrolbase.h"
+#include "xwcontrol.h"
 
 ___BEGIN_NAMESPACE___
 
@@ -19,7 +19,7 @@ ___BEGIN_NAMESPACE___
 * ⮟⮟ Class name: Checkbox control
 * Checkbox control for window
 ***********************************************************************************/
-class Dllexport Checkbox : public ControlBase, public RectUIControl
+class Dllexport Checkbox : public Control, public RectUIControl
 {
 	enum CHK_EVENT
 	{
@@ -47,7 +47,7 @@ private:
 	typeFunCheckboxEvent	m_funcCheckChanged = { nullptr };
 
 public:
-	Checkbox(const wchar_t* text = L"", bool bCheck = false): ControlBase(), 
+	Checkbox(const wchar_t* text = L"", bool bCheck = false): Control(),
 		m_image_check(NULL), m_image_uncheck(NULL)
 	{
 		m_sLabel	= text;

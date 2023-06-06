@@ -11,7 +11,7 @@
 #ifndef XCOMBOBOX_H
 #define XCOMBOBOX_H
 
-#include "xcontrolbase.h"
+#include "xwcontrol.h"
 #include <Commctrl.h>
 #include <iostream>
 
@@ -21,7 +21,7 @@ ___BEGIN_NAMESPACE___
 * ⮟⮟ Class name: Combobox control
 * Combobox control for window
 ***********************************************************************************/
-class Dllexport Combobox : public ControlBase, public RectUIControl
+class Dllexport Combobox : public Control, public RectUIControl
 {
 	enum CBB_EVENT
 	{
@@ -73,7 +73,7 @@ private:
 public:
 	Combobox(	int _x = 0, int _y = 0,
 				int _width	= WIDTH_DEF,
-				int _height = HEIGHT_DEF) :ControlBase()
+				int _height = HEIGHT_DEF) :Control()
 	{
 		m_rect.x		= _x;
 		m_rect.y		= _y;

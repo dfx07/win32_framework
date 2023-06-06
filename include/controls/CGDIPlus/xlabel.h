@@ -11,7 +11,7 @@
 #ifndef XLABEL_H
 #define XLABEL_H
 
-#include "xcontrolbase.h"
+#include "xwcontrol.h"
 
 ___BEGIN_NAMESPACE___
 
@@ -19,7 +19,7 @@ ___BEGIN_NAMESPACE___
 * ⮟⮟ Class name: Label control
 * Label control for window
 ***********************************************************************************/
-class Dllexport Label : public ControlBase, public RectUIControl
+class Dllexport Label : public Control, public RectUIControl
 {
 private:
 	std::wstring			m_text;
@@ -62,7 +62,7 @@ protected:
 	}
 
 public:
-	Label(const wchar_t* text = L""): ControlBase()
+	Label(const wchar_t* text = L""): Control()
 	{
 		m_text = text;
 

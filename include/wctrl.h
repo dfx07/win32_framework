@@ -35,6 +35,29 @@ enum class WindowType
 	SubWin  ,
 };
 
+enum class Visible
+{
+	SHOW	 ,
+	HIDE	 ,
+	COLLAPSE ,
+};
+
+/**********************************************************************************
+* ⮟⮟ Class name: Location, Size
+* Base class for window handle inheritance
+***********************************************************************************/
+struct Location
+{
+	float		m_x;
+	float		m_y;
+};
+
+struct Size
+{
+	float		m_width;
+	float		m_height;
+};
+
 /**********************************************************************************
 * ⮟⮟ Class name: WindowBase
 * Base class for window handle inheritance
@@ -302,20 +325,35 @@ public:
 	union { _type bottom;  };
 
 public:
-	Control4Value(	_type t = static_cast<_type>(0),
-					_type l = static_cast<_type>(0),
-					_type r = static_cast<_type>(0),
-					_type b = static_cast<_type>(0))
+	Control4Value() : left(static_cast<T>(0)), top(static_cast<T>(0)),
+		right(static_cast<T>(0)), bottom(static_cast<T>(0))
 	{
-		this->top    = t;
-		this->left   = l;
-		this->right  = r;
-		this->bottom = b;
+
 	}
 
-	const Control4Value& operator=(const _type& v)
+	template< typename U>
+	Control4Value(const U& value) :
+		left(static_cast<T>(value)), top(static_cast<T>(value)),
+		right(static_cast<T>(value)), bottom(static_cast<T>(value))
 	{
-		this->top = left = right = bottom = v;
+
+	}
+
+	template< typename A, typename B, typename C, typename D>
+	Control4Value(const A& _left,
+		const B& _top = static_cast<B>(0),
+		const C& _right = static_cast<C>(0),
+		const D& _bottom = static_cast<D>(0)):
+		left(static_cast<T>(_left)), top(static_cast<T>(_top)),
+		right(static_cast<T>(_right)), bottom(static_cast<T>(_bottom))
+	{
+
+	}
+
+	template< typename U>
+	const Control4Value& operator=(const U& v)
+	{
+		this->top = left = right = bottom =  static_cast<T>(v);
 		return *this;
 	}
 };
@@ -486,52 +524,6 @@ protected:
 
 	CMargin					m_margin;
 	CPadding				m_padding;
-};
-
-/**********************************************************************************
-* ⮟⮟ Class name: Control base
-* Base class for inherited window controls
-***********************************************************************************/
-class Dllexport BackgroundRenderAction
-{
-protected:
-	void SetRectDraw(Gdiplus::RectF rect)
-	{
-		m_rect_draw = rect;
-	}
-
-
-
-	//void DrawBorderBackground(GDIplusCtrlRender* render, Gdiplus::Pen* pen = NULL)
-	//{
-	//	// Draw rectangle background;
-	//	int iBorderWidth  = m_property.border_width;
-	//	int iBorderRadius = m_property.border_radius;
-
-	//	if (iBorderWidth > 0)
-	//	{
-	//		Gdiplus::Rect rect = render->GetDrawRect();
-
-	//		int iB = (iBorderWidth & 1) ? iBorderWidth -1 : iBorderWidth;
-
-	//		rect.X      += iBorderWidth/2;
-	//		rect.Y      += iBorderWidth/2;
-	//		rect.Width  -= iB;
-	//		rect.Height -= iB;
-
-	//		if (pen)
-	//		{
-	//			render->DrawRectangle(rect, pen, nullptr, iBorderRadius);
-	//		}
-	//		else
-	//		{
-	//			render->DrawRectangle(rect, m_property.m_border_color.wrefcol, nullptr, iBorderWidth, iBorderRadius);
-	//		}
-	//	}
-	//}
-
-protected:
-	Gdiplus::RectF		m_rect_draw;
 };
 ____END_NAMESPACE____
 

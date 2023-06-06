@@ -195,7 +195,7 @@ private:
 			HWND hwndControl = (HWND)lParam;  // handle of control
 			NULL_BREAK(hwndControl);
 
-			auto pControl = (ControlBase*)(GetWindowLongPtr(hwndControl, GWLP_USERDATA));
+			auto pControl = (Control*)(GetWindowLongPtr(hwndControl, GWLP_USERDATA));
 			NULL_BREAK(pControl);
 
 			pControl->OnCommand(win, wID, wEvt);
@@ -206,7 +206,7 @@ private:
 		{
 			WORD wID = LOWORD(wParam);
 			LPDRAWITEMSTRUCT pdis = (LPDRAWITEMSTRUCT)lParam;
-			auto pControl = (ControlBase*)(GetWindowLongPtr(pdis->hwndItem, GWLP_USERDATA));
+			auto pControl = (Control*)(GetWindowLongPtr(pdis->hwndItem, GWLP_USERDATA));
 			NULL_BREAK(pControl);
 
 			//pControl->Draw(win->m);
@@ -219,7 +219,7 @@ private:
 			SetBkMode((HDC)wParam, TRANSPARENT);
 			HWND hwndControl = (HWND)lParam;
 
-			auto pControl = (ControlBase*)(GetWindowLongPtr(hwndControl, GWLP_USERDATA));
+			auto pControl = (Control*)(GetWindowLongPtr(hwndControl, GWLP_USERDATA));
 			//if (ctrl && ctrl->GetType() == ControlType::LABEL)
 			//{
 			//	Label* lab = static_cast<Label*>(ctrl);
