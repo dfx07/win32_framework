@@ -725,6 +725,53 @@ public:
 	}
 };
 
+
+struct object_temp
+{
+
+};
+////////////////////////////////////////////////////////////////////////////////////
+/**********************************************************************************
+* ⮟⮟ Class name: SafeThread
+* Base class for window handle inheritance
+***********************************************************************************/
+class Dllexport SUpdateListManage
+{
+protected:
+	typedef std::vector<object_temp> CacheData;
+
+protected:
+	CacheData m_data;
+
+public:
+
+	void Clear()
+	{
+		m_data.clear();
+	}
+
+	int Add(const object_temp& data)
+	{
+		m_data.emplace_back(data);
+	}
+
+	bool Update(const int& i, const object_temp& obj_update)
+	{
+		if (i < 0 || i > m_data.size())
+			return false;
+		m_data[i] = obj_update;
+	}
+
+	const object_temp* Get(const int i) const
+	{
+		if (i < 0 || i > m_data.size())
+			return nullptr;
+
+		return &m_data[i];
+	}
+}
+
+
 ____END_NAMESPACE____
 
 #endif // !XSYSTYPE_H

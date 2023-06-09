@@ -273,7 +273,7 @@ void Draw(WindowBase* win)
         shader.SetUniformMat4("projmat", proj);
         shader.SetUniformMat4("viewmat", view);
 
-        shader.SetUniformVec2("resolution", vResolution);
+        //shader.SetUniformVec2("resolution", vResolution);
         shader.SetUniformVec2("btn_size", vSize);
 
         glBindVertexArray(vaoID);

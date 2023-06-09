@@ -13,6 +13,7 @@
 
 #include "xsysdef.h"
 #include "graphics/gp_shader.h"
+#include "graphics/gp_shader_type.h"
 #include <vector>
 
 ___BEGIN_NAMESPACE___
@@ -27,65 +28,86 @@ typedef struct tagContentColor
 
 typedef struct tagRectangle
 {
-	float  width;
-	float  height;
-	float  border;
-	float  radius;
-	float  x;
-	float  y;
-	float  z;
+	SD_Point3D		_pt;
+	SD_Size2D		_size;
+	SD_Border2D		_border;
+	SD_Color4		_bgColor;
+	SD_Color4		_bdColor;
+
 } RECT_DRAW_DATA;
 
-typedef std::vector<std::mar tagRectangle> CacheRectangle;
-
-class XDataDrawer
+typedef struct tagCircle
 {
-public:
-	CacheRectangle		m_rectangle_cache;
+	SD_Point3D		_pt;
+	SD_Size2D		_size;
+	SD_Border2D		_border;
+	SD_Color4		_bgColor;
+	SD_Color4		_bdColor;
+
+} CRICLE_DRAW_DATA;
+
+
+
+class SUpdateListManage
+{
+
+	typedef std::vector<RECT_DRAW_DATA> CacheData;
+
+	CacheData m_data;
 
 public:
-	XDataDrawer()
+
+	void Clear()
 	{
-		m_rectangle_cache.reserve(100);
+		m_data.clear();
 	}
 
-public:
-	int AddRectangle(RECT_DRAW_DATA& rect, CONTENT_COLOR& color)
+	void Add(const RECT_DRAW_DATA& data)
 	{
 
 	}
+}
 
-	bool UpdateRectangleData(int index, RECT_DRAW_DATA* rect = NULL, CONTENT_COLOR* color = NULL)
+
+class XShapeData
+{
+	virtual void Clear() = 0;
+};
+
+class CRectangleSDData : public XShapeData
+{
+protected:
+	typedef std::vector<RECT_DRAW_DATA> CacheRectangle;
+
+protected:
+	CacheRectangle		m_rect;
+
+public:
+	void Add()
 	{
 
 	}
 };
 
-class XGLDrawer : protected XDataDrawer
+class XShapeDrawer
 {
-protected:
-	Shader				m_rectangle_shader;
-	Shader				m_line_shader;
-
 protected:
 	virtual void Init(const wchar_t* pathVertex, const wchar_t* pathFragment = NULL, const wchar_t* pathGeometry = NULL) = 0;
-
-	virtual void Create() { };
-
-	virtual void DrawRectangle() {};
-
-	virtual void DrawLine() {};
-
-	virtual void DrawCicle() {};
-
-	virtual void UpdateTime() {};
+	virtual void Create() = 0;
 };
 
-
-class VukaDrawer : protected XDataDrawer
+class CRectangleDrawer : public XShapeDrawer
 {
+	virtual void Init(const wchar_t* pathVertex, const wchar_t* pathFragment = NULL, const wchar_t* pathGeometry = NULL)
+	{
 
+	}
+	virtual void Create()
+	{
+
+	}
 };
+
 
 _____END_SECTION_____
 

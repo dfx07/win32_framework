@@ -163,6 +163,7 @@
     <ClInclude Include="..\include\graphics\gp_camera.h" />
     <ClInclude Include="..\include\graphics\gp_geometry_render.h" />
     <ClInclude Include="..\include\graphics\gp_shader.h" />
+    <ClInclude Include="..\include\graphics\gp_shader_type.h" />
     <ClInclude Include="..\include\graphics\wtext_render.h" />
     <ClInclude Include="..\include\import_ctrlgdi.h" />
     <ClInclude Include="..\include\import_ctrgl.h" />

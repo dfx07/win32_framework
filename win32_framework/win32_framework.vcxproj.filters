@@ -167,6 +167,9 @@
     <ClInclude Include="..\include\controls\CGL\UIFrame\xelemdrawer.h">
       <Filter>Header Files\ui\controls\CGL</Filter>
     </ClInclude>
+    <ClInclude Include="..\include\graphics\gp_shader_type.h">
+      <Filter>Header Files\graphics</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="shader\fragment.glsl">
