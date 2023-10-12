@@ -16,6 +16,7 @@
 #include <iostream>
 #include <chrono>
 #include <vector>
+#include <queue>
 #include <thread>
 #include <ctime>
 
@@ -732,44 +733,128 @@ struct object_temp
 };
 ////////////////////////////////////////////////////////////////////////////////////
 /**********************************************************************************
-* ⮟⮟ Class name: SafeThread
+* ⮟⮟ Class name: SUpdateListManage
 * Base class for window handle inheritance
 ***********************************************************************************/
-class Dllexport SUpdateListManage
+class Dllexport OptimizeListTemp
 {
 protected:
 	typedef std::vector<object_temp> CacheData;
 
 protected:
-	CacheData m_data;
+	CacheData			m_data;
+	std::deque<int>		m_IndexDirtyList;
+
+private:
+	bool IsContain(const int index)
+	{
+		if (index < 0 || index > m_data.size())
+			return false;
+	}
 
 public:
 
+	/******************************************************************************
+	*! @brief  : Check index is free
+	*! @return : index insert (failed  =-1)
+	*! @author : thuong.nv          - [Date] : 05/03/2023
+	******************************************************************************/
+	bool IsFree(const int index) const
+	{
+		if (index < 0)
+			return false;
+
+		if (index >= m_data.size())
+			return true;
+
+		auto itr = std::find(m_IndexDirtyList.begin(), m_IndexDirtyList.end(), index);
+		return (itr != m_IndexDirtyList.end()) ? true : false;
+	}
+
+	/******************************************************************************
+	*! @brief  : Clear data + list
+	*! @return : index insert (failed  =-1)
+	*! @author : thuong.nv          - [Date] : 05/03/2023
+	******************************************************************************/
 	void Clear()
 	{
 		m_data.clear();
+
+		std::queue<int> qEmpty;
+		m_IndexDirtyList.clear();
 	}
 
+	/******************************************************************************
+	*! @brief  : Add object 
+	*! @return : index insert (failed  =-1)
+	*! @author : thuong.nv          - [Date] : 05/03/2023
+	******************************************************************************/
 	int Add(const object_temp& data)
 	{
-		m_data.emplace_back(data);
+		int index = -1;
+
+		if (!m_IndexDirtyList.empty())
+		{
+			index = m_IndexDirtyList.front();
+			m_data[index] = data;
+			m_IndexDirtyList.pop_front();
+		}
+		else
+		{
+			m_data.emplace_back(data);
+			index = static_cast<int>(m_data.size() - 1);
+		}
+		
+		return index;
 	}
 
-	bool Update(const int& i, const object_temp& obj_update)
+	/******************************************************************************
+	*! @brief  : Add object 
+	*! @return : index insert (failed  =-1)
+	*! @author : thuong.nv          - [Date] : 05/03/2023
+	******************************************************************************/
+	bool Remove(const int index)
+	{
+		if (index < 0 || index >= m_data.size())
+			return true;
+
+		if (IsFree(index) == false)
+		{
+
+		}
+
+		return true;
+	}
+
+	/******************************************************************************
+	*! @brief  : Update object 
+	*! @param  : [in]   i : index update
+	*! @return : true : ok | false : not ok
+	*! @author : thuong.nv          - [Date] : 05/03/2023
+	******************************************************************************/
+	bool Update(const int i, const object_temp& obj_update)
 	{
 		if (i < 0 || i > m_data.size())
 			return false;
 		m_data[i] = obj_update;
 	}
 
+	/******************************************************************************
+	*! @brief  : Get object 
+	*! @return : true : ok | false : not ok
+	*! @author : thuong.nv          - [Date] : 05/03/2023
+	******************************************************************************/
 	const object_temp* Get(const int i) const
 	{
 		if (i < 0 || i > m_data.size())
 			return nullptr;
 
+		if (IsFree(i) == true)
+			return nullptr;
+
 		return &m_data[i];
 	}
-}
+};
 
 
 ____END_NAMESPACE____
