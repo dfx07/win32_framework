@@ -353,6 +353,13 @@ typedef std::vector<Vec2D>		VecPoint2D;
 typedef std::vector<Vec3D>		VecPoint3D;
 
 
+enum EnumOrien
+{
+	COLLINEAR,
+	LEFT,
+	RIGHT,
+};
+
 /////////////////////////////////////////////////////////////////////////////////////
 /***********************************************************************************/
 // Define use GLM library

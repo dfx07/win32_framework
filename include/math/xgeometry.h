@@ -15,6 +15,7 @@
 
 
 #define GEO_XY_EPSILON		0.0001f
+#define GEO_EPSILON			0.01f
 
 ___BEGIN_NAMESPACE___
 
@@ -27,29 +28,41 @@ ____BEGIN_SECTION____(geo)
 //----------------------------------------------------------------------------------
 // Vector base function
 //----------------------------------------------------------------------------------
-FLOAT			GetMagnitude(const Vec2D& v);
-Vec2D			NormalizeVector(const Vec2D& v);
-FLOAT			GetCrossProduct(const Vec2D& v1, const Vec2D& v2);
-FLOAT			GetDotProduct(const Vec2D& v1, const Vec2D& v2);
-FLOAT			CalcAngle2Vector(const Vec2D& v1, const Vec2D& v2);
+____BEGIN_SECTION____(base)
+FLOAT			mag(const Vec2D& v);
+Vec2D			normalize(const Vec2D& v);
+FLOAT			cross(const Vec2D& v1, const Vec2D& v2);
+FLOAT			dot(const Vec2D& v1, const Vec2D& v2);
+FLOAT			angle(const Vec2D& v1, const Vec2D& v2);
 
-Point2D			Move(const Point2D& pt, const Vec2D& vn, const FLOAT fDistance);
-Vec2D			Rotate(const Vec2D& v, const FLOAT fDegree);
-Point2D			RotatePoint(const Point2D& ptPivot, const Point2D& ptRotate, const FLOAT fDegree);
+Point2D			move(const Point2D& pt, const Vec2D& vn, const FLOAT fDistance);
+Vec2D			rotate(const Vec2D& v, const FLOAT fDegree);
+Point2D			rotate(const Point2D& ptPivot, const Point2D& ptRotate, const FLOAT fDegree);
+_____END_SECTION_____
 
 ////////////////////////////////////////////////////////////////////////////////////
 //-----------------------------------------------------------------------------------
 // Geometry function
 //-----------------------------------------------------------------------------------
-BOOL			IsPointInLineSegment(const Point2D& pt1, const Point2D& pt2, const Point2D& pt);
-BOOL			IsPointInAreaLineSegment(const Point2D& pt1, const Point2D& pt2, const Point2D& pt);
-BOOL			IsPointInPolygon(const Point2D& pt, const VecPoint2D& poly);
-BOOL			Intersect2Line(const Point2D& pt1, const Point2D& pt2, const Point2D& pt3, const Point2D& pt4, Point2D* pInter = NULL);
-BOOL			Intersect2Line2(const Point2D& ptLine1, const Vec2D& vnLine1, const Point2D& ptLine2, const Vec2D& vnLine2, Point2D* pInter = NULL);
-BOOL			Intersect2Segment(const Point2D& pt1, const Point2D& pt2, const Point2D& pt3, const Point2D& pt4, Point2D* pInter = NULL);
-BOOL			IntersectLine2Segment(const Point2D& ptLine1, const Point2D& ptLine2, const Point2D& ptSeg1, const Point2D& ptSeg2, Point2D* pInter = NULL);  // line = two point
-BOOL			IntersectLine2Segment2(const Point2D& ptLine, const Vec2D& vnLine, const Point2D& ptSeg1, const Point2D& ptSeg2, Point2D* pInter = NULL);     // line = 1 point + unit vector
-INT				IntersectLine2Polygon(const Point2D& ptLine1, const Point2D& ptLine2, const VecPoint2D& poly, VecPoint2D* vecInter = NULL, BOOL bOnlyCheck = FALSE);
+____BEGIN_SECTION____(algo)
+
+Point2D			get_projection_point_to_line(const Point2D& ptLine1, const Point2D& ptLine2, const Point2D& pt); // line = two point
+INT				get_projection_point_to_lsegment(const Point2D& ptSeg1, const Point2D& ptSeg2, const Point2D& pt, Point2D* ptPerp = NULL, BOOL bCheckNearest = FALSE);// Segment = two point
+
+BOOL			is_point_in_lsegment(const Point2D& pt1, const Point2D& pt2, const Point2D& pt);
+BOOL			is_snap_point_to_lsegment(const Point2D& pt1, const Point2D& pt2, const Point2D& pt, const float& fSnap);
+BOOL			is_point_in_line(const Point2D& pt1, const Point2D& pt2, const Point2D& pt);
+BOOL			is_point_in_line2(const Point2D& pt, const Vec2D& vn, const Point2D& ptc);
+BOOL			is_snap_point_to_line(const Point2D& pt1, const Point2D& pt2, const Point2D& pt, const float& fSnap);
+BOOL			is_point_in_polygon(const Point2D& pt, const VecPoint2D& poly);
+BOOL			is_point_in_ray(const Point2D& pt, const Vec2D& vn, const Point2D& ptc);                 // ray  = 1 point + unit vector
+
+BOOL			intersect_2line(const Point2D& pt1, const Point2D& pt2, const Point2D& pt3, const Point2D& pt4, Point2D* pInter = NULL);
+BOOL			intersect_2line2(const Point2D& ptLine1, const Vec2D& vnLine1, const Point2D& ptLine2, const Vec2D& vnLine2, Point2D* pInter = NULL);
+BOOL			intersect_2lsegment(const Point2D& pt1, const Point2D& pt2, const Point2D& pt3, const Point2D& pt4, Point2D* pInter = NULL);
+BOOL			intersect_line_lsegment(const Point2D& ptLine1, const Point2D& ptLine2, const Point2D& ptSeg1, const Point2D& ptSeg2, Point2D* pInter = NULL);  // line = two point
+BOOL			intersect_line_lsegment2(const Point2D& ptLine, const Vec2D& vnLine, const Point2D& ptSeg1, const Point2D& ptSeg2, Point2D* pInter = NULL);     // line = 1 point + unit vector
+INT				intersect_line_Polygon(const Point2D& ptLine1, const Point2D& ptLine2, const VecPoint2D& poly, VecPoint2D* vecInter = NULL, BOOL bOnlyCheck = FALSE);
 INT				IntersectLine2Rectangle(const Point2D& ptLine1, const Point2D& ptLine2, const Rect2D& rect, VecPoint2D* vecInter = NULL, BOOL bOnlyCheck = FALSE);
 INT				IntersectSegment2Polygon(const Point2D& pt1, const Point2D& pt2, const VecPoint2D& poly, VecPoint2D* vecInter = NULL, BOOL bOnlyCheck = FALSE);
 
@@ -58,19 +71,23 @@ INT				GetRelation2Polygon(const VecPoint2D& vecPoly1, const VecPoint2D& vecPoly
 
 BOOL			IsPointInLine(const Point2D& pt1, const Point2D& pt2, const Point2D& ptc);            // line = two point
 BOOL			IsPointInLine2(const Point2D& pt, const Vec2D& vn, const Point2D& ptc);               // line = 1 point + unit vector
-Point2D			GetPerpPoint2Line(const Point2D& ptLine1, const Point2D& ptLine2, const Point2D& pt); // line = two point
-INT				GetPerpPoint2Segment(const Point2D& ptSeg1, const Point2D& ptSeg2, const Point2D& pt, Point2D* ptPerp = NULL, BOOL bCheckNearest = FALSE);// Segment = two point
 
-BOOL			IsPointInRay(const Point2D& pt, const Vec2D& vn, const Point2D& ptc);                 // ray  = 1 point + unit vector
+
+
+EnumOrien		GetOrientationPoint2Vector(const Point2D& ptC, const Point2D& pt1, const Point2D& pt2);
+_____END_SECTION_____
 
 ////////////////////////////////////////////////////////////////////////////////////
 //----------------------------------------------------------------------------------
 // Support function
 //----------------------------------------------------------------------------------
+____BEGIN_SECTION____(sp)
 BOOL			IsEqual(const FLOAT fVal1, const FLOAT fVal2, const FLOAT fEpsilon);
 VecPoint2D		ConvertRectF2Points(const Rect2D& rect);
-FLOAT			ConvertRadToDeg(const FLOAT fRad);
-FLOAT			ConvertDegToRad(const FLOAT fDegree);
+BOOL			is_ccw(const VecPoint2D& poly);
+FLOAT			r2d(const FLOAT fRad);
+FLOAT			d2r(const FLOAT fDegree);
+_____END_SECTION_____
 ///////////////////////////////////////////////////////////////////////////////////
 
 
@@ -92,9 +109,10 @@ BOOL IsEqual(const FLOAT fVal1, const FLOAT fVal2, const FLOAT fEpsilon)
 @param		[in] v : Vector
 @return		FLOAT : magnitude
 ***********************************************************************************/
-FLOAT GetMagnitude(const Vec2D& v)
+FLOAT mag(const Vec2D& v)
 {
 	return std::sqrtf(v.x * v.x + v.y * v.y);
+
 }
 
 /***********************************************************************************
@@ -103,35 +121,35 @@ FLOAT GetMagnitude(const Vec2D& v)
 *! @return : uinit vector
 *! @author : thuong.nv				- [Date] : 06/03/2023
 ***********************************************************************************/
-Vec2D NormalizeVector(const Vec2D& v)
+Vec2D normalize(const Vec2D& v)
 {
-	FLOAT fMagnitude = GetMagnitude(v);
+	FLOAT fmagnitude = mag(v);
 
-	if (fMagnitude <= 0)
+	if (fmagnitude <= 0)
 	{
 		return Vec2D(0.f, 0.f);
 	}
-	return Vec2D(v.x / fMagnitude, v.y / fMagnitude);
+	return Vec2D(v.x / fmagnitude, v.y / fmagnitude);
 }
 
 /***********************************************************************************
-@brief		Calculate the CrossProduct of the two vector
+@brief		Calculate the crossProduct of the two vector
 @param		[in] v1		: First vector
 @param		[in] v2		: Second vector
 @return		FLOAT : Value cross product
 ***********************************************************************************/
-FLOAT GetCrossProduct(const Vec2D& v1, const Vec2D& v2)
+FLOAT cross(const Vec2D& v1, const Vec2D& v2)
 {
 	return (v1.x * v2.y - v1.y * v2.x);
 }
 
 /***********************************************************************************
 *! @brief  : Calculate dot product between 2 vectors
-*! @param  : [in] fAngle : angle float
+*! @param  : [in] fangle : angle float
 *! @return : FLOAT : dot product
 *! @author : thuong.nv				- [Date] : 06/03/2023
 ***********************************************************************************/
-FLOAT GetDotProduct(const Vec2D& v1, const Vec2D& v2)
+FLOAT dot(const Vec2D& v1, const Vec2D& v2)
 {
 	return v1.x * v2.x + v1.y * v2.y;
 }
@@ -143,32 +161,32 @@ FLOAT GetDotProduct(const Vec2D& v1, const Vec2D& v2)
 *! @return : Degree angle between two vector [-180~180]
 *! @author : thuong.nv			- [Date] : 06/03/2023
 ***********************************************************************************/
-FLOAT CalcAngle2Vector(const Vec2D& v1, const Vec2D& v2)
+FLOAT angle(const Vec2D& v1, const Vec2D& v2)
 {
-	FLOAT fDot = GetDotProduct(v1, v2);
+	FLOAT fdot = dot(v1, v2);
 	FLOAT fDet = v1.x * v2.y - v1.y * v2.x;
 
-	FLOAT fAngle = std::atan2f(fDet, fDot);
+	FLOAT fangle = std::atan2f(fDet, fdot);
 
-	return ConvertRadToDeg(fAngle);
+	return geo::sp::r2d(fangle);
 }
 
 /***********************************************************************************
-*! @brief  : Move point use unit vector and distance
+*! @brief  : move point use unit vector and distance
 *! @param  : [in] pt       : move point
 *! @param  : [in] vn       : unit vector ( move direction)
 *! @param  : [in] fDistance: distance
 *! @return : Point2D point after move
 *! @author : thuong.nv			- [Date] : 06/03/2023
 ***********************************************************************************/
-Point2D Move(const Point2D& pt, const Vec2D& vn, const FLOAT fDistance)
+Point2D move(const Point2D& pt, const Vec2D& vn, const FLOAT fDistance)
 {
-	Point2D ptMove;
+	Point2D ptmove;
 
-	ptMove.x = pt.x + vn.x * fDistance;
-	ptMove.y = pt.y + vn.y * fDistance;
+	ptmove.x = pt.x + vn.x * fDistance;
+	ptmove.y = pt.y + vn.y * fDistance;
 
-	return ptMove;
+	return ptmove;
 }
 
 /***********************************************************************************
@@ -178,13 +196,13 @@ Point2D Move(const Point2D& pt, const Vec2D& vn, const FLOAT fDistance)
 *! @return : Vector2D after rotate
 *! @author : thuong.nv			- [Date] : 06/03/2023
 ***********************************************************************************/
-Vec2D Rotate(const Vec2D& v, const FLOAT fDegree)
+Vec2D rotate(const Vec2D& v, const FLOAT fDegree)
 {
-	FLOAT fRadAngle = ConvertDegToRad(fDegree);
+	FLOAT fRadangle = geo::sp::d2r(fDegree);
 
 	Vec2D vRoate;
-	vRoate.x = std::cos(fRadAngle) * v.x - sin(fRadAngle) * v.y;
-	vRoate.y = std::sin(fRadAngle) * v.x + cos(fRadAngle) * v.y;
+	vRoate.x = std::cos(fRadangle) * v.x - sin(fRadangle) * v.y;
+	vRoate.y = std::sin(fRadangle) * v.x + cos(fRadangle) * v.y;
 	return vRoate;
 }
 
@@ -196,17 +214,17 @@ Vec2D Rotate(const Vec2D& v, const FLOAT fDegree)
 *! @return : Point2D after rotate
 *! @author : thuong.nv			- [Date] : 06/03/2023
 ***********************************************************************************/
-Point2D	 RotatePoint(const Point2D& ptPivot, const Point2D& ptRotate, const FLOAT fDegree)
+Point2D	 rotate(const Point2D& ptPivot, const Point2D& ptRotate, const FLOAT fDegree)
 {
 	Vec2D vpipr = ptRotate - ptPivot;
-	FLOAT fDistance = GetMagnitude(vpipr);
+	FLOAT fDistance = mag(vpipr);
 
-	Vec2D vuint_pipr = NormalizeVector(vpipr);
-	Vec2D vuint_rotate = Rotate(vuint_pipr, fDegree);
+	Vec2D vuint_pipr = normalize(vpipr);
+	Vec2D vuint_rotate = rotate(vuint_pipr, fDegree);
 
-	Point2D ptMove = Move(ptPivot, vuint_rotate, fDistance);
+	Point2D ptmove = move(ptPivot, vuint_rotate, fDistance);
 
-	return ptMove;
+	return ptmove;
 }
 
 /***********************************************************************************
@@ -216,20 +234,20 @@ Point2D	 RotatePoint(const Point2D& ptPivot, const Point2D& ptRotate, const FLOA
 @param		[in] pt		: Point check
 @return		TRUE : inside | FALSE : outside
 ***********************************************************************************/
-BOOL IsPointInLineSegment(const Point2D& pt1, const Point2D& pt2, const Point2D& pt)
+BOOL is_point_in_lsegment(const Point2D& pt1, const Point2D& pt2, const Point2D& pt)
 {
 	Vec2D vp1p = pt - pt1; // Vector vp1p ;
 	Vec2D vp2p = pt - pt2; // Vector vp2p ;
 
-	FLOAT fCrs = GetCrossProduct(vp1p, vp2p);
+	FLOAT fCrs = cross(vp1p, vp2p);
 
 	// Point in straight line
 	if (IsEqual(fCrs, 0.f, MATH_EPSILON))
 	{
 		// Point in side line Segment
-		FLOAT fp1pDistance = GetMagnitude(vp1p);
-		FLOAT fp2pDistance = GetMagnitude(vp2p);
-		FLOAT fp1p2Distance = GetMagnitude(pt1 - pt2);
+		FLOAT fp1pDistance = mag(vp1p);
+		FLOAT fp2pDistance = mag(vp2p);
+		FLOAT fp1p2Distance = mag(pt1 - pt2);
 
 		if (fp1pDistance <= fp1p2Distance &&
 			fp2pDistance <= fp1p2Distance)
@@ -239,6 +257,90 @@ BOOL IsPointInLineSegment(const Point2D& pt1, const Point2D& pt2, const Point2D&
 	}
 	return FALSE;
 }
+
+/***********************************************************************************
+@brief		Check snap point point to line segement
+@param		[in] pt1	: First point in line segment
+@param		[in] pt2	: Second point in line segment
+@param		[in] pt		: Point check
+@return		TRUE : inside | FALSE : outside
+***********************************************************************************/
+BOOL is_snap_point_to_lsegment(const Point2D& pt1, const Point2D& pt2, const Point2D& pt, const float& fSnap)
+{
+	Point2D ptProj;
+
+	if (get_projection_point_to_lsegment(pt1, pt2, pt, &ptProj, true) >= 1)
+	{
+		float fDisProj = geo::base::mag(ptProj - pt);
+
+		return fDisProj <= std::abs(fSnap);
+	}
+
+	return false;
+}
+
+/***********************************************************************************
+@brief		Check point on a line given by two points
+@param		[in] pt1	: First point in line
+@param		[in] pt2	: Second point in line
+@param		[in] pt		: Point check
+@return		TRUE : inside | FALSE : outside
+***********************************************************************************/
+BOOL is_point_in_line(const Point2D& pt1, const Point2D& pt2, const Point2D& pt)
+{
+	Vec2D vp1p = pt - pt1; // Vector vp1p ;
+	Vec2D vp2p = pt - pt2; // Vector vp2p ;
+
+	FLOAT fCrs = cross(vp1p, vp2p);
+
+	// Point in straight line
+	if (IsEqual(fCrs, 0.f, MATH_EPSILON))
+	{
+		return TRUE;
+	}
+	return FALSE;
+}
+
+/***********************************************************************************
+*! @brief  : Check point in line (line : 1 point + unit vector)
+*! @param  : [in] pt   : point in line
+*! @param  : [in] vn   : unit vector of line
+*! @param  : [in] ptc  : point check
+*! @return : TRUE : point in line | FALSE : no
+*! @author : thuong.nv			- [Date] : 06/03/2023
+***********************************************************************************/
+BOOL is_point_in_line2(const Point2D& pt, const Vec2D& vn, const Point2D& ptc)
+{
+	Point2D ptpc = ptc - pt;
+
+	FLOAT fcross = cross(vn, ptpc);
+
+	// 3 collinear point if cross product isqual 0
+	if (TRUE == IsEqual(fcross, 0.f, MATH_EPSILON))
+	{
+		return TRUE;
+	}
+
+	return FALSE;
+}
+
+
+/***********************************************************************************
+@brief		Check snap point point to line
+@param		[in] pt1	: First point in line segment
+@param		[in] pt2	: Second point in line segment
+@param		[in] pt		: Point check
+@return		TRUE : inside | FALSE : outside
+***********************************************************************************/
+BOOL is_snap_point_to_line(const Point2D& pt1, const Point2D& pt2, const Point2D& pt, const float& fSnap)
+{
+	Point2D ptProj = get_projection_point_to_line(pt1, pt2, pt);
+
+	float fDisProj = geo::base::mag(ptProj - pt);
+
+	return fDisProj <= std::abs(fSnap);
+}
+
 
 /***********************************************************************************
 @brief		Check a point in the bound region between two points
@@ -266,7 +368,7 @@ BOOL IsPointInAreaLineSegment(const Point2D& pt1, const Point2D& pt2, const Poin
 @return		TRUE : inside | FALSE : outside
 @note		ref : https://wrf.ecse.rpi.edu/Research/Short_Notes/pnpoly.html
 ***********************************************************************************/
-BOOL IsPointInPolygon(const Point2D& pt, const VecPoint2D& poly)
+BOOL is_point_in_polygon(const Point2D& pt, const VecPoint2D& poly)
 {
 	if (poly.size() < 3)
 	{
@@ -314,6 +416,29 @@ BOOL IsPointInPolygon(const Point2D& pt, const VecPoint2D& poly)
 
 	return bInside;
 }
+
+/***********************************************************************************
+*! @brief  : Check point is in ray (ray : point start and unit vector)
+*! @param  : [in] pt  : start point of ray
+*! @param  : [in] vn  : unit vector of ray
+*! @param  : [in] ptc : point check
+*! @return : TRUE : in ray | FALSE : out ray
+*! @author : thuong.nv			- [Date] : 06/03/2023
+***********************************************************************************/
+BOOL is_point_in_ray(const Point2D& pt, const Vec2D& vn, const Point2D& ptc)
+{
+	if (is_point_in_line2(pt, vn, ptc))
+	{
+		// unit vector ptpc
+		Vec2D vptpc = normalize(ptc - pt);
+
+		return  (vptpc.x * vn.x) >= 0 &&
+			(vptpc.y * vn.y) >= 0;
+	}
+
+	return FALSE;
+}
+
 
 /***********************************************************************************
 @brief		Get intersection point between line and line (line = 2 point)
@@ -431,8 +556,8 @@ BOOL Intersect2Segment(const Point2D& pt1,		// L1
 		ptIntersect.y = (fa * fc1 - fa1 * fc) / fDet;
 
 		// Inside intersection 
-		if (IsPointInLineSegment(pt1, pt2, ptIntersect) &&
-			IsPointInLineSegment(pt3, pt4, ptIntersect))
+		if (is_point_in_lsegment(pt1, pt2, ptIntersect) &&
+			is_point_in_lsegment(pt3, pt4, ptIntersect))
 		{
 			bInter = TRUE;
 		}
@@ -470,9 +595,9 @@ BOOL IntersectLine2Segment(const Point2D& ptLine1,	// Point on the line
 	if (TRUE == Intersect2Line(ptLine1, ptLine2, ptSeg1, ptSeg2, &ptInter))
 	{
 		// Check point inside line segment
-		FLOAT fp1pDistance = GetMagnitude(ptSeg1 - ptInter);
-		FLOAT fp2pDistance = GetMagnitude(ptSeg2 - ptInter);
-		FLOAT fp1p2Distance = GetMagnitude(ptSeg1 - ptSeg2);
+		FLOAT fp1pDistance = mag(ptSeg1 - ptInter);
+		FLOAT fp2pDistance = mag(ptSeg2 - ptInter);
+		FLOAT fp1p2Distance = mag(ptSeg1 - ptSeg2);
 
 		if (fp1pDistance <= fp1p2Distance &&
 			fp2pDistance <= fp1p2Distance)
@@ -661,7 +786,7 @@ BOOL IsInsidePolygon(const VecPoint2D& poly1, const VecPoint2D& poly2)
 	}
 
 	// Check polygon outside
-	if (!IsPointInPolygon(poly1[0], poly2))
+	if (!is_point_in_polygon(poly1[0], poly2))
 		return FALSE;
 
 	return TRUE;
@@ -701,11 +826,11 @@ INT GetRelation2Polygon(const VecPoint2D& vecPoly1, const VecPoint2D& vecPoly2)
 	}
 
 	// Case 2 : inside - check poly1 inside poly2 
-	if (TRUE == IsPointInPolygon(vecPoly1[0], vecPoly2))
+	if (TRUE == is_point_in_polygon(vecPoly1[0], vecPoly2))
 		return 2;
 
 	// Case 3 : inside - check poly2 inside poly1 
-	if (TRUE == IsPointInPolygon(vecPoly2[0], vecPoly1))
+	if (TRUE == is_point_in_polygon(vecPoly2[0], vecPoly1))
 		return 3;
 
 	// Case 4 (default): outside
@@ -723,7 +848,7 @@ INT GetRelation2Polygon(const VecPoint2D& vecPoly1, const VecPoint2D& vecPoly2)
 ***********************************************************************************/
 BOOL IsPointInLine(const Point2D& pt1, const Point2D& pt2, const Point2D& ptc)
 {
-	Vec2D vuint_line = NormalizeVector(pt1 - pt2);
+	Vec2D vuint_line = normalize(pt1 - pt2);
 
 	return IsPointInLine2(pt1, vuint_line, ptc);
 }
@@ -740,10 +865,10 @@ BOOL IsPointInLine2(const Point2D& pt, const Vec2D& vn, const Point2D& ptc)
 {
 	Point2D ptpc = ptc - pt;
 
-	FLOAT fCross = GetCrossProduct(vn, ptpc);
+	FLOAT fcross = cross(vn, ptpc);
 
 	// 3 collinear point if cross product isqual 0
-	if (TRUE == IsEqual(fCross, 0.f, MATH_EPSILON))
+	if (TRUE == IsEqual(fcross, 0.f, MATH_EPSILON))
 	{
 		return TRUE;
 	}
@@ -759,18 +884,18 @@ BOOL IsPointInLine2(const Point2D& pt, const Vec2D& vn, const Point2D& ptc)
 *! @return : Point2D perpendicular projection of a point
 *! @author : thuong.nv			- [Date] : 04/07/2023
 ***********************************************************************************/
-Point2D GetPerpPoint2Line(const Point2D& ptLine1, const Point2D& ptLine2, const Point2D& pt)
+Point2D get_projection_point_to_line(const Point2D& ptLine1, const Point2D& ptLine2, const Point2D& pt)
 {
 	Vec2D ptPer;
-	Vec2D vp1p2 = ptLine2 - ptLine1;  // p1p2
-	Vec2D vp1p = pt - ptLine1;  // p1p
-	Vec2D vp2p = pt - ptLine2;  // p2p
+	Vec2D vp1p2	= ptLine2 - ptLine1;  // p1p2
+	Vec2D vp1p	= pt      - ptLine1;  // p1p
+	Vec2D vp2p	= pt      - ptLine2;  // p2p
 
 	FLOAT fDis = vp1p2.x * vp1p2.x + vp1p2.y * vp1p2.y;
 
 	if (FALSE == IsEqual(fDis, 0.f, MATH_EPSILON))
 	{
-		FLOAT fDet = GetDotProduct(vp1p, vp1p2);
+		FLOAT fDet = dot(vp1p, vp1p2);
 
 		FLOAT t = fDet / fDis;
 		ptPer.x = ptLine1.x + t * (ptLine2.x - ptLine1.x);
@@ -778,7 +903,7 @@ Point2D GetPerpPoint2Line(const Point2D& ptLine1, const Point2D& ptLine2, const 
 	}
 	else
 	{
-		ptPer = ptLine1; // case 3 points coincide
+		ptPer = pt; // case 3 points coincide
 	}
 
 	return ptPer;
@@ -797,27 +922,27 @@ Point2D GetPerpPoint2Line(const Point2D& ptLine1, const Point2D& ptLine2, const 
 *!         : 0 : Not exist perpendicular point
 *! @author : thuong.nv			- [Date] : 05/11/2023
 ***********************************************************************************/
-INT GetPerpPoint2Segment(const  Point2D& ptSeg1, const Point2D& ptSeg2,
-						 const  Point2D& pt,
-								Point2D* pptPerp	  /* = NULL*/,
-								BOOL	 bCheckNearest/* = FALSE*/)
+INT get_projection_point_to_lsegment(const  Point2D& ptSeg1, const Point2D& ptSeg2,
+									 const  Point2D& pt,
+											Point2D* pptPerp	  /* = NULL*/,
+											BOOL	 bCheckNearest/* = FALSE*/)
 {
 	INT iRet = 0;
 
-	Point2D ptPer = GetPerpPoint2Line(ptSeg1, ptSeg2, pt);
+	Point2D ptPer = get_projection_point_to_line(ptSeg1, ptSeg2, pt);
 
 	// Point in side line Segment
-	FLOAT fDot1 = GetDotProduct(ptSeg2 - ptSeg1, ptPer - ptSeg1);
-	FLOAT fDot2 = GetDotProduct(ptSeg1 - ptSeg2, ptPer - ptSeg2);
+	FLOAT fdot1 = dot(ptSeg2 - ptSeg1, ptPer - ptSeg1);
+	FLOAT fdot2 = dot(ptSeg1 - ptSeg2, ptPer - ptSeg2);
 
-	if (fDot1 >= MATH_EPSILON && fDot2 >= MATH_EPSILON)
+	if (fdot1 >= MATH_EPSILON && fdot2 >= MATH_EPSILON)
 	{
 		iRet = 1;
 	}
 	else if (bCheckNearest == TRUE)
 	{
-		FLOAT fDis1 = GetMagnitude(ptSeg1 - ptPer);
-		FLOAT fDis2 = GetMagnitude(ptSeg2 - ptPer);
+		FLOAT fDis1 = mag(ptSeg1 - ptPer);
+		FLOAT fDis2 = mag(ptSeg2 - ptPer);
 		iRet = (fDis1 <= fDis2) ? 2 : 3;
 	}
 
@@ -840,26 +965,74 @@ INT GetPerpPoint2Segment(const  Point2D& ptSeg1, const Point2D& ptSeg2,
 	return iRet;
 }
 
-/***********************************************************************************
-*! @brief  : Check point is in ray (ray : point start and unit vector)
-*! @param  : [in] pt  : start point of ray
-*! @param  : [in] vn  : unit vector of ray
-*! @param  : [in] ptc : point check
-*! @return : TRUE : in ray | FALSE : out ray
-*! @author : thuong.nv			- [Date] : 06/03/2023
-***********************************************************************************/
-BOOL IsPointInRay(const Point2D& pt, const Vec2D& vn, const Point2D& ptc)
-{
-	if (IsPointInLine2(pt, vn, ptc))
-	{
-		// unit vector ptpc
-		Vec2D vptpc = NormalizeVector(ptc - pt);
 
-		return  (vptpc.x * vn.x) >= 0 &&
-			(vptpc.y * vn.y) >= 0;
+/***********************************************************************************
+*! @brief  : Determine the orientation of these three points
+*! @param  : [in ] ptC :check point
+*! @param  : [out] pt1  : point on vector p1p2
+*! @param  : [out] pt2  : point on vector p1p2
+*! @return : EnumOrien | COLLINEAR : ptc and p1p2 collinear
+*!					   | RIGHT     : ptc on the right p1p2
+*!					   | LEFT      : ptc on the left  p1p2
+*! @author : thuong.nv			- [Date] : 08/07/2023
+***********************************************************************************/
+EnumOrien GetOrientationPoint2Vector(const Point2D& ptC, const Point2D& pt1, const Point2D& pt2)
+{
+	const float fOrin = (pt2.x - pt1.x) * (ptC.y - pt1.y) - (ptC.x - pt1.x) * (pt2.y - pt1.y);
+
+	if (IsEqual(fOrin, 0.f, GEO_EPSILON))	return EnumOrien::COLLINEAR; /* ptc and p1p2 collinear */
+	else if (fOrin < 0.f)					return EnumOrien::RIGHT; /* ptc on the right p1p2 */
+	else									return EnumOrien::LEFT; /* ptc on the left p1p2 */
+}
+
+/***********************************************************************************
+@brief		Check polygon is counter-clockwise
+@param		[in] polyg : polygon
+@return		TRUE : is CCW | FALSE : CW
+***********************************************************************************/
+BOOL is_ccw(const VecPoint2D& poly)
+{
+	int nPolyCnt = static_cast<int>(poly.size());
+
+	int nNext; float fSum = 0.f;
+
+	for (int i = 0; i < nPolyCnt; i++)
+	{
+		nNext = (i + 1) % nPolyCnt;
+		fSum += (poly[nNext].x - poly[i].x) * (poly[nNext].y + poly[i].y);
 	}
 
-	return FALSE;
+	return (fSum <= 0.f) ? FALSE : TRUE;
+}
+
+/***********************************************************************************
+@brief		Check polygon is convex
+@param		[in] poly : polygon
+@return		TRUE : is convex | FALSE : no convex
+***********************************************************************************/
+BOOL IsConvexPolygon(const VecPoint2D& poly)
+{
+	int nPolyCnt = static_cast<int>(poly.size());
+
+	if (nPolyCnt < 3)
+		return FALSE;
+
+	EnumOrien ePreOrien = EnumOrien::COLLINEAR;
+
+	for (int i = 0; i < nPolyCnt - 2; i++)
+	{
+		EnumOrien eCurOrien = GetOrientationPoint2Vector(poly[i], poly[i + 1], poly[i + 2]);
+
+		if (eCurOrien != EnumOrien::COLLINEAR &&
+			(ePreOrien != EnumOrien::COLLINEAR && eCurOrien != ePreOrien))
+		{
+			return FALSE;
+		}
+
+		ePreOrien = eCurOrien;
+	}
+
+	return TRUE;
 }
 
 /***********************************************************************************
@@ -885,7 +1058,7 @@ VecPoint2D ConvertRectF2Points(const Rect2D& rect)
 *! @param  : [in] fRad : angle float (radian)
 *! @return : angle after convert
 ***********************************************************************************/
-FLOAT ConvertRadToDeg(const FLOAT fRad)
+FLOAT r2d(const FLOAT fRad)
 {
 	return fRad * 180.f / float(PI);
 }
@@ -895,7 +1068,7 @@ FLOAT ConvertRadToDeg(const FLOAT fRad)
 *! @param  : [in] fDegree : angle float (degree)
 *! @return : angle after convert
 ***********************************************************************************/
-FLOAT ConvertDegToRad(const FLOAT fDegree)
+FLOAT d2r(const FLOAT fDegree)
 {
 	return fDegree * float(PI) / 180.f;
 }

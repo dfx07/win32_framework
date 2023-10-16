@@ -182,30 +182,30 @@ Vec2D p2;
 
 void CreatedDone()
 {
-    shader.Create(L"shader/vertex.glsl", L"shader/fragment.glsl");
+    //shader.Create(L"shader/vertex.glsl", L"shader/fragment.glsl");
 
-    //glFrontFace(GL_CCW);
-    //glCullFace(GL_FRONT);
+    ////glFrontFace(GL_CCW);
+    ////glCullFace(GL_FRONT);
 
-    glGenVertexArrays(1, &vaoID);
-    glGenBuffers(1, &vboID);
-    glGenBuffers(1, &tboID);
+    //glGenVertexArrays(1, &vaoID);
+    //glGenBuffers(1, &vboID);
+    //glGenBuffers(1, &tboID);
 
-    glEnable(GL_MULTISAMPLE);
+    //glEnable(GL_MULTISAMPLE);
 
-    glBindVertexArray(vaoID);
-    {
-        glBindBuffer(GL_ARRAY_BUFFER, vboID);                                                                                 // <---.
-        glBufferData(GL_ARRAY_BUFFER, vRectVertexDrawData.size() * sizeof(Vec3D), &vRectVertexDrawData[0].x, GL_STATIC_DRAW); //     |
-        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vec3D), (void*)0);                                             //-->--'
-        glEnableVertexAttribArray(0);
+    //glBindVertexArray(vaoID);
+    //{
+    //    glBindBuffer(GL_ARRAY_BUFFER, vboID);                                                                                 // <---.
+    //    glBufferData(GL_ARRAY_BUFFER, vRectVertexDrawData.size() * sizeof(Vec3D), &vRectVertexDrawData[0].x, GL_STATIC_DRAW); //     |
+    //    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vec3D), (void*)0);                                             //-->--'
+    //    glEnableVertexAttribArray(0);
 
-        glBindBuffer(GL_ARRAY_BUFFER, tboID);                                                                               // <---.
-        glBufferData(GL_ARRAY_BUFFER, vRectCoordDrawData.size() * sizeof(Vec2D), &vRectCoordDrawData[0], GL_STATIC_DRAW);   //     |
-        glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE,sizeof(Vec2D), (void*)0);                                            //-->--'
-        glEnableVertexAttribArray(1);
-    }
-    glBindVertexArray(0);
+    //    glBindBuffer(GL_ARRAY_BUFFER, tboID);                                                                               // <---.
+    //    glBufferData(GL_ARRAY_BUFFER, vRectCoordDrawData.size() * sizeof(Vec2D), &vRectCoordDrawData[0], GL_STATIC_DRAW);   //     |
+    //    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE,sizeof(Vec2D), (void*)0);                                            //-->--'
+    //    glEnableVertexAttribArray(1);
+    //}
+    //glBindVertexArray(0);
 }
 
 void MouseButton(WindowBase* win, int button, int action)
@@ -261,30 +261,30 @@ void Draw(WindowBase* win)
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glClearColor(120.0 / 255.0, 139.f / 255.0, 201.0 / 255.0, 1.0);
 
-    glEnable(GL_BLEND);
-    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    //glEnable(GL_BLEND);
+    //glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-    // Use shader draw : vertex and fragment shader
-    shader.Use();
-    {
-        Mat4& proj = cam2D.GetProjMatrix();
-        Mat4& view = cam2D.GetViewMatrix();
+    //// Use shader draw : vertex and fragment shader
+    //shader.Use();
+    //{
+    //    Mat4& proj = cam2D.GetProjMatrix();
+    //    Mat4& view = cam2D.GetViewMatrix();
 
-        shader.SetUniformMat4("projmat", proj);
-        shader.SetUniformMat4("viewmat", view);
+    //    shader.SetUniformMat4("projmat", proj);
+    //    shader.SetUniformMat4("viewmat", view);
 
-        shader.SetUniformVec2("resolution", vResolution);
-        shader.SetUniformVec2("btn_size", vSize);
+    //    shader.SetUniformVec2("resolution", vResolution);
+    //    shader.SetUniformVec2("btn_size", vSize);
 
-        glBindVertexArray(vaoID);
-        glDrawArrays(GL_TRIANGLES, 0, 6);
-    }
+    //    glBindVertexArray(vaoID);
+    //    glDrawArrays(GL_TRIANGLES, 0, 6);
+    //}
 
-    glBegin(GL_LINE);
-    {
+    //glBegin(GL_LINE);
+    //{
 
-    }
-    glEnd();
+    //}
+    //glEnd();
 
     //cam2D.UseMatrix();
     //render.Draw();
