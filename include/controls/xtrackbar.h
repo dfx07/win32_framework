@@ -366,9 +366,9 @@ protected:
 				long y = static_cast<long>(lParam);
 
 				Point2D pt;
-				geo::GetPerpPoint2Segment({ m_start_loc.X, m_start_loc.Y }, { m_end_loc.X, m_end_loc.Y }, { x , y }, &pt, true);
-				float fValuePix  = geo::GetMagnitude(pt - Point2D{ m_start_loc.X, m_start_loc.Y });
-				float fLengthPix = geo::GetMagnitude(Point2D{ m_end_loc.X, m_end_loc.Y } - Point2D{ m_start_loc.X, m_start_loc.Y });
+				geo::get_projection_point_to_lsegment({ m_start_loc.X, m_start_loc.Y }, { m_end_loc.X, m_end_loc.Y }, { x , y }, &pt, true);
+				float fValuePix  = geo::mag(pt - Point2D{ m_start_loc.X, m_start_loc.Y });
+				float fLengthPix = geo::mag(Point2D{ m_end_loc.X, m_end_loc.Y } - Point2D{ m_start_loc.X, m_start_loc.Y });
 
 				float value = m_fMinValue + (fValuePix / fLengthPix) * (m_fMaxValue - m_fMinValue);
 

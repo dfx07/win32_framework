@@ -151,36 +151,36 @@ void Create(WindowBase* win)
     render.AddRectangle(p1, p2, p3, p4);
     render.UpdateRenderData();
 
+    
 
-    int width  = win->GetWidth();
-    int height = win->GetHeight();
 
-    vResolution = Vec2D(width, height);
-    vSize = Vec2D(200, 200);
+    //int width  = win->GetWidth();
+    //int height = win->GetHeight();
 
-    Rect2D rectDraw = Rect2D(10, 10, vSize);
+    //vResolution = Vec2D(width, height);
+    //vSize = Vec2D(200, 200);
 
-    Vec2D vertx1 = rectDraw.TopLeft();
-    Vec2D vertx2 = rectDraw.TopRight();
-    Vec2D vertx3 = rectDraw.BottomLeft();
-    Vec2D vertx4 = rectDraw.BottomRight();
+    //Rect2D rectDraw = Rect2D(10, 10, vSize);
 
-    vRectVertexDrawData.push_back({vertx1, 0.f}); vRectCoordDrawData.push_back({0, 1});
-    vRectVertexDrawData.push_back({vertx2, 0.f}); vRectCoordDrawData.push_back({1, 1});
-    vRectVertexDrawData.push_back({vertx3, 0.f}); vRectCoordDrawData.push_back({0, 0});
-    vRectVertexDrawData.push_back({vertx3, 0.f}); vRectCoordDrawData.push_back({0, 0});
-    vRectVertexDrawData.push_back({vertx2, 0.f}); vRectCoordDrawData.push_back({1, 1});
-    vRectVertexDrawData.push_back({vertx4, 0.f}); vRectCoordDrawData.push_back({1, 0});
+    //Vec2D vertx1 = rectDraw.TopLeft();
+    //Vec2D vertx2 = rectDraw.TopRight();
+    //Vec2D vertx3 = rectDraw.BottomLeft();
+    //Vec2D vertx4 = rectDraw.BottomRight();
+
+    //vRectVertexDrawData.push_back({vertx1, 0.f}); vRectCoordDrawData.push_back({0, 1});
+    //vRectVertexDrawData.push_back({vertx2, 0.f}); vRectCoordDrawData.push_back({1, 1});
+    //vRectVertexDrawData.push_back({vertx3, 0.f}); vRectCoordDrawData.push_back({0, 0});
+    //vRectVertexDrawData.push_back({vertx3, 0.f}); vRectCoordDrawData.push_back({0, 0});
+    //vRectVertexDrawData.push_back({vertx2, 0.f}); vRectCoordDrawData.push_back({1, 1});
+    //vRectVertexDrawData.push_back({vertx4, 0.f}); vRectCoordDrawData.push_back({1, 0});
 }
 
 GLuint vaoID;
 GLuint vboID;
 GLuint tboID;
 
-Vec2D p1;
-Vec2D p2;
 
-void CreatedDone()
+void CreatedDone(Window* win)
 {
     //shader.Create(L"shader/vertex.glsl", L"shader/fragment.glsl");
 
@@ -206,6 +206,17 @@ void CreatedDone()
     //    glEnableVertexAttribArray(1);
     //}
     //glBindVertexArray(0);
+
+    float left   = -float(win->GetWidth() / 2);
+    float right  =  float(win->GetWidth() / 2);
+    float bottom = -float(win->GetHeight() / 2);
+    float top    =  float(win->GetHeight() / 2);
+
+
+    glMatrixMode(GL_PROJECTION);
+    glLoadIdentity();
+
+    glOrtho(left, right, bottom, top, 0.f, -1000.f);
 }
 
 void MouseButton(WindowBase* win, int button, int action)
@@ -244,6 +255,20 @@ void MouseScroll(WindowBase* win)
 
     cam2D.ZoomTo(x, y, zDelta* sensitive);
     cam2D.UpdateMatrix();
+
+
+    float left   = -float(win->GetWidth() / 2);
+    float right  =  float(win->GetWidth() / 2);
+    float bottom = -float(win->GetHeight() / 2);
+    float top    =  float(win->GetHeight() / 2);
+
+            // Projection matrix sử dụng thuộc tính zoom
+    left         =  left  / cam2D.GetZoom();
+    right        =  right / cam2D.GetZoom();
+    bottom       =  bottom/ cam2D.GetZoom();
+    top          =  top   / cam2D.GetZoom();
+
+    gluOrtho2D(left, right, bottom, top);
 }
 
 void MouseMove(WindowBase* win)
@@ -251,43 +276,29 @@ void MouseMove(WindowBase* win)
    long x, y;
    win->GetCursorPosCenter(x, y);
 
-   float a= RectSDF(Vec2D(x, y) - Vec2D(0, 0), Vec2D(100, 100), 50);
-
-   std::cout << x <<":" << y <<"=" << a << std::endl;
 }
+
+Point2D p1 = { 10, 10 };
+Point2D p2 = { 100, 100 };
+
+float z = 10.f;
 
 void Draw(WindowBase* win)
 {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glClearColor(120.0 / 255.0, 139.f / 255.0, 201.0 / 255.0, 1.0);
 
-    //glEnable(GL_BLEND);
-    //glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-    //// Use shader draw : vertex and fragment shader
-    //shader.Use();
-    //{
-    //    Mat4& proj = cam2D.GetProjMatrix();
-    //    Mat4& view = cam2D.GetViewMatrix();
+    glBegin(GL_LINES);
+    {
+        glColor3f(1.f, 1.f, 1.f);
+        glVertex3f(p1.x, p1.y, z);
 
-    //    shader.SetUniformMat4("projmat", proj);
-    //    shader.SetUniformMat4("viewmat", view);
+        glColor3f(1.f, 1.f, 1.f);
+        glVertex3f(p2.x, p2.y, z);
+    }
+    glEnd();
 
-    //    shader.SetUniformVec2("resolution", vResolution);
-    //    shader.SetUniformVec2("btn_size", vSize);
-
-    //    glBindVertexArray(vaoID);
-    //    glDrawArrays(GL_TRIANGLES, 0, 6);
-    //}
-
-    //glBegin(GL_LINE);
-    //{
-
-    //}
-    //glEnd();
-
-    //cam2D.UseMatrix();
-    //render.Draw();
 }
 
 void Resize(WindowBase* win)
@@ -320,7 +331,7 @@ int main()
 
     window = create_window(window);
 
-    CreatedDone();
+    CreatedDone(window);
 
     while (!window->closed())
     {
