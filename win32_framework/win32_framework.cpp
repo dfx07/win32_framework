@@ -271,17 +271,31 @@ void MouseScroll(WindowBase* win)
     gluOrtho2D(left, right, bottom, top);
 }
 
+Point2D p1 = { -15, -12 };
+Point2D p2 = { 100, 10 };
+
+Point2D p3 = { 20 , 15 };
+Point2D p4 = { 20 , 15 };
+
+bool bCheck = false;
+
 void MouseMove(WindowBase* win)
 {
    long x, y;
    win->GetCursorPosCenter(x, y);
 
+   p4 = { x, y };
+
+
+   bCheck = geo::is_same_direction(p2 - p1, p4 - p3, 0.01f);
 }
 
-Point2D p1 = { 10, 10 };
-Point2D p2 = { 100, 100 };
+
 
 float z = 10.f;
+
+
+
 
 void Draw(WindowBase* win)
 {
@@ -291,11 +305,24 @@ void Draw(WindowBase* win)
 
     glBegin(GL_LINES);
     {
-        glColor3f(1.f, 1.f, 1.f);
+        if (bCheck)
+        {
+            glColor3f(1.f, 0.f, 0.f);
+        }
+        else
+        {
+            glColor3f(1.f, 1.f, 1.f);
+        }
+
         glVertex3f(p1.x, p1.y, z);
 
-        glColor3f(1.f, 1.f, 1.f);
         glVertex3f(p2.x, p2.y, z);
+
+        glColor3f(1.f, 1.f, 1.f);
+
+        glVertex3f(p3.x, p3.y, z);
+
+        glVertex3f(p4.x, p4.y, z);
     }
     glEnd();
 
@@ -309,7 +336,6 @@ void Resize(WindowBase* win)
 
 void Process(WindowBase* pWin)
 {
-
 }
 
 int main()

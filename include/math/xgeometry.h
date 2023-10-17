@@ -28,7 +28,7 @@ ____BEGIN_SECTION____(geo)
 //----------------------------------------------------------------------------------
 // Vector base function
 //----------------------------------------------------------------------------------
-____BEGIN_SECTION____(base)
+//____BEGIN_SECTION____(base)
 FLOAT			mag(const Vec2D& v);
 Vec2D			normalize(const Vec2D& v);
 FLOAT			cross(const Vec2D& v1, const Vec2D& v2);
@@ -38,17 +38,17 @@ FLOAT			angle(const Vec2D& v1, const Vec2D& v2);
 Point2D			move(const Point2D& pt, const Vec2D& vn, const FLOAT fDistance);
 Vec2D			rotate(const Vec2D& v, const FLOAT fDegree);
 Point2D			rotate(const Point2D& ptPivot, const Point2D& ptRotate, const FLOAT fDegree);
-_____END_SECTION_____
+//_____END_SECTION_____
 
 ////////////////////////////////////////////////////////////////////////////////////
 //-----------------------------------------------------------------------------------
 // Geometry function
 //-----------------------------------------------------------------------------------
-____BEGIN_SECTION____(algo)
+//____BEGIN_SECTION____(algo)
 
 BOOL			is_zero(const Vec2D& v, const float& fepsilon);
-BOOL			is_same_direction(const Vec2D& v1, const Point2D& v2);
-BOOL			is_same_sign(const Vec2D& v1, const Point2D& v2);
+static bool		is_same_direction(const Vec2D& v1, const Point2D& v2, const float& ftolerance = MATH_EPSILON);
+bool			is_same_sign(const Vec2D& v1, const Point2D& v2);
 
 Point2D			get_projection_point_to_line(const Point2D& ptLine1, const Point2D& ptLine2, const Point2D& pt); // line = two point
 INT				get_projection_point_to_lsegment(const Point2D& ptSeg1, const Point2D& ptSeg2, const Point2D& pt, Point2D* ptPerp = NULL, BOOL bCheckNearest = FALSE);// Segment = two point
@@ -75,7 +75,7 @@ BOOL			IsInsidePolygon(const VecPoint2D& poly1, const VecPoint2D& poly2);
 INT				GetRelation2Polygon(const VecPoint2D& vecPoly1, const VecPoint2D& vecPoly2);
 
 
-_____END_SECTION_____
+//_____END_SECTION_____
 
 ////////////////////////////////////////////////////////////////////////////////////
 //----------------------------------------------------------------------------------
@@ -234,25 +234,25 @@ inline BOOL is_zero(const Vec2D& v, const float& fepsilon)
 }
 
 /***********************************************************************************
-@brief		Check point on a line segment given by two points
-@param		[in] pt1	: First point in line segment
-@param		[in] pt2	: Second point in line segment
-@param		[in] pt		: Point check
-@return		TRUE : inside | FALSE : outside
+@brief		Check two vector is the same direction (parallel || 
+@param		[in] pt1		: vector 1 (not normal)
+@param		[in] pt2		: vector 2 (not normal)
+@param		[in] ftolerance : > math_epsilon
+@return		true : same | false : not same
 ***********************************************************************************/
-inline BOOL is_same_direction(const Vec2D& v1, const Point2D& v2)
+static bool is_same_direction(const Vec2D& v1, const Point2D& v2, const float& ftolerance /* = MATH_EPSILON*/)
 {
-	Vec2D vn1 = base::normalize(v1);
-	Vec2D vn2 = base::normalize(v2);
+	Vec2D vn1 = normalize(v1);
+	Vec2D vn2 = normalize(v2);
 
-	FLOAT fCrs = base::cross(vn1, vn2);
+	FLOAT fCrs =  cross(vn1, vn2);
 
 	// Point in straight line
-	if (is_equal(fCrs, 0.f, MATH_EPSILON))
+	if (is_equal(fCrs, 0.f, ftolerance))
 	{
-		return TRUE;
+		return is_same_sign(vn1, vn2);
 	}
-	return FALSE;
+	return false;
 }
 
 /***********************************************************************************
@@ -262,7 +262,7 @@ inline BOOL is_same_direction(const Vec2D& v1, const Point2D& v2)
 @param		[in] pt		: Point check
 @return		TRUE : inside | FALSE : outside
 ***********************************************************************************/
-inline BOOL is_same_sign(const Vec2D& v1, const Point2D& v2)
+inline bool is_same_sign(const Vec2D& v1, const Point2D& v2)
 {
 	return (v1.x * v2.x) >= 0 && (v1.y * v2.y) >= 0;
 }
@@ -309,9 +309,9 @@ inline BOOL is_snap_point_to_lsegment(const Point2D& pt1, const Point2D& pt2, co
 {
 	Point2D ptProj;
 
-	if (algo::get_projection_point_to_lsegment(pt1, pt2, pt, &ptProj, true) >= 1)
+	if ( get_projection_point_to_lsegment(pt1, pt2, pt, &ptProj, true) >= 1)
 	{
-		float fDisProj = geo::base::mag(ptProj - pt);
+		float fDisProj = geo:: mag(ptProj - pt);
 
 		return fDisProj <= std::abs(fSnap);
 	}
@@ -331,7 +331,7 @@ inline BOOL is_point_in_line(const Point2D& pt1, const Point2D& pt2, const Point
 	Vec2D vp1p = pt - pt1; // Vector vp1p ;
 	Vec2D vp2p = pt - pt2; // Vector vp2p ;
 
-	FLOAT fCrs = base::cross(vp1p, vp2p);
+	FLOAT fCrs =  cross(vp1p, vp2p);
 
 	// Point in straight line
 	if (is_equal(fCrs, 0.f, MATH_EPSILON))
@@ -374,9 +374,9 @@ inline BOOL is_point_in_line2(const Point2D& pt, const Vec2D& vn, const Point2D&
 ***********************************************************************************/
 inline BOOL is_snap_point_to_line(const Point2D& pt1, const Point2D& pt2, const Point2D& pt, const float& fSnap)
 {
-	Point2D ptProj = algo::get_projection_point_to_line(pt1, pt2, pt);
+	Point2D ptProj =  get_projection_point_to_line(pt1, pt2, pt);
 
-	float fDisProj = geo::base::mag(ptProj - pt);
+	float fDisProj = geo:: mag(ptProj - pt);
 
 	return fDisProj <= std::abs(fSnap);
 }
@@ -467,7 +467,7 @@ inline BOOL is_point_in_polygon(const Point2D& pt, const VecPoint2D& poly)
 ***********************************************************************************/
 inline BOOL is_point_in_ray(const Point2D& pt, const Vec2D& vn, const Point2D& ptc)
 {
-	Point2D pt2 = base::move(pt, vn, 1.f);
+	Point2D pt2 =  move(pt, vn, 1.f);
 
 	if (is_point_in_line(pt, pt2, ptc))
 	{
@@ -497,7 +497,7 @@ inline int	 get_rel_point_lsegment(const Point2D& pt1, const Point2D& pt2, const
 	Vec2D vp1p  = pt - pt1; // Vector vp1p ;
 	Vec2D vp1p2 = pt2 - pt1; // Vector vp2p ;
 
-	float fCrs = base::cross(vp1p, vp1p2);
+	float fCrs =  cross(vp1p, vp1p2);
 
 	// Điểm không nằm trên đường thẳng
 	if (!is_equal(fCrs, 0.f, GEO_EPSILON))
@@ -661,7 +661,7 @@ inline BOOL IntersectLine2Segment(const Point2D& ptLine1,	// Point on the line
 {
 	Point2D ptInter;
 
-	if (TRUE == algo::intersect_2line(ptLine1, ptLine2, ptSeg1, ptSeg2, &ptInter))
+	if (TRUE ==  intersect_2line(ptLine1, ptLine2, ptSeg1, ptSeg2, &ptInter))
 	{
 		// Check point inside line segment
 		FLOAT fp1pDistance = mag(ptSeg1 - ptInter);
@@ -808,7 +808,7 @@ inline INT IntersectSegment2Polygon(const Point2D&		pt1,	//[in] Point on the lin
 	{
 		nNext = (i + 1) % nPolyCount; // next point index
 
-		if (algo::intersect_2lsegment(pt1, pt2, poly[i], poly[nNext], &ptInter) == TRUE)
+		if ( intersect_2lsegment(pt1, pt2, poly[i], poly[nNext], &ptInter) == TRUE)
 		{
 			nInter++;
 
