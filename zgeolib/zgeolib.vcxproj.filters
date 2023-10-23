@@ -13,25 +13,25 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
-    <Filter Include="Header Files\2D">
-      <UniqueIdentifier>{d6febc2f-5720-47ef-9071-40d9d285bad7}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Source Files\2D">
-      <UniqueIdentifier>{c7f404a0-3419-4b87-b95a-84709ed1bce5}</UniqueIdentifier>
-    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="xgeodef.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="xgeo2dlib.h">
+    <ClInclude Include="x2drel.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="x2dbase.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="x2dtype.h">
-      <Filter>Header Files\2D</Filter>
+      <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="x2dbase.h">
-      <Filter>Header Files\2D</Filter>
+    <ClInclude Include="x2dint.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="xgeosp.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -39,7 +39,16 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="x2dbase.cpp">
-      <Filter>Source Files\2D</Filter>
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="x2drel.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="xgeosp.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="x2dint.cpp">
+      <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

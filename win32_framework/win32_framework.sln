@@ -5,7 +5,7 @@ VisualStudioVersion = 16.0.33214.272
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "win32_framework", "win32_framework.vcxproj", "{97F72974-6550-44DE-AF0C-B0722B3763AA}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ezxdlib", "..\engz2d\engz2d.vcxproj", "{762B0C09-77C8-4F9C-BB7D-965B3DE654F0}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "zgeolib", "..\zgeolib\zgeolib.vcxproj", "{762B0C09-77C8-4F9C-BB7D-965B3DE654F0}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

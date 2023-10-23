@@ -17,3 +17,11 @@
 #ifndef MATH_EPSILON
 	#define MATH_EPSILON		 0.001f			/* epsilon*/
 #endif
+
+#define GTrue  true
+#define GFalse false
+
+typedef float	GFloat;
+typedef double	GDouble;
+typedef int		GInt;
+typedef bool	GBool;

@@ -1,5 +1,5 @@
 
-#include "xgeo2dlib.h"
+#include "x2drel.h"
 
 int main()
 {

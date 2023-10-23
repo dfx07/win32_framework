@@ -198,5 +198,15 @@ typedef tagVec<2, float>	Point2D;
 typedef tagRect<float>		Rect2D;
 typedef std::vector<Vec2D>	VecPoint2D;
 
+/////////////////////////////////////////////////////////////////////////////////////
+/***********************************************************************************/
+// ENUM DEFINE
+enum EnumOrien
+{
+	COLLINEAR,
+	LEFT,
+	RIGHT,
+};
+
 #endif //!X2DTYPE_H
 

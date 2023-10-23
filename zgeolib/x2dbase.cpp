@@ -1,4 +1,5 @@
 #include "x2dbase.h"
+#include "xgeosp.h"
 #include <iostream>
 
 namespace geo {namespace v2
@@ -8,7 +9,7 @@ namespace geo {namespace v2
 @param		[in] v : Vector
 @return		FLOAT : magnitude
 ***********************************************************************************/
-float mag(const Vec2D& v)
+API_EXPR GFloat mag(const Vec2D& v)
 {
 	return std::sqrtf(v.x * v.x + v.y * v.y);
 }
@@ -19,7 +20,7 @@ float mag(const Vec2D& v)
 *! @return : uinit vector
 *! @author : thuong.nv				- [Date] : 06/03/2023
 ***********************************************************************************/
-inline Vec2D normalize(const Vec2D& v)
+API_EXPR Vec2D normalize(const Vec2D& v)
 {
 	float fmagnitude = mag(v);
 
@@ -36,7 +37,7 @@ inline Vec2D normalize(const Vec2D& v)
 @param		[in] v2		: Second vector
 @return		FLOAT : Value cross product
 ***********************************************************************************/
-float cross(const Vec2D& v1, const Vec2D& v2)
+API_EXPR GFloat cross(const Vec2D& v1, const Vec2D& v2)
 {
 	return (v1.x * v2.y - v1.y * v2.x);
 }
@@ -47,7 +48,7 @@ float cross(const Vec2D& v1, const Vec2D& v2)
 *! @return : FLOAT : dot product
 *! @author : thuong.nv				- [Date] : 06/03/2023
 ***********************************************************************************/
-float dot(const Vec2D& v1, const Vec2D& v2)
+API_EXPR GFloat dot(const Vec2D& v1, const Vec2D& v2)
 {
 	return v1.x * v2.x + v1.y * v2.y;
 }
@@ -59,12 +60,12 @@ float dot(const Vec2D& v1, const Vec2D& v2)
 *! @return : Degree angle between two vector [-180~180]
 *! @author : thuong.nv			- [Date] : 06/03/2023
 ***********************************************************************************/
-float angle(const Vec2D& v1, const Vec2D& v2)
+API_EXPR GFloat angle(const Vec2D& v1, const Vec2D& v2)
 {
-	float fdot = dot(v1, v2);
-	float fDet = v1.x * v2.y - v1.y * v2.x;
+	GFloat fdot = dot(v1, v2);
+	GFloat fDet = v1.x * v2.y - v1.y * v2.x;
 
-	float fangle = std::atan2f(fDet, fdot);
+	GFloat fangle = std::atan2f(fDet, fdot);
 
 	return r2d(fangle);
 }
@@ -77,7 +78,7 @@ float angle(const Vec2D& v1, const Vec2D& v2)
 *! @return : Point2D point after move
 *! @author : thuong.nv			- [Date] : 06/03/2023
 ***********************************************************************************/
-inline Point2D move(const Point2D& pt, const Vec2D& vn, const float fDistance)
+API_EXPR Point2D move(const Point2D& pt, const Vec2D& vn, const GFloat fDistance)
 {
 	Point2D ptmove;
 
@@ -94,9 +95,9 @@ inline Point2D move(const Point2D& pt, const Vec2D& vn, const float fDistance)
 *! @return : Vector2D after rotate
 *! @author : thuong.nv			- [Date] : 06/03/2023
 ***********************************************************************************/
-inline Vec2D rotate(const Vec2D& v, const float fDegree)
+API_EXPR Vec2D rotate(const Vec2D& v, const GFloat fDegree)
 {
-	float fRadangle = d2r(fDegree);
+	GFloat fRadangle = d2r(fDegree);
 
 	Vec2D vRoate;
 	vRoate.x = std::cos(fRadangle) * v.x - sin(fRadangle) * v.y;
@@ -112,10 +113,10 @@ inline Vec2D rotate(const Vec2D& v, const float fDegree)
 *! @return : Point2D after rotate
 *! @author : thuong.nv			- [Date] : 06/03/2023
 ***********************************************************************************/
-inline Point2D	 rotate(const Point2D& ptPivot, const Point2D& ptRotate, const float fDegree)
+API_EXPR Point2D	 rotate(const Point2D& ptPivot, const Point2D& ptRotate, const GFloat fDegree)
 {
 	Vec2D vpipr = ptRotate - ptPivot;
-	float fDistance = mag(vpipr);
+	GFloat fDistance = mag(vpipr);
 
 	Vec2D vuint_pipr = normalize(vpipr);
 	Vec2D vuint_rotate = rotate(vuint_pipr, fDegree);
@@ -123,26 +124,6 @@ inline Point2D	 rotate(const Point2D& ptPivot, const Point2D& ptRotate, const fl
 	Point2D ptmove = move(ptPivot, vuint_rotate, fDistance);
 
 	return ptmove;
-}
-
-/***********************************************************************************
-*! @brief  : Convert from Radian to Degree
-*! @param  : [in] fRad : angle float (radian)
-*! @return : angle after convert
-***********************************************************************************/
-float r2d(const float fRad)
-{
-	return fRad * 180.f / float(PI);
-}
-
-/***********************************************************************************
-*! @brief  : Convert from Degree to Radian
-*! @param  : [in] fDegree : angle float (degree)
-*! @return : angle after convert
-***********************************************************************************/
-float d2r(const float fDegree)
-{
-	return fDegree * float(PI) / 180.f;
 }
 
 }}

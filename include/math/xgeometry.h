@@ -47,8 +47,7 @@ Point2D			rotate(const Point2D& ptPivot, const Point2D& ptRotate, const FLOAT fD
 //____BEGIN_SECTION____(algo)
 
 BOOL			is_zero(const Vec2D& v, const float& fepsilon);
-static bool		is_same_direction(const Vec2D& v1, const Point2D& v2, const float& ftolerance = MATH_EPSILON);
-bool			is_same_sign(const Vec2D& v1, const Point2D& v2);
+
 
 Point2D			get_projection_point_to_line(const Point2D& ptLine1, const Point2D& ptLine2, const Point2D& pt); // line = two point
 INT				get_projection_point_to_lsegment(const Point2D& ptSeg1, const Point2D& ptSeg2, const Point2D& pt, Point2D* ptPerp = NULL, BOOL bCheckNearest = FALSE);// Segment = two point

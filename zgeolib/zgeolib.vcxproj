@@ -22,9 +22,9 @@
     <VCProjectVersion>16.0</VCProjectVersion>
     <Keyword>Win32Proj</Keyword>
     <ProjectGuid>{762b0c09-77c8-4f9c-bb7d-965b3de654f0}</ProjectGuid>
-    <RootNamespace>engz2d</RootNamespace>
+    <RootNamespace>zgeolib</RootNamespace>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
-    <ProjectName>ezgeolib</ProjectName>
+    <ProjectName>zgeolib</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
@@ -141,13 +141,18 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="x2dbase.h" />
+    <ClInclude Include="x2dint.h" />
     <ClInclude Include="x2dtype.h" />
-    <ClInclude Include="xgeo2dlib.h" />
+    <ClInclude Include="x2drel.h" />
     <ClInclude Include="xgeodef.h" />
+    <ClInclude Include="xgeosp.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp" />
     <ClCompile Include="x2dbase.cpp" />
+    <ClCompile Include="x2dint.cpp" />
+    <ClCompile Include="x2drel.cpp" />
+    <ClCompile Include="xgeosp.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
