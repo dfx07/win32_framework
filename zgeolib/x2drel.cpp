@@ -279,4 +279,34 @@ API_EXPR GBool is_point_in_ray(const Point2D& pt, const Vec2D& vn, const Point2D
 	return GFalse;
 }
 
+/***********************************************************************************
+@brief		Check that a polygon is completely inside another polygon
+@param		[in]  poly1	 : Polygon check
+@param		[in]  poly2	 : Polygon outside
+@return		TRUE : inside | FALSE : outside
+***********************************************************************************/
+API_EXPR GBool is_polygon_in_polygon(const VecPoint2D& poly1, const VecPoint2D& poly2)
+{
+	if (poly1.size() < 3 || poly2.size() < 3)
+	{
+		assert(0);
+		return GFalse;
+	}
+
+	int nPolyCount = static_cast<int>(poly1.size());
+
+	// Check polygon onside or inside
+	for (int j = 0, i = nPolyCount - 1; j < nPolyCount; i = j++)
+	{
+		if (intersect_lsegment_polygon(poly1[i], poly1[j], poly2, NULL, GTrue) >= 1)
+			return GFalse;
+	}
+
+	// Check polygon outside
+	if (!is_point_in_polygon(poly1[0], poly2))
+		return GFalse;
+
+	return GTrue;
+}
+
 }}
