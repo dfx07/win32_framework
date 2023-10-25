@@ -142,6 +142,7 @@
   <ItemGroup>
     <ClInclude Include="x2dbase.h" />
     <ClInclude Include="x2dint.h" />
+    <ClInclude Include="x2dpoly.h" />
     <ClInclude Include="x2dtype.h" />
     <ClInclude Include="x2drel.h" />
     <ClInclude Include="xgeodef.h" />
@@ -151,6 +152,7 @@
     <ClCompile Include="main.cpp" />
     <ClCompile Include="x2dbase.cpp" />
     <ClCompile Include="x2dint.cpp" />
+    <ClCompile Include="x2dpoly.cpp" />
     <ClCompile Include="x2drel.cpp" />
     <ClCompile Include="xgeosp.cpp" />
   </ItemGroup>

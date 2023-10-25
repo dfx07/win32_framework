@@ -121,6 +121,19 @@ namespace geo{ namespace v2
 	@return		TRUE : inside | FALSE : outside
 	********************************************************************************/
 	API_EXPR GBool is_polygon_in_polygon(const VecPoint2D& poly1, const VecPoint2D& poly2);
+
+	/*******************************************************************************
+	@brief		Get the relationship between 2 polygons
+	@param		[in]  poly1	 : first polygon
+	@param		[in]  poly2	 : second polygon
+	@return		| INVALID  (-1) : invalid param
+				| OUTSIDE  ( 0) : outside
+				| INTER    ( 1) : intersect
+				| INSIDE_1 ( 2) : poly1 inside poly2
+				| INSIDE_2 ( 3) : poly2 inside poly1
+	@note		poly1 and poly 2 have number points greater than 3
+	********************************************************************************/
+	API_EXPR GInt rel_2polygon(const VecPoint2D& poly1, const VecPoint2D& poly2);
 }}
 
 #endif // !X2D_REL_H

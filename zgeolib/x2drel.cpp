@@ -309,4 +309,44 @@ API_EXPR GBool is_polygon_in_polygon(const VecPoint2D& poly1, const VecPoint2D& 
 	return GTrue;
 }
 
+/***********************************************************************************
+@brief		Get the relationship between 2 polygons
+@param		[in]  poly1	 : first polygon
+@param		[in]  poly2	 : second polygon
+@return		| INVALID  (-1) : invalid param
+			| OUTSIDE  ( 0) : outside
+			| INTER    ( 1) : intersect
+			| INSIDE_1 ( 2) : poly1 inside poly2
+			| INSIDE_2 ( 3) : poly2 inside poly1
+@note		poly1 and poly 2 have number points greater than 3
+***********************************************************************************/
+API_EXPR GInt rel_2polygon(const VecPoint2D& poly1, const VecPoint2D& poly2)
+{
+	if (poly1.size() < 3 || poly2.size() < 3)
+	{
+		assert(0);
+		return -1;
+	}
+
+	int nPolyCount = static_cast<int>(poly1.size());
+
+	// Case 1 : intersect - check 2 intersecting polygons
+	for (int j = 0, i = nPolyCount - 1; j < nPolyCount; i = j++)
+	{
+		if (intersect_lsegment_polygon(poly1[i], poly1[j], poly2, NULL, GTrue) >= 1)
+			return 1;
+	}
+
+	// Case 2 : inside - check poly1 inside poly2 
+	if (GTrue == is_point_in_polygon(poly1[0], poly2))
+		return 2;
+
+	// Case 3 : inside - check poly2 inside poly1 
+	if (GTrue == is_point_in_polygon(poly2[0], poly1))
+		return 3;
+
+	// Case 4 (default): outside
+	return 0;
+}
+
 }}

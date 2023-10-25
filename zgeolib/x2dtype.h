@@ -22,6 +22,7 @@ template<int dimention, typename T> struct tagVec;
 /////////////////////////////////////////////////////////////////////////////////////
 /***********************************************************************************/
 // TYPE BASE VEC DEFINE
+
 template<typename T>
 struct tagVec<2, T>
 {
@@ -130,6 +131,7 @@ public:
 /////////////////////////////////////////////////////////////////////////////////////
 /***********************************************************************************/
 // RECTANGLE DEFINE
+
 template<typename T>
 struct tagRect
 {
@@ -193,14 +195,53 @@ public:
 	}
 };
 
+/////////////////////////////////////////////////////////////////////////////////////
+/***********************************************************************************/
+// LINE DEFINE
+
+template<typename T>
+struct tagLine
+{
+	typedef T	value_type;
+	typedef tagLine<T> type;
+
+	typedef tagVec<2, T> value_type_point;
+
+public:
+	value_type_point ptStart;
+	value_type_point ptEnd;
+
+	tagLine()
+	{
+		ptStart = tagVec<2, T>(0, 0);
+		ptEnd   = tagVec<2, T>(0, 0);
+	}
+
+	template<typename U, typename V>
+	tagLine(const tagVec<2, U> ptS, const tagVec<2, V> ptE)
+	{
+		ptStart = value_type_point(ptS);
+		ptEnd = value_type_point(ptE);
+	}
+};
+
+
+/////////////////////////////////////////////////////////////////////////////////////
+/***********************************************************************************/
+// Type DEFINE
+
 typedef tagVec<2, float>	Vec2D;
 typedef tagVec<2, float>	Point2D;
 typedef tagRect<float>		Rect2D;
 typedef std::vector<Vec2D>	VecPoint2D;
 
+typedef tagLine<float>		Line2D;
+typedef std::vector<Line2D>	VecLine2D;
+
 /////////////////////////////////////////////////////////////////////////////////////
 /***********************************************************************************/
 // ENUM DEFINE
+
 enum EnumOrien
 {
 	COLLINEAR,

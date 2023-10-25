@@ -33,6 +33,9 @@
     <ClInclude Include="xgeosp.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="x2dpoly.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -48,6 +51,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="x2dint.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="x2dpoly.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
