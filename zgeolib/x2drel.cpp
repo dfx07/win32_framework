@@ -80,6 +80,47 @@ API_EXPR EnumOrien get_orientation_point_vector(const Point2D& ptC, const Point2
 }
 
 /***********************************************************************************
+*! @brief  : Check point is in ray (ray : point start and unit vector)
+*! @param  : [in] pt  : start point of ray
+*! @param  : [in] vn  : unit vector of ray
+*! @param  : [in] ptc : point check
+*! @return : 0 : not in line segment
+*!           1 : in line segment
+*!           2 : same p1
+*!           3 : same p2
+*! @author : thuong.nv			- [Date] : 17/10/2023
+***********************************************************************************/
+API_EXPR GInt get_rel_point_lsegment(const Point2D& pt1, const Point2D& pt2, const Point2D& pt)
+{
+	Vec2D vp1p  = pt - pt1; // Vector vp1p ;
+	Vec2D vp1p2 = pt2 - pt1; // Vector vp2p ;
+
+	float fCrs =  cross(vp1p, vp1p2);
+
+	// Is not in line segment
+	if (!is_equal(fCrs, 0.f, MATH_EPSILON))
+		return 0;
+
+	float fDot_p1p_p1p2 = dot(vp1p2, vp1p);
+
+	// Same p1
+	if (fDot_p1p_p1p2 < 0)
+		return 0;
+	if (is_equal(fDot_p1p_p1p2, 0, MATH_EPSILON) == GTrue)
+		return 2;
+
+	// Same p2
+	float fDot_p1p2_p1p2 = dot(vp1p2, vp1p2);
+
+	if (fDot_p1p_p1p2 > fDot_p1p2_p1p2)
+		return 0;
+	if (is_equal(fDot_p1p_p1p2, fDot_p1p2_p1p2, MATH_EPSILON) == true)
+		return 2;
+
+	return 1;
+}
+
+/***********************************************************************************
 @brief		Check polygon is convex
 @param		[in] poly : polygon
 @return		TRUE : is convex | FALSE : no convex
@@ -201,61 +242,6 @@ API_EXPR GBool is_snap_point_to_line(const Point2D& pt1, const Point2D& pt2, con
 }
 
 /***********************************************************************************
-@brief		check point inside polygon
-@param		[in] pt		: Point check
-@param		[in] poly	: Polygon
-@return		TRUE : inside | FALSE : outside
-@note		ref : https://wrf.ecse.rpi.edu/Research/Short_Notes/pnpoly.html
-***********************************************************************************/
-API_EXPR GBool is_point_in_polygon(const Point2D& pt, const VecPoint2D& poly)
-{
-	if (poly.size() < 3)
-	{
-		assert(0);
-		return GFalse;
-	}
-
-	GFloat fMinX = poly[0].x;
-	GFloat fMaxX = poly[0].x;
-	GFloat fMinY = poly[0].y;
-	GFloat fMaxY = poly[0].y;
-
-	int nPolyCount = static_cast<int>(poly.size());
-
-	for (int i = 1; i < nPolyCount; i++)
-	{
-		fMinX = std::min<GFloat>(poly[i].x, fMinX);
-		fMaxX = std::max<GFloat>(poly[i].x, fMaxX);
-		fMinY = std::min<GFloat>(poly[i].y, fMinY);
-		fMaxY = std::max<GFloat>(poly[i].y, fMaxY);
-	}
-
-	if (pt.x < fMinX || pt.x > fMaxX || pt.y < fMinY || pt.y > fMaxY)
-		return GFalse;
-
-	GBool bInside = GFalse;
-	for (int i = 0, j = nPolyCount - 1; i < nPolyCount; j = i++)
-	{
-		if ((poly[i].y > pt.y) != (poly[j].y > pt.y) &&
-			pt.x < (poly[j].x - poly[i].x) * (pt.y - poly[i].y) / (poly[j].y - poly[i].y) + poly[i].x)
-		{
-			bInside = !bInside;
-		}
-		// case inside edge and collinear
-		else if (is_equal(poly[i].y, pt.y, MATH_EPSILON) &&
-				 is_equal(poly[j].y, pt.y, MATH_EPSILON))
-		{
-			if ((poly[i].x > pt.x) != (poly[j].x > pt.x))
-			{
-				return GTrue;
-			}
-		}
-	}
-
-	return bInside;
-}
-
-/***********************************************************************************
 *! @brief  : Check point is in ray (ray : point start and unit vector)
 *! @param  : [in] pt  : start point of ray
 *! @param  : [in] vn  : unit vector of ray
@@ -277,76 +263,6 @@ API_EXPR GBool is_point_in_ray(const Point2D& pt, const Vec2D& vn, const Point2D
 	}
 
 	return GFalse;
-}
-
-/***********************************************************************************
-@brief		Check that a polygon is completely inside another polygon
-@param		[in]  poly1	 : Polygon check
-@param		[in]  poly2	 : Polygon outside
-@return		TRUE : inside | FALSE : outside
-***********************************************************************************/
-API_EXPR GBool is_polygon_in_polygon(const VecPoint2D& poly1, const VecPoint2D& poly2)
-{
-	if (poly1.size() < 3 || poly2.size() < 3)
-	{
-		assert(0);
-		return GFalse;
-	}
-
-	int nPolyCount = static_cast<int>(poly1.size());
-
-	// Check polygon onside or inside
-	for (int j = 0, i = nPolyCount - 1; j < nPolyCount; i = j++)
-	{
-		if (intersect_lsegment_polygon(poly1[i], poly1[j], poly2, NULL, GTrue) >= 1)
-			return GFalse;
-	}
-
-	// Check polygon outside
-	if (!is_point_in_polygon(poly1[0], poly2))
-		return GFalse;
-
-	return GTrue;
-}
-
-/***********************************************************************************
-@brief		Get the relationship between 2 polygons
-@param		[in]  poly1	 : first polygon
-@param		[in]  poly2	 : second polygon
-@return		| INVALID  (-1) : invalid param
-			| OUTSIDE  ( 0) : outside
-			| INTER    ( 1) : intersect
-			| INSIDE_1 ( 2) : poly1 inside poly2
-			| INSIDE_2 ( 3) : poly2 inside poly1
-@note		poly1 and poly 2 have number points greater than 3
-***********************************************************************************/
-API_EXPR GInt rel_2polygon(const VecPoint2D& poly1, const VecPoint2D& poly2)
-{
-	if (poly1.size() < 3 || poly2.size() < 3)
-	{
-		assert(0);
-		return -1;
-	}
-
-	int nPolyCount = static_cast<int>(poly1.size());
-
-	// Case 1 : intersect - check 2 intersecting polygons
-	for (int j = 0, i = nPolyCount - 1; j < nPolyCount; i = j++)
-	{
-		if (intersect_lsegment_polygon(poly1[i], poly1[j], poly2, NULL, GTrue) >= 1)
-			return 1;
-	}
-
-	// Case 2 : inside - check poly1 inside poly2 
-	if (GTrue == is_point_in_polygon(poly1[0], poly2))
-		return 2;
-
-	// Case 3 : inside - check poly2 inside poly1 
-	if (GTrue == is_point_in_polygon(poly2[0], poly1))
-		return 3;
-
-	// Case 4 (default): outside
-	return 0;
 }
 
 }}

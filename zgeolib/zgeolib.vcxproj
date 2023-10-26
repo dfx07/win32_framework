@@ -140,6 +140,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="x2dalgo.h" />
     <ClInclude Include="x2dbase.h" />
     <ClInclude Include="x2dint.h" />
     <ClInclude Include="x2dpoly.h" />
@@ -150,6 +151,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="x2dalgo.cpp" />
     <ClCompile Include="x2dbase.cpp" />
     <ClCompile Include="x2dint.cpp" />
     <ClCompile Include="x2dpoly.cpp" />

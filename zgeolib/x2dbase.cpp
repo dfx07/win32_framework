@@ -113,7 +113,7 @@ API_EXPR Vec2D rotate(const Vec2D& v, const GFloat fDegree)
 *! @return : Point2D after rotate
 *! @author : thuong.nv			- [Date] : 06/03/2023
 ***********************************************************************************/
-API_EXPR Point2D	 rotate(const Point2D& ptPivot, const Point2D& ptRotate, const GFloat fDegree)
+API_EXPR Point2D rotate(const Point2D& ptPivot, const Point2D& ptRotate, const GFloat fDegree)
 {
 	Vec2D vpipr = ptRotate - ptPivot;
 	GFloat fDistance = mag(vpipr);
@@ -124,6 +124,23 @@ API_EXPR Point2D	 rotate(const Point2D& ptPivot, const Point2D& ptRotate, const 
 	Point2D ptmove = move(ptPivot, vuint_rotate, fDistance);
 
 	return ptmove;
+}
+
+/***********************************************************************************
+*! @brief  : Midpoint between 2 points
+*! @param  : [in] pt1 : point 1
+*! @param  : [in] pt2 : point 2
+*! @return : Point2D mid point
+*! @author : thuong.nv			- [Date] : 05/19/2023
+***********************************************************************************/
+API_EXPR Point2D  mid_point(const Point2D& pt1, const Point2D& pt2)
+{
+	Point2D ptMid;
+
+	ptMid.x = (pt1.x + pt2.x) / 2.f;
+	ptMid.y = (pt1.y + pt2.y) / 2.f;
+
+	return ptMid;
 }
 
 }}

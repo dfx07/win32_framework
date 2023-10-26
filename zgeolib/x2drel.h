@@ -49,8 +49,21 @@ namespace geo{ namespace v2
 	*!					   | RIGHT     : ptc on the right p1p2
 	*!					   | LEFT      : ptc on the left  p1p2
 	*! @author : thuong.nv			- [Date] : 08/07/2023
-	*********************************************************************************/
+	********************************************************************************/
 	API_EXPR EnumOrien get_orientation_point_vector(const Point2D& ptC, const Point2D& pt1, const Point2D& pt2);
+
+	/********************************************************************************
+	*! @brief  : Check point is in ray (ray : point start and unit vector)
+	*! @param  : [in] pt  : start point of ray
+	*! @param  : [in] vn  : unit vector of ray
+	*! @param  : [in] ptc : point check
+	*! @return : 0 : not in line segment
+	*!           1 : in line segment
+	*!           2 : same p1
+	*!           3 : same p2
+	*! @author : thuong.nv			- [Date] : 17/10/2023
+	********************************************************************************/
+	API_EXPR GInt get_rel_point_lsegment(const Point2D& pt1, const Point2D& pt2, const Point2D& pt);
 
 	/********************************************************************************
 	@brief		Check polygon is convex
@@ -96,15 +109,6 @@ namespace geo{ namespace v2
 	API_EXPR GBool is_snap_point_to_line(const Point2D& pt1, const Point2D& pt2, const Point2D& pt, const GFloat& fSnap);
 
 	/********************************************************************************
-	@brief		check point inside polygon
-	@param		[in] pt		: Point check
-	@param		[in] poly	: Polygon
-	@return		TRUE : inside | FALSE : outside
-	@note		ref : https://wrf.ecse.rpi.edu/Research/Short_Notes/pnpoly.html
-	********************************************************************************/
-	API_EXPR GBool is_point_in_polygon(const Point2D& pt, const VecPoint2D& poly);
-
-	/********************************************************************************
 	*! @brief  : Check point is in ray (ray : point start and unit vector)
 	*! @param  : [in] pt  : start point of ray
 	*! @param  : [in] vn  : unit vector of ray
@@ -113,27 +117,6 @@ namespace geo{ namespace v2
 	*! @author : thuong.nv			- [Date] : 06/03/2023
 	********************************************************************************/
 	API_EXPR GBool is_point_in_ray(const Point2D& pt, const Vec2D& vn, const Point2D& ptc);
-
-	/*******************************************************************************
-	@brief		Check that a polygon is completely inside another polygon
-	@param		[in]  poly1	 : Polygon check
-	@param		[in]  poly2	 : Polygon outside
-	@return		TRUE : inside | FALSE : outside
-	********************************************************************************/
-	API_EXPR GBool is_polygon_in_polygon(const VecPoint2D& poly1, const VecPoint2D& poly2);
-
-	/*******************************************************************************
-	@brief		Get the relationship between 2 polygons
-	@param		[in]  poly1	 : first polygon
-	@param		[in]  poly2	 : second polygon
-	@return		| INVALID  (-1) : invalid param
-				| OUTSIDE  ( 0) : outside
-				| INTER    ( 1) : intersect
-				| INSIDE_1 ( 2) : poly1 inside poly2
-				| INSIDE_2 ( 3) : poly2 inside poly1
-	@note		poly1 and poly 2 have number points greater than 3
-	********************************************************************************/
-	API_EXPR GInt rel_2polygon(const VecPoint2D& poly1, const VecPoint2D& poly2);
 }}
 
 #endif // !X2D_REL_H

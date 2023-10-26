@@ -230,13 +230,14 @@ public:
 /***********************************************************************************/
 // Type DEFINE
 
-typedef tagVec<2, float>	Vec2D;
-typedef tagVec<2, float>	Point2D;
-typedef tagRect<float>		Rect2D;
-typedef std::vector<Vec2D>	VecPoint2D;
+typedef tagVec<2, float>			Vec2D;
+typedef tagVec<2, float>			Point2D;
+typedef tagRect<float>				Rect2D;
+typedef std::vector<Vec2D>			VecPoint2D;
+typedef std::vector<VecPoint2D>		VecPolyList;
 
-typedef tagLine<float>		Line2D;
-typedef std::vector<Line2D>	VecLine2D;
+typedef tagLine<float>				Line2D;
+typedef std::vector<Line2D>			VecLine2D;
 
 /////////////////////////////////////////////////////////////////////////////////////
 /***********************************************************************************/

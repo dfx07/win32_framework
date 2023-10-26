@@ -15,12 +15,10 @@
 
 namespace geo{ namespace v2
 {
-
-
 	/*******************************************************************************
-	@brief		Calculate vector magnitude
-	@param		[in] v : Vector
-	@return		GFloat : magnitude	- [Date] : 17/10/2023
+	*! @brief	: Calculate vector magnitude
+	*! @param	: [in] v : Vector
+	*! @return	: GFloat : magnitude	- [Date] : 17/10/2023
 	********************************************************************************/
 	API_EXPR GFloat	 mag(const Vec2D& v);
 
@@ -85,6 +83,15 @@ namespace geo{ namespace v2
 	*! @author : thuong.nv			- [Date] : 17/10/2023
 	********************************************************************************/
 	API_EXPR Point2D rotate(const Point2D& ptPivot, const Point2D& ptRotate, const GFloat fDegree);
+
+	/********************************************************************************
+	*! @brief  : Midpoint between 2 points
+	*! @param  : [in] pt1 : point 1
+	*! @param  : [in] pt2 : point 2
+	*! @return : Point2D mid point
+	*! @author : thuong.nv			- [Date] : 05/19/2023
+	********************************************************************************/
+	API_EXPR Point2D mid_point(const Point2D& pt1, const Point2D& pt2);
 }}
 
 #endif //!X2DBASE_H

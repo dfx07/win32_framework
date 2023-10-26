@@ -59,6 +59,27 @@ namespace geo {	namespace v2
 	********************************************************************************/
 	API_EXPR void  get_bounding_box(const VecPoint2D& points, Point2D& ptMin, Point2D& ptMax);
 
+	/***********************************************************************************
+	*! @brief	: check point inside polygon
+	*! @param	: [in] pt		: Point check
+	*! @param	: [in] poly	: Polygon
+	*! @return	: TRUE : inside | FALSE : outside
+	*! @note	: ref : https://wrf.ecse.rpi.edu/Research/Short_Notes/pnpoly.html
+	***********************************************************************************/
+	API_EXPR GBool is_point_in_polygon(const Point2D& pt, const VecPoint2D& poly);
+
+	/*******************************************************************************
+	*! @brief	:Get the relationship between 2 polygons
+	*! @param	:[in]  poly1	 : first polygon
+	*! @param	:[in]  poly2	 : second polygon
+	*! @return	:| INVALID  (-1) : invalid param
+	*!			 | OUTSIDE  ( 0) : outside
+	*!			 | INTER    ( 1) : intersect
+	*!			 | INSIDE_1 ( 2) : poly1 inside poly2
+	*!			 | INSIDE_2 ( 3) : poly2 inside poly1
+	*!@note		poly1 and poly 2 have number points greater than 3
+	*!********************************************************************************/
+	API_EXPR GInt rel_2polygon(const VecPoint2D& poly1, const VecPoint2D& poly2);
 }}
 
 #endif // !X2D_POLY_H
