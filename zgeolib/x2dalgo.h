@@ -46,6 +46,18 @@ namespace geo {	namespace v2
 	*! @refer  : https://www.geeksforgeeks.org/weiler-atherton-polygon-clipping-algorithm/
 	*********************************************************************************/
 	API_EXPR VecPolyList clip_polygon_weiler(const VecPoint2D& poly, const VecPoint2D& clipPoly);
+
+	/********************************************************************************
+	*! @brief  : Cut line and polygon
+	*! @param  : [in]  pt1  : Point in line
+	*! @param  : [in]  pt2  : Point in line
+	*! @param  : [in]  poly : polygon
+	*! @return : VecPolyList list poly clip
+	*! @author : thuong.nv   - [Date] : 29/10/2023
+	*! @note   : Polygon input is counterclockwise (CCW).
+	*********************************************************************************/
+	API_EXPR VecPolyList cut_line_polygon(const Point2D& pt1, const Point2D& pt2, const VecPoint2D& poly);
+
 }}
 
 #endif // !X2D_ALOGO_H

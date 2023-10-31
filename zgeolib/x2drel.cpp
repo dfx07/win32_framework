@@ -70,7 +70,7 @@ API_EXPR GBool is_ccw(const VecPoint2D& poly)
 *!					   | LEFT      : ptc on the left  p1p2
 *! @author : thuong.nv			- [Date] : 08/07/2023
 ***********************************************************************************/
-API_EXPR EnumOrien get_orientation_point_vector(const Point2D& ptC, const Point2D& pt1, const Point2D& pt2)
+API_EXPR EnumOrien get_orientation_point_vector(const Point2D& pt1, const Point2D& pt2, const Point2D& ptC)
 {
 	const float fOrin = (pt2.x - pt1.x) * (ptC.y - pt1.y) - (ptC.x - pt1.x) * (pt2.y - pt1.y);
 

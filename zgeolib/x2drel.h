@@ -42,15 +42,15 @@ namespace geo{ namespace v2
 
 	/********************************************************************************
 	*! @brief  : Determine the orientation of these three points
-	*! @param  : [in ] ptC :check point
-	*! @param  : [out] pt1  : point on vector p1p2
-	*! @param  : [out] pt2  : point on vector p1p2
+	*! @param  : [in] pt1  : point on vector p1p2
+	*! @param  : [in] pt2  : point on vector p1p2
+	*! @param  : [in] ptC :check point
 	*! @return : EnumOrien | COLLINEAR : ptc and p1p2 collinear
 	*!					   | RIGHT     : ptc on the right p1p2
 	*!					   | LEFT      : ptc on the left  p1p2
 	*! @author : thuong.nv			- [Date] : 08/07/2023
 	********************************************************************************/
-	API_EXPR EnumOrien get_orientation_point_vector(const Point2D& ptC, const Point2D& pt1, const Point2D& pt2);
+	API_EXPR EnumOrien get_orientation_point_vector(const Point2D& pt1, const Point2D& pt2, const Point2D& ptC);
 
 	/********************************************************************************
 	*! @brief  : Check point is in ray (ray : point start and unit vector)

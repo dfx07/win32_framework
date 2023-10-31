@@ -1,15 +1,21 @@
-#include "x2dalgo.h"
+ï»¿#include "x2dalgo.h"
 #include "x2drel.h"
 #include "x2dpoly.h"
 #include "x2dint.h"
 
 #include <map>
 #include <set>
+#include "xgeosp.h"
 
 #pragma warning(disable : 26812)
 
 namespace geo {	namespace v2 {
 
+/***********************************************************************************
+*! @brief  : shape in which all of its sides are pointing or protruding outwards
+*! @param  : [in] vecPoints : point list
+*! @author : thuong.nv			- [Date] : 25/10/2023
+***********************************************************************************/
 API_EXPR VecPoint2D convex_hull_giftwap(const VecPoint2D& vecPoints)
 {
 	if (vecPoints.size() < 3)
@@ -72,13 +78,13 @@ API_EXPR VecPoint2D convex_hull_giftwap(const VecPoint2D& vecPoints)
 }
 
 /***********************************************************************************
-*! @brief  : Clipping Polygons use Sutherland–Hodgman algorithm [rect]
+*! @brief  : Clipping Polygons use Sutherlandâ€“Hodgman algorithm [rect]
 *! @param  : [in]  poly     : polygon
 *! @param  : [in]  clipRect : clip (rectangle)
 *! @return : VecPoint2D clip polygon
 *! @author : thuong.nv         - [Date] : 08/07/2023
 *! @note   : Polygon input is counterclockwise (CCW).
-*! @refer  : https://en.wikipedia.org/wiki/Sutherland–Hodgman_algorithm
+*! @refer  : https://en.wikipedia.org/wiki/Sutherlandâ€“Hodgman_algorithm
 ***********************************************************************************/
 API_EXPR VecPoint2D clip_polygon_hodgman(const VecPoint2D& poly, const VecPoint2D& clipConvexPoly)
 {
@@ -434,6 +440,178 @@ VecPolyList clip_polygon_weiler(const VecPoint2D& _poly, const VecPoint2D& _clip
 	}
 
 	return vecClips;
+}
+
+/***********************************************************************************
+*! @brief  : Cut line and polygon
+*! @param  : [in]  line : Line
+*! @param  : [in]  poly : polygon
+*! @return : VecPolyList list poly clip
+*! @author : thuong.nv   - [Date] : 29/10/2023
+*! @note   : Polygon input is counterclockwise (CCW).
+***********************************************************************************/
+API_EXPR VecPolyList cut_line_polygon(const Point2D& pt1, const Point2D& pt2, const VecPoint2D& _poly)
+{
+	VecPolyList vec_poly_split;
+	VecPoint2D poly = _poly; // copy data
+
+	if (_poly.size() < 3)
+	{
+		vec_poly_split.push_back(_poly);
+		_ASSERT(0);
+		return vec_poly_split;
+	}
+
+	struct MarkPointInterPoly
+	{
+		Point2D		pt;
+		int			idx_start;
+		int			idx_end;
+	};
+
+	typedef std::vector<MarkPointInterPoly> VecMarkPointInterPoly;
+
+	GBool bInter, bExist; Point2D ptInter;
+	VecMarkPointInterPoly vMarkInters;
+	GFloat fDis = 0.f;
+
+	// Polygon input is counterclockwise
+	if (is_ccw(poly) == GFalse) reverse_polygon(poly);
+
+	// seek all intersection point and index polygon between line and polygon
+	int nPolyCnt = static_cast<int>(poly.size());
+
+	for (int j = 0, i = nPolyCnt - 1; j < nPolyCnt; i = j++)
+	{
+		bExist = GFalse;
+		if (intersect_2lsegment(poly[i], poly[j], pt1, pt2, &ptInter) == GTrue)
+		{
+			for (int ii = 0; ii < vMarkInters.size(); ii++)
+			{
+				fDis = mag(ptInter - vMarkInters[ii].pt);
+
+				if (fDis < MATH_EPSILON)
+				{
+					bExist = GTrue;
+					break;
+				}
+			}
+
+			if (bExist == GFalse)
+			{
+				vMarkInters.push_back({ ptInter, i,j });
+			}
+		}
+	}
+
+	bool* arMark = new bool[nPolyCnt];
+	std::memset(arMark, 0, sizeof(bool)*nPolyCnt);
+
+	// check existed intersection point in line segment of polygon
+	auto funExistIntersect = [&](int& idx, int& idx_next)
+	{
+		for (int in = 0; in < vMarkInters.size(); in++)
+		{
+			if (idx == vMarkInters[in].idx_start && idx_next == vMarkInters[in].idx_end)
+			{
+				return in;
+			}
+		}
+
+		return -1;
+	};
+
+	// seek intersection point and near intersection point index
+	// located on the left side of intersection point mark
+	auto funGetIndexIntersectNearest = [&](int idxInter)
+	{
+		GFloat fDisMin = -1.f, fDis = 0.f;
+		int idxInterMin = -1;
+		EnumOrien ori_min;
+
+		if (idxInter < 0 || idxInter >= vMarkInters.size())
+			return -1;
+
+		auto& markInter = vMarkInters[idxInter];
+
+		for (int in = 0; in < vMarkInters.size(); in++)
+		{
+			fDis = mag(vMarkInters[in].pt - vMarkInters[idxInter].pt);
+			ori_min = get_orientation_point_vector(poly[markInter.idx_start], poly[markInter.idx_end], vMarkInters[in].pt);
+
+			if (in != idxInter && (ori_min == EnumOrien::LEFT && (fDisMin < 0 || fDis <= fDisMin)))
+			{
+				idxInterMin = in;
+				fDisMin = fDis;
+			}
+		}
+
+		return idxInterMin;
+	};
+
+	EnumOrien or_pfirst = EnumOrien::LEFT;
+	int nIdx, nIdxNext, i, x, y;
+
+	// loop to seek all polygon after cutting
+	for (i = 0; i < nPolyCnt; i++)
+	{
+		if (arMark[i] == true) continue;
+
+		VecPoint2D poly_split;
+		int idx = i, count = 0;
+
+		while (count < nPolyCnt) //PS: Prevents infinite looping
+		{
+			x = idx; y = (idx + 1) % nPolyCnt;
+
+			if ((nIdx = funExistIntersect(x, y)) >= 0)
+			{
+				poly_split.push_back(vMarkInters[nIdx].pt);
+
+				if ((nIdxNext = funGetIndexIntersectNearest(nIdx)) >= 0)
+				{
+					poly_split.push_back(vMarkInters[nIdxNext].pt);
+
+					int st = vMarkInters[nIdxNext].idx_start;
+					int ed = vMarkInters[nIdxNext].idx_end;
+
+					if (get_orientation_point_vector(vMarkInters[nIdx].pt, vMarkInters[nIdxNext].pt, poly[st]) == or_pfirst)
+					{
+						poly_split.push_back(poly[st]);
+						arMark[st] = true;
+						idx = st;
+					}
+
+					if (get_orientation_point_vector(vMarkInters[nIdx].pt, vMarkInters[nIdxNext].pt, poly[ed]) == or_pfirst)
+					{
+						poly_split.push_back(poly[ed]);
+						arMark[ed] = true;
+						idx = ed;
+					}
+				}
+			}
+			else
+			{
+				poly_split.push_back(poly[x]);
+				arMark[x] = true;
+				idx = y;
+			}
+
+			count++;
+
+			if (i == idx) break;
+		}
+		vec_poly_split.push_back(poly_split);
+	}
+
+	delete[] arMark;
+
+	//for (INT i = 0; i < vec_poly_split.size(); i++)
+	//{
+	//	V2remove_double_point(vec_poly_split[i]);
+	//}
+
+	return vec_poly_split;
 }
 
 }}
