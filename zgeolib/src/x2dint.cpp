@@ -13,7 +13,7 @@ namespace geo {	namespace v2 {
 *! @return : Point2D perpendicular projection of a point
 *! @author : thuong.nv			- [Date] : 04/07/2023
 ***********************************************************************************/
-API_EXPR Point2D get_projection_point_to_line(const Point2D& ptLine1, const Point2D& ptLine2, const Point2D& pt)
+Dllexport Point2D get_projection_point_to_line(const Point2D& ptLine1, const Point2D& ptLine2, const Point2D& pt)
 {
 	Vec2D ptPer;
 	Vec2D vp1p2 = ptLine2 - ptLine1;  // p1p2
@@ -51,7 +51,7 @@ API_EXPR Point2D get_projection_point_to_line(const Point2D& ptLine1, const Poin
 *!         : 0 : Not exist perpendicular point
 *! @author : thuong.nv			- [Date] : 05/11/2023
 ***********************************************************************************/
-API_EXPR GInt get_projection_point_to_lsegment(const  Point2D& ptSeg1, const Point2D& ptSeg2,
+Dllexport GInt get_projection_point_to_lsegment(const  Point2D& ptSeg1, const Point2D& ptSeg2,
 											   const  Point2D& pt,
 													  Point2D* pptPerp	    /* = NULL*/,
 													  GBool	   bCheckNearest/* = FALSE*/)
@@ -103,7 +103,7 @@ API_EXPR GInt get_projection_point_to_lsegment(const  Point2D& ptSeg1, const Poi
 @param		[out] pInter : Intersection
 @return		TRUE : Intersect | FALSE : not intersect
 ***********************************************************************************/
-API_EXPR GBool intersect_2line(	const Point2D& pt1,		// L1
+Dllexport GBool intersect_2line(	const Point2D& pt1,		// L1
 								const Point2D& pt2,		// L1
 								const Point2D& pt3,		// L2
 								const Point2D& pt4,		// L2
@@ -150,7 +150,7 @@ API_EXPR GBool intersect_2line(	const Point2D& pt1,		// L1
 @param		[out] pInter : Intersection
 @return		TRUE : Intersect | FALSE : not intersect
 ***********************************************************************************/
-API_EXPR GBool intersect_2lsegment(	const Point2D& pt1,		// L1
+Dllexport GBool intersect_2lsegment(	const Point2D& pt1,		// L1
 									const Point2D& pt2,		// L1
 									const Point2D& pt3,		// L2
 									const Point2D& pt4,		// L2
@@ -192,7 +192,7 @@ API_EXPR GBool intersect_2lsegment(	const Point2D& pt1,		// L1
 @param		[out] pInter  : Intersection
 @return		TRUE : Intersect | FALSE : not intersect
 ***********************************************************************************/
-API_EXPR GBool intersect_line_lsegment( const Point2D& ptLine1,	// Point on the line
+Dllexport GBool intersect_line_lsegment( const Point2D& ptLine1,	// Point on the line
 										const Point2D& ptLine2,	// Point on the line
 										const Point2D& ptSeg1,	// Point start on line segment
 										const Point2D& ptSeg2,	// Point end on line segment
@@ -229,7 +229,7 @@ API_EXPR GBool intersect_line_lsegment( const Point2D& ptLine1,	// Point on the 
 @param		[out] vecInter   : point list of intersections
 @return		INT : intersection number.
 ***********************************************************************************/
-API_EXPR GInt intersect_line_polygon(const Point2D&		ptLine1,	 //[in] Point on the line
+Dllexport GInt intersect_line_polygon(const Point2D&		ptLine1,	 //[in] Point on the line
 									 const Point2D&		ptLine2,	 //[in] Point on the line
 									 const VecPoint2D&	poly,		 //[in] polygon
 										   VecPoint2D*	vecInter,  /*= NULL */   //[out] point list of intersections
@@ -275,7 +275,7 @@ API_EXPR GInt intersect_line_polygon(const Point2D&		ptLine1,	 //[in] Point on t
 @param		[out] vecInter: point list of intersections
 @return		INT : intersection number.
 ***********************************************************************************/
-API_EXPR GInt intersect_line_rectangle(	const Point2D&		ptLine1,	 //[in] Point on the line
+Dllexport GInt intersect_line_rectangle(	const Point2D&		ptLine1,	 //[in] Point on the line
 										const Point2D&		ptLine2,	 //[in] Point on the line
 										const Rect2D&		rect,		//[in] rectangle
 											  VecPoint2D*	vecInter,	/*= NULL */   //[out] point list of intersections
@@ -295,7 +295,7 @@ API_EXPR GInt intersect_line_rectangle(	const Point2D&		ptLine1,	 //[in] Point o
 @param		[in]  bOnlyCheck: only check if intersect or not
 @return		INT : intersection number.
 ***********************************************************************************/
-API_EXPR GInt intersect_lsegment_polygon(const Point2D&		pt1,	//[in] Point on the line
+Dllexport GInt intersect_lsegment_polygon(const Point2D&		pt1,	//[in] Point on the line
 										 const Point2D&		pt2,	//[in] Point on the line
 										 const VecPoint2D&	poly,	//[in] polygon
 											   VecPoint2D*	vecInter,  /*= NULL*/    //[out] point list of intersections

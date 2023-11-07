@@ -20,7 +20,7 @@ namespace geo{ namespace v2
 	*! @param	: [in] v : Vector
 	*! @return	: GFloat : magnitude	- [Date] : 17/10/2023
 	********************************************************************************/
-	API_EXPR GFloat	 mag(const Vec2D& v);
+	Dllexport GFloat	 mag(const Vec2D& v);
 
 	/*******************************************************************************
 	*! @brief  : Calculation of unit vector
@@ -28,7 +28,7 @@ namespace geo{ namespace v2
 	*! @return : uinit vector
 	*! @author : thuong.nv				- [Date] : 17/10/2023
 	********************************************************************************/
-	API_EXPR Vec2D	 normalize(const Vec2D& v);
+	Dllexport Vec2D	 normalize(const Vec2D& v);
 
 	/*******************************************************************************
 	@brief		Calculate the crossProduct of the two vector
@@ -36,7 +36,7 @@ namespace geo{ namespace v2
 	@param		[in] v2		: Second vector
 	@return		GFloat : Value cross product
 	********************************************************************************/
-	API_EXPR GFloat	 cross(const Vec2D& v1, const Vec2D& v2);
+	Dllexport GFloat	 cross(const Vec2D& v1, const Vec2D& v2);
 
 	/*******************************************************************************
 	*! @brief  : Calculate dot product between 2 vectors
@@ -44,7 +44,7 @@ namespace geo{ namespace v2
 	*! @return : GFloat : dot product
 	*! @author : thuong.nv				- [Date] : 17/10/2023
 	********************************************************************************/
-	API_EXPR GFloat	 dot(const Vec2D& v1, const Vec2D& v2);
+	Dllexport GFloat	 dot(const Vec2D& v1, const Vec2D& v2);
 
 	/*******************************************************************************
 	*! @brief  : Calculate angle between 2 vectors (degree)
@@ -53,7 +53,7 @@ namespace geo{ namespace v2
 	*! @return : Degree angle between two vector [-180~180]
 	*! @author : thuong.nv			- [Date] : 17/10/2023
 	********************************************************************************/
-	API_EXPR GFloat	 angle(const Vec2D& v1, const Vec2D& v2);
+	Dllexport GFloat	 angle(const Vec2D& v1, const Vec2D& v2);
 
 	/*******************************************************************************
 	*! @brief  : move point use unit vector and distance
@@ -63,7 +63,7 @@ namespace geo{ namespace v2
 	*! @return : Point2D point after move
 	*! @author : thuong.nv			- [Date] : 17/10/2023
 	********************************************************************************/
-	API_EXPR Point2D move(const Point2D& pt, const Vec2D& vn, const GFloat fDistance);
+	Dllexport Point2D move(const Point2D& pt, const Vec2D& vn, const GFloat fDistance);
 
 	/*******************************************************************************
 	*! @brief  : Rotate vector (degree)
@@ -72,7 +72,7 @@ namespace geo{ namespace v2
 	*! @return : Vector2D after rotate
 	*! @author : thuong.nv			- [Date] : 17/10/2023
 	********************************************************************************/
-	API_EXPR Vec2D	 rotate(const Vec2D& v, const GFloat fDegree);
+	Dllexport Vec2D	 rotate(const Vec2D& v, const GFloat fDegree);
 
 	/*******************************************************************************
 	*! @brief  : Rotate point (degree)
@@ -82,7 +82,7 @@ namespace geo{ namespace v2
 	*! @return : Point2D after rotate
 	*! @author : thuong.nv			- [Date] : 17/10/2023
 	********************************************************************************/
-	API_EXPR Point2D rotate(const Point2D& ptPivot, const Point2D& ptRotate, const GFloat fDegree);
+	Dllexport Point2D rotate(const Point2D& ptPivot, const Point2D& ptRotate, const GFloat fDegree);
 
 	/********************************************************************************
 	*! @brief  : Midpoint between 2 points
@@ -91,7 +91,7 @@ namespace geo{ namespace v2
 	*! @return : Point2D mid point
 	*! @author : thuong.nv			- [Date] : 05/19/2023
 	********************************************************************************/
-	API_EXPR Point2D mid_point(const Point2D& pt1, const Point2D& pt2);
+	Dllexport Point2D mid_point(const Point2D& pt1, const Point2D& pt2);
 }}
 
 #endif //!X2DBASE_H

@@ -16,7 +16,7 @@ namespace geo {	namespace v2 {
 *! @param  : [in] vecPoints : point list
 *! @author : thuong.nv			- [Date] : 25/10/2023
 ***********************************************************************************/
-API_EXPR VecPoint2D convex_hull_giftwap(const VecPoint2D& vecPoints)
+Dllexport VecPoint2D convex_hull_giftwap(const VecPoint2D& vecPoints)
 {
 	if (vecPoints.size() < 3)
 	{
@@ -86,7 +86,7 @@ API_EXPR VecPoint2D convex_hull_giftwap(const VecPoint2D& vecPoints)
 *! @note   : Polygon input is counterclockwise (CCW).
 *! @refer  : https://en.wikipedia.org/wiki/Sutherland–Hodgman_algorithm
 ***********************************************************************************/
-API_EXPR VecPoint2D clip_polygon_hodgman(const VecPoint2D& poly, const VecPoint2D& clipConvexPoly)
+Dllexport VecPoint2D clip_polygon_hodgman(const VecPoint2D& poly, const VecPoint2D& clipConvexPoly)
 {
 	if (is_convex_polygon(clipConvexPoly) == GFalse)
 		return poly;
@@ -450,7 +450,7 @@ VecPolyList clip_polygon_weiler(const VecPoint2D& _poly, const VecPoint2D& _clip
 *! @author : thuong.nv   - [Date] : 29/10/2023
 *! @note   : Polygon input is counterclockwise (CCW).
 ***********************************************************************************/
-API_EXPR VecPolyList cut_line_polygon(const Point2D& pt1, const Point2D& pt2, const VecPoint2D& _poly)
+Dllexport VecPolyList cut_line_polygon(const Point2D& pt1, const Point2D& pt2, const VecPoint2D& _poly)
 {
 	VecPolyList vec_poly_split;
 	VecPoint2D poly = _poly; // copy data
@@ -471,7 +471,7 @@ API_EXPR VecPolyList cut_line_polygon(const Point2D& pt1, const Point2D& pt2, co
 
 	typedef std::vector<MarkPointInterPoly> VecMarkPointInterPoly;
 
-	GBool bInter, bExist; Point2D ptInter;
+	GBool bExist; Point2D ptInter;
 	VecMarkPointInterPoly vMarkInters;
 	GFloat fDis = 0.f;
 
@@ -621,7 +621,7 @@ API_EXPR VecPolyList cut_line_polygon(const Point2D& pt1, const Point2D& pt2, co
 *! @author : thuong.nv   - [Date] : 11/07/2023
 *! @note   : Polygon input/out is counterclockwise (CCW).
 ************************************************************************************/
-API_EXPR VecPoint2D split_poly2trig_ear_clipping(const VecPoint2D& poly)
+Dllexport VecPoint2D split_poly2trig_ear_clipping(const VecPoint2D& poly)
 {
 	VecPoint2D list_trig; VecPoint2D vecPolyTemp;
 
@@ -664,7 +664,7 @@ API_EXPR VecPoint2D split_poly2trig_ear_clipping(const VecPoint2D& poly)
 	while (vecPolyTemp.size() > 0)
 	{
 		//PS: prevent in case of infinite loops 
-		nPolyCnt = nOldSize = vecPolyTemp.size();
+		nPolyCnt = nOldSize = static_cast<int>(vecPolyTemp.size());
 
 		for (i = 0; i < nPolyCnt; i++)
 		{
@@ -682,7 +682,7 @@ API_EXPR VecPoint2D split_poly2trig_ear_clipping(const VecPoint2D& poly)
 				vecPolyTemp.erase(vecPolyTemp.begin() + nCur);
 			}
 
-			nPolyCnt = vecPolyTemp.size();
+			nPolyCnt = static_cast<int>(vecPolyTemp.size());
 		}
 
 		if (vecPolyTemp.size() == nOldSize)

@@ -10,7 +10,7 @@ namespace geo {
 @param		[in] fEpsilon	: tolerance
 @return		TRUE : equal | FALSE : no equal
 *******************************************************************************/
-API_EXPR GBool is_equal(const GFloat fVal1, const GFloat fVal2, const GFloat fEpsilon)
+Dllexport GBool is_equal(const GFloat fVal1, const GFloat fVal2, const GFloat fEpsilon)
 {
 	GFloat fDiff = fVal2 - fVal1;
 	return (std::fabs(fDiff) <= fEpsilon);
@@ -22,7 +22,7 @@ API_EXPR GBool is_equal(const GFloat fVal1, const GFloat fVal2, const GFloat fEp
 @return		List pointF
 @note		It can be counterclockwise or clockwise
 ********************************************************************************/
-API_EXPR VecPoint2D convert_rectf_to_points(const Rect2D& rect)
+Dllexport VecPoint2D convert_rectf_to_points(const Rect2D& rect)
 {
 	VecPoint2D vecPointPoly;
 
@@ -39,7 +39,7 @@ API_EXPR VecPoint2D convert_rectf_to_points(const Rect2D& rect)
 *! @param  : [in] fRad : angle float (radian)
 *! @return : angle after convert
 ***********************************************************************************/
-API_EXPR GFloat r2d(const GFloat& fRad)
+Dllexport GFloat r2d(const GFloat& fRad)
 {
 	return fRad * 180.f / GFloat(PI);
 }
@@ -49,7 +49,7 @@ API_EXPR GFloat r2d(const GFloat& fRad)
 *! @param  : [in] fDegree : angle float (degree)
 *! @return : angle after convert
 ***********************************************************************************/
-API_EXPR GFloat d2r(const GFloat& fDegree)
+Dllexport GFloat d2r(const GFloat& fDegree)
 {
 	return fDegree * GFloat(PI) / 180.f;
 }

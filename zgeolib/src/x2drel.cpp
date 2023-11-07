@@ -13,7 +13,7 @@ namespace geo {namespace v2 {
 @param		[in] ftolerance : > math_epsilon
 @return		true : same | false : not same
 ***********************************************************************************/
-API_EXPR bool is_same_direction(const Vec2D& v1, const Point2D& v2, const GFloat& ftolerance /* = MATH_EPSILON*/)
+Dllexport bool is_same_direction(const Vec2D& v1, const Point2D& v2, const GFloat& ftolerance /* = MATH_EPSILON*/)
 {
 	Vec2D vn1 = normalize(v1);
 	Vec2D vn2 = normalize(v2);
@@ -35,7 +35,7 @@ API_EXPR bool is_same_direction(const Vec2D& v1, const Point2D& v2, const GFloat
 @param		[in] pt		: Point check
 @return		TRUE : inside | FALSE : outside
 ***********************************************************************************/
-API_EXPR GBool is_same_sign(const Vec2D& v1, const Point2D& v2)
+Dllexport GBool is_same_sign(const Vec2D& v1, const Point2D& v2)
 {
 	return ((v1.x * v2.x) >= 0 && (v1.y * v2.y) >= 0) ? GTrue : GFalse;
 }
@@ -45,7 +45,7 @@ API_EXPR GBool is_same_sign(const Vec2D& v1, const Point2D& v2)
 @param		[in] polyg : polygon
 @return		TRUE : is CCW | FALSE : CW
 ***********************************************************************************/
-API_EXPR GBool is_ccw(const VecPoint2D& poly)
+Dllexport GBool is_ccw(const VecPoint2D& poly)
 {
 	int nPolyCnt = static_cast<int>(poly.size());
 
@@ -70,7 +70,7 @@ API_EXPR GBool is_ccw(const VecPoint2D& poly)
 *!					   | LEFT      : ptc on the left  p1p2
 *! @author : thuong.nv			- [Date] : 08/07/2023
 ***********************************************************************************/
-API_EXPR EnumOrien get_orientation_point_vector(const Point2D& pt1, const Point2D& pt2, const Point2D& ptC)
+Dllexport EnumOrien get_orientation_point_vector(const Point2D& pt1, const Point2D& pt2, const Point2D& ptC)
 {
 	const float fOrin = (pt2.x - pt1.x) * (ptC.y - pt1.y) - (ptC.x - pt1.x) * (pt2.y - pt1.y);
 
@@ -90,7 +90,7 @@ API_EXPR EnumOrien get_orientation_point_vector(const Point2D& pt1, const Point2
 *!           3 : same p2
 *! @author : thuong.nv			- [Date] : 17/10/2023
 ***********************************************************************************/
-API_EXPR GInt rel_point_lsegment(const Point2D& pt1, const Point2D& pt2, const Point2D& pt)
+Dllexport GInt rel_point_lsegment(const Point2D& pt1, const Point2D& pt2, const Point2D& pt)
 {
 	Vec2D vp1p  = pt - pt1; // Vector vp1p ;
 	Vec2D vp1p2 = pt2 - pt1; // Vector vp2p ;
@@ -125,7 +125,7 @@ API_EXPR GInt rel_point_lsegment(const Point2D& pt1, const Point2D& pt2, const P
 @param		[in] poly : polygon
 @return		TRUE : is convex | FALSE : no convex
 ***********************************************************************************/
-API_EXPR GBool is_convex_polygon(const VecPoint2D& poly)
+Dllexport GBool is_convex_polygon(const VecPoint2D& poly)
 {
 	int nPolyCnt = static_cast<int>(poly.size());
 
@@ -157,7 +157,7 @@ API_EXPR GBool is_convex_polygon(const VecPoint2D& poly)
 @param		[in] pt		: Point check
 @return		TRUE : inside | FALSE : outside
 ***********************************************************************************/
-API_EXPR GBool is_point_in_lsegment(const Point2D& pt1, const Point2D& pt2, const Point2D& pt)
+Dllexport GBool is_point_in_lsegment(const Point2D& pt1, const Point2D& pt2, const Point2D& pt)
 {
 	Vec2D vp1p = pt - pt1; // Vector vp1p ;
 	Vec2D vp2p = pt - pt2; // Vector vp2p ;
@@ -189,7 +189,7 @@ API_EXPR GBool is_point_in_lsegment(const Point2D& pt1, const Point2D& pt2, cons
 @param		[in] pt		: Point check
 @return		TRUE : inside | FALSE : outside
 ***********************************************************************************/
-API_EXPR GBool is_snap_point_to_lsegment(const Point2D& pt1, const Point2D& pt2, const Point2D& pt, const GFloat& fSnap)
+Dllexport GBool is_snap_point_to_lsegment(const Point2D& pt1, const Point2D& pt2, const Point2D& pt, const GFloat& fSnap)
 {
 	Point2D ptProj;
 
@@ -210,7 +210,7 @@ API_EXPR GBool is_snap_point_to_lsegment(const Point2D& pt1, const Point2D& pt2,
 @param		[in] pt		: Point check
 @return		TRUE : inside | FALSE : outside
 ***********************************************************************************/
-API_EXPR GBool is_point_in_line(const Point2D& pt1, const Point2D& pt2, const Point2D& pt)
+Dllexport GBool is_point_in_line(const Point2D& pt1, const Point2D& pt2, const Point2D& pt)
 {
 	Vec2D vp1p = pt - pt1; // Vector vp1p ;
 	Vec2D vp2p = pt - pt2; // Vector vp2p ;
@@ -232,7 +232,7 @@ API_EXPR GBool is_point_in_line(const Point2D& pt1, const Point2D& pt2, const Po
 @param		[in] pt		: Point check
 @return		TRUE : inside | FALSE : outside
 ***********************************************************************************/
-API_EXPR GBool is_snap_point_to_line(const Point2D& pt1, const Point2D& pt2, const Point2D& pt, const GFloat& fSnap)
+Dllexport GBool is_snap_point_to_line(const Point2D& pt1, const Point2D& pt2, const Point2D& pt, const GFloat& fSnap)
 {
 	Point2D ptProj = get_projection_point_to_line(pt1, pt2, pt);
 
@@ -249,7 +249,7 @@ API_EXPR GBool is_snap_point_to_line(const Point2D& pt1, const Point2D& pt2, con
 *! @return : TRUE : in ray | FALSE : out ray
 *! @author : thuong.nv			- [Date] : 06/03/2023
 ***********************************************************************************/
-API_EXPR GBool is_point_in_ray(const Point2D& pt, const Vec2D& vn, const Point2D& ptc)
+Dllexport GBool is_point_in_ray(const Point2D& pt, const Vec2D& vn, const Point2D& ptc)
 {
 	Point2D pt2 = move(pt, vn, 1.f);
 

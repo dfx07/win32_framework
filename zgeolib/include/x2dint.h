@@ -24,7 +24,7 @@ namespace geo { namespace v2
 	*! @return : Point2D perpendicular projection of a point
 	*! @author : thuong.nv			- [Date] : 04/07/2023
 	********************************************************************************/
-	API_EXPR Point2D get_projection_point_to_line(const Point2D& ptLine1, const Point2D& ptLine2, const Point2D& pt);
+	Dllexport Point2D get_projection_point_to_line(const Point2D& ptLine1, const Point2D& ptLine2, const Point2D& pt);
 
 	/********************************************************************************
 	*! @brief  : Find the perpendicular projection of a point onto the segment. (segment = 2 point)
@@ -39,7 +39,7 @@ namespace geo { namespace v2
 	*!         : 0 : Not exist perpendicular point
 	*! @author : thuong.nv			- [Date] : 05/11/2023
 	********************************************************************************/
-	API_EXPR GInt get_projection_point_to_lsegment(const Point2D& ptSeg1, const Point2D& ptSeg2, const Point2D& pt, Point2D* ptPerp = NULL, GBool bCheckNearest = GFalse);
+	Dllexport GInt get_projection_point_to_lsegment(const Point2D& ptSeg1, const Point2D& ptSeg2, const Point2D& pt, Point2D* ptPerp = NULL, GBool bCheckNearest = GFalse);
 
 	/********************************************************************************
 	@brief		Get intersection point between line and line (line = 2 point)
@@ -50,7 +50,7 @@ namespace geo { namespace v2
 	@param		[out] pInter : Intersection
 	@return		TRUE : Intersect | FALSE : not intersect
 	*********************************************************************************/
-	API_EXPR GBool intersect_2line(const Point2D& pt1, const Point2D& pt2, const Point2D& pt3, const Point2D& pt4, Point2D* pInter = NULL);
+	Dllexport GBool intersect_2line(const Point2D& pt1, const Point2D& pt2, const Point2D& pt3, const Point2D& pt4, Point2D* pInter = NULL);
 
 	/********************************************************************************
 	@brief		Checks if two line segments intersect and returns the intersection point
@@ -61,7 +61,7 @@ namespace geo { namespace v2
 	@param		[out] pInter : Intersection
 	@return		TRUE : Intersect | FALSE : not intersect
 	*********************************************************************************/
-	API_EXPR GBool intersect_2lsegment(const Point2D& pt1, const Point2D& pt2, const Point2D& pt3, const Point2D& pt4, Point2D* pInter = NULL);
+	Dllexport GBool intersect_2lsegment(const Point2D& pt1, const Point2D& pt2, const Point2D& pt3, const Point2D& pt4, Point2D* pInter = NULL);
 
 	/********************************************************************************
 	@brief		Get intersection point between line and line segment (line = two point)
@@ -72,7 +72,7 @@ namespace geo { namespace v2
 	@param		[out] pInter  : Intersection
 	@return		TRUE : Intersect | FALSE : not intersect
 	*********************************************************************************/
-	API_EXPR GBool intersect_line_lsegment(const Point2D& ptLine1, const Point2D& ptLine2, const Point2D& ptSeg1, const Point2D& ptSeg2, Point2D* pInter = NULL);  // line = two point
+	Dllexport GBool intersect_line_lsegment(const Point2D& ptLine1, const Point2D& ptLine2, const Point2D& ptSeg1, const Point2D& ptSeg2, Point2D* pInter = NULL);  // line = two point
 
 	/********************************************************************************
 	@brief		Get intersection points between line and polygon (line = two point)
@@ -82,7 +82,7 @@ namespace geo { namespace v2
 	@param		[out] vecInter   : point list of intersections
 	@return		INT : intersection number.
 	*********************************************************************************/
-	API_EXPR GInt  intersect_line_polygon(const Point2D& ptLine1, const Point2D& ptLine2, const VecPoint2D& poly, VecPoint2D* vecInter = NULL, GBool bOnlyCheck = GFalse);
+	Dllexport GInt  intersect_line_polygon(const Point2D& ptLine1, const Point2D& ptLine2, const VecPoint2D& poly, VecPoint2D* vecInter = NULL, GBool bOnlyCheck = GFalse);
 
 	/********************************************************************************
 	@brief		Get intersection points between line and rect (line = two point)
@@ -92,7 +92,7 @@ namespace geo { namespace v2
 	@param		[out] vecInter: point list of intersections
 	@return		INT : intersection number.
 	*********************************************************************************/
-	API_EXPR GInt  intersect_line_rectangle(const Point2D& ptLine1, const Point2D& ptLine2, const Rect2D& rect, VecPoint2D* vecInter = NULL, GBool bOnlyCheck = GFalse);
+	Dllexport GInt  intersect_line_rectangle(const Point2D& ptLine1, const Point2D& ptLine2, const Rect2D& rect, VecPoint2D* vecInter = NULL, GBool bOnlyCheck = GFalse);
 
 	/********************************************************************************
 	@brief		get intersection point between line segment and polygon
@@ -103,7 +103,7 @@ namespace geo { namespace v2
 	@param		[in]  bOnlyCheck: only check if intersect or not
 	@return		INT : intersection number.
 	********************************************************************************/
-	API_EXPR GInt intersect_lsegment_polygon(const Point2D& pt1, const Point2D& pt2, const VecPoint2D& poly, VecPoint2D* vecInter = NULL, GBool bOnlyCheck = GFalse);
+	Dllexport GInt intersect_lsegment_polygon(const Point2D& pt1, const Point2D& pt2, const VecPoint2D& poly, VecPoint2D* vecInter = NULL, GBool bOnlyCheck = GFalse);
 }}
 
 #endif // !X2D_INT_H

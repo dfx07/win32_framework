@@ -23,7 +23,7 @@ namespace geo{ namespace v2
 	@param		[in] ftolerance : > math_epsilon
 	@return		true : same | false : not same
 	********************************************************************************/
-	API_EXPR GBool	is_same_direction(const Vec2D& v1, const Point2D& v2, const GFloat& ftolerance = MATH_EPSILON);
+	Dllexport GBool	is_same_direction(const Vec2D& v1, const Point2D& v2, const GFloat& ftolerance = MATH_EPSILON);
 
 	/*******************************************************************************
 	@brief		Check if 2 vectors have the same sign (on the same 1/4)
@@ -31,14 +31,14 @@ namespace geo{ namespace v2
 	@param		[in] v2	: Second vector
 	@return		TRUE : same | FALSE : not same
 	********************************************************************************/
-	API_EXPR GBool	is_same_sign(const Vec2D& v1, const Point2D& v2);
+	Dllexport GBool	is_same_sign(const Vec2D& v1, const Point2D& v2);
 
 	/********************************************************************************
 	@brief		Check polygon is counter-clockwise
 	@param		[in] polyg : polygon
 	@return		TRUE : is CCW | FALSE : CW
 	********************************************************************************/
-	API_EXPR GBool	is_ccw(const VecPoint2D& poly);
+	Dllexport GBool	is_ccw(const VecPoint2D& poly);
 
 	/********************************************************************************
 	*! @brief  : Determine the orientation of these three points
@@ -50,7 +50,7 @@ namespace geo{ namespace v2
 	*!					   | LEFT      : ptc on the left  p1p2
 	*! @author : thuong.nv			- [Date] : 08/07/2023
 	********************************************************************************/
-	API_EXPR EnumOrien get_orientation_point_vector(const Point2D& pt1, const Point2D& pt2, const Point2D& ptC);
+	Dllexport EnumOrien get_orientation_point_vector(const Point2D& pt1, const Point2D& pt2, const Point2D& ptC);
 
 	/********************************************************************************
 	*! @brief  : Check point is in ray (ray : point start and unit vector)
@@ -63,14 +63,14 @@ namespace geo{ namespace v2
 	*!           3 : same p2
 	*! @author : thuong.nv			- [Date] : 17/10/2023
 	********************************************************************************/
-	API_EXPR GInt rel_point_lsegment(const Point2D& pt1, const Point2D& pt2, const Point2D& pt);
+	Dllexport GInt rel_point_lsegment(const Point2D& pt1, const Point2D& pt2, const Point2D& pt);
 
 	/********************************************************************************
 	@brief		Check polygon is convex
 	@param		[in] poly : polygon
 	@return		TRUE : is convex | FALSE : no convex
 	********************************************************************************/
-	API_EXPR GBool	is_convex_polygon(const VecPoint2D& poly);
+	Dllexport GBool	is_convex_polygon(const VecPoint2D& poly);
 
 	/********************************************************************************
 	@brief		Check point on a line segment given by two points
@@ -79,7 +79,7 @@ namespace geo{ namespace v2
 	@param		[in] pt		: Point check
 	@return		TRUE : inside | FALSE : outside
 	*********************************************************************************/
-	API_EXPR GBool is_point_in_lsegment(const Point2D& pt1, const Point2D& pt2, const Point2D& pt);
+	Dllexport GBool is_point_in_lsegment(const Point2D& pt1, const Point2D& pt2, const Point2D& pt);
 
 	/********************************************************************************
 	@brief		Check snap point point to line segement
@@ -88,7 +88,7 @@ namespace geo{ namespace v2
 	@param		[in] pt		: Point check
 	@return		TRUE : inside | FALSE : outside
 	********************************************************************************/
-	API_EXPR GBool is_snap_point_to_lsegment(const Point2D& pt1, const Point2D& pt2, const Point2D& pt, const GFloat& fSnap);
+	Dllexport GBool is_snap_point_to_lsegment(const Point2D& pt1, const Point2D& pt2, const Point2D& pt, const GFloat& fSnap);
 
 	/*******************************************************************************
 	@brief		Check point on a line given by two points
@@ -97,7 +97,7 @@ namespace geo{ namespace v2
 	@param		[in] pt		: Point check
 	@return		TRUE : inside | FALSE : outside
 	********************************************************************************/
-	API_EXPR GBool is_point_in_line(const Point2D& pt1, const Point2D& pt2, const Point2D& pt);
+	Dllexport GBool is_point_in_line(const Point2D& pt1, const Point2D& pt2, const Point2D& pt);
 
 	/********************************************************************************
 	@brief		Check snap point point to line
@@ -106,7 +106,7 @@ namespace geo{ namespace v2
 	@param		[in] pt		: Point check
 	@return		TRUE : inside | FALSE : outside
 	*********************************************************************************/
-	API_EXPR GBool is_snap_point_to_line(const Point2D& pt1, const Point2D& pt2, const Point2D& pt, const GFloat& fSnap);
+	Dllexport GBool is_snap_point_to_line(const Point2D& pt1, const Point2D& pt2, const Point2D& pt, const GFloat& fSnap);
 
 	/********************************************************************************
 	*! @brief  : Check point is in ray (ray : point start and unit vector)
@@ -116,7 +116,7 @@ namespace geo{ namespace v2
 	*! @return : TRUE : in ray | FALSE : out ray
 	*! @author : thuong.nv			- [Date] : 06/03/2023
 	********************************************************************************/
-	API_EXPR GBool is_point_in_ray(const Point2D& pt, const Vec2D& vn, const Point2D& ptc);
+	Dllexport GBool is_point_in_ray(const Point2D& pt, const Vec2D& vn, const Point2D& ptc);
 }}
 
 #endif // !X2D_REL_H

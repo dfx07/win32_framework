@@ -83,9 +83,6 @@
     <ClInclude Include="..\include\graphics\wtext_render.h">
       <Filter>Header Files\graphics</Filter>
     </ClInclude>
-    <ClInclude Include="..\include\graphics\gp_camera.h">
-      <Filter>Header Files\graphics</Filter>
-    </ClInclude>
     <ClInclude Include="..\include\import_control.h">
       <Filter>Header Files\api</Filter>
     </ClInclude>
@@ -97,9 +94,6 @@
     </ClInclude>
     <ClInclude Include="..\include\xwinbase.h">
       <Filter>Header Files\ui\window</Filter>
-    </ClInclude>
-    <ClInclude Include="..\include\graphics\gp_geometry_render.h">
-      <Filter>Header Files\graphics</Filter>
     </ClInclude>
     <ClInclude Include="..\include\math\xmath.h">
       <Filter>Header Files\math</Filter>

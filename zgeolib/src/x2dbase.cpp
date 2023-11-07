@@ -9,7 +9,7 @@ namespace geo {namespace v2
 @param		[in] v : Vector
 @return		FLOAT : magnitude
 ***********************************************************************************/
-API_EXPR GFloat mag(const Vec2D& v)
+Dllexport GFloat mag(const Vec2D& v)
 {
 	return std::sqrtf(v.x * v.x + v.y * v.y);
 }
@@ -20,7 +20,7 @@ API_EXPR GFloat mag(const Vec2D& v)
 *! @return : uinit vector
 *! @author : thuong.nv				- [Date] : 06/03/2023
 ***********************************************************************************/
-API_EXPR Vec2D normalize(const Vec2D& v)
+Dllexport Vec2D normalize(const Vec2D& v)
 {
 	float fmagnitude = mag(v);
 
@@ -37,7 +37,7 @@ API_EXPR Vec2D normalize(const Vec2D& v)
 @param		[in] v2		: Second vector
 @return		FLOAT : Value cross product
 ***********************************************************************************/
-API_EXPR GFloat cross(const Vec2D& v1, const Vec2D& v2)
+Dllexport GFloat cross(const Vec2D& v1, const Vec2D& v2)
 {
 	return (v1.x * v2.y - v1.y * v2.x);
 }
@@ -48,7 +48,7 @@ API_EXPR GFloat cross(const Vec2D& v1, const Vec2D& v2)
 *! @return : FLOAT : dot product
 *! @author : thuong.nv				- [Date] : 06/03/2023
 ***********************************************************************************/
-API_EXPR GFloat dot(const Vec2D& v1, const Vec2D& v2)
+Dllexport GFloat dot(const Vec2D& v1, const Vec2D& v2)
 {
 	return v1.x * v2.x + v1.y * v2.y;
 }
@@ -60,7 +60,7 @@ API_EXPR GFloat dot(const Vec2D& v1, const Vec2D& v2)
 *! @return : Degree angle between two vector [-180~180]
 *! @author : thuong.nv			- [Date] : 06/03/2023
 ***********************************************************************************/
-API_EXPR GFloat angle(const Vec2D& v1, const Vec2D& v2)
+Dllexport GFloat angle(const Vec2D& v1, const Vec2D& v2)
 {
 	GFloat fdot = dot(v1, v2);
 	GFloat fDet = v1.x * v2.y - v1.y * v2.x;
@@ -78,7 +78,7 @@ API_EXPR GFloat angle(const Vec2D& v1, const Vec2D& v2)
 *! @return : Point2D point after move
 *! @author : thuong.nv			- [Date] : 06/03/2023
 ***********************************************************************************/
-API_EXPR Point2D move(const Point2D& pt, const Vec2D& vn, const GFloat fDistance)
+Dllexport Point2D move(const Point2D& pt, const Vec2D& vn, const GFloat fDistance)
 {
 	Point2D ptmove;
 
@@ -95,7 +95,7 @@ API_EXPR Point2D move(const Point2D& pt, const Vec2D& vn, const GFloat fDistance
 *! @return : Vector2D after rotate
 *! @author : thuong.nv			- [Date] : 06/03/2023
 ***********************************************************************************/
-API_EXPR Vec2D rotate(const Vec2D& v, const GFloat fDegree)
+Dllexport Vec2D rotate(const Vec2D& v, const GFloat fDegree)
 {
 	GFloat fRadangle = d2r(fDegree);
 
@@ -113,7 +113,7 @@ API_EXPR Vec2D rotate(const Vec2D& v, const GFloat fDegree)
 *! @return : Point2D after rotate
 *! @author : thuong.nv			- [Date] : 06/03/2023
 ***********************************************************************************/
-API_EXPR Point2D rotate(const Point2D& ptPivot, const Point2D& ptRotate, const GFloat fDegree)
+Dllexport Point2D rotate(const Point2D& ptPivot, const Point2D& ptRotate, const GFloat fDegree)
 {
 	Vec2D vpipr = ptRotate - ptPivot;
 	GFloat fDistance = mag(vpipr);
@@ -133,7 +133,7 @@ API_EXPR Point2D rotate(const Point2D& ptPivot, const Point2D& ptRotate, const G
 *! @return : Point2D mid point
 *! @author : thuong.nv			- [Date] : 05/19/2023
 ***********************************************************************************/
-API_EXPR Point2D  mid_point(const Point2D& pt1, const Point2D& pt2)
+Dllexport Point2D  mid_point(const Point2D& pt1, const Point2D& pt2)
 {
 	Point2D ptMid;
 

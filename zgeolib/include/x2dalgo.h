@@ -21,7 +21,7 @@ namespace geo {	namespace v2
 	*! @param  : [in] poly : polygon
 	*! @author : thuong.nv			- [Date] : 25/10/2023
 	********************************************************************************/
-	API_EXPR VecPoint2D convex_hull_giftwap(const VecPoint2D& vecPoints);
+	Dllexport VecPoint2D convex_hull_giftwap(const VecPoint2D& vecPoints);
 
 	/********************************************************************************
 	*! @brief  : Clipping Polygons use Sutherland–Hodgman algorithm [rect]
@@ -34,7 +34,7 @@ namespace geo {	namespace v2
 	*!           selecting only vertices from the subject polygon that are on the visible side.
 	*! @refer  : https://en.wikipedia.org/wiki/Sutherland–Hodgman_algorithm
 	********************************************************************************/
-	API_EXPR VecPoint2D clip_polygon_hodgman(const VecPoint2D& poly, const VecPoint2D& clipConvexPoly);
+	Dllexport VecPoint2D clip_polygon_hodgman(const VecPoint2D& poly, const VecPoint2D& clipConvexPoly);
 
 	/********************************************************************************
 	*! @brief  : Clipping Polygons use Weiler Atherton  algorithm
@@ -45,7 +45,7 @@ namespace geo {	namespace v2
 	*! @note   : Polygon input is counterclockwise (CCW).
 	*! @refer  : https://www.geeksforgeeks.org/weiler-atherton-polygon-clipping-algorithm/
 	*********************************************************************************/
-	API_EXPR VecPolyList clip_polygon_weiler(const VecPoint2D& poly, const VecPoint2D& clipPoly);
+	Dllexport VecPolyList clip_polygon_weiler(const VecPoint2D& poly, const VecPoint2D& clipPoly);
 
 	/********************************************************************************
 	*! @brief  : Cut line and polygon
@@ -56,7 +56,7 @@ namespace geo {	namespace v2
 	*! @author : thuong.nv   - [Date] : 29/10/2023
 	*! @note   : Polygon input is counterclockwise (CCW).
 	*********************************************************************************/
-	API_EXPR VecPolyList cut_line_polygon(const Point2D& pt1, const Point2D& pt2, const VecPoint2D& poly);
+	Dllexport VecPolyList cut_line_polygon(const Point2D& pt1, const Point2D& pt2, const VecPoint2D& poly);
 
 	/********************************************************************************
 	*! @brief  : The partition of a polygonal area (simple polygon) P into a set of triangles
@@ -65,7 +65,7 @@ namespace geo {	namespace v2
 	*! @author : thuong.nv   - [Date] : 11/07/2023
 	*! @note   : Polygon input is counterclockwise (CCW).
 	*********************************************************************************/
-	API_EXPR VecPoint2D split_poly2trig_ear_clipping(const VecPoint2D& poly);
+	Dllexport VecPoint2D split_poly2trig_ear_clipping(const VecPoint2D& poly);
 
 }}
 

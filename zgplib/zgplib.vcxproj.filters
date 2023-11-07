@@ -24,12 +24,24 @@
     <ClInclude Include="include\xgpcam.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="include\xgpwintext_render.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\xgpwinctx.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src\xgpcam.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="include\xgpgeo_render.h">
+      <Filter>Header Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\xgpgeo_render.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\xgpwintext_render.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

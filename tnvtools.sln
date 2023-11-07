@@ -11,10 +11,12 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "zgplib", "zgplib\zgplib.vcx
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Common", "Common", "{0DA449E1-BDB0-43B3-9146-64C5F0E09B22}"
 	ProjectSection(SolutionItems) = preProject
+		common\x2dtype.h = common\x2dtype.h
+		common\x3dtype.h = common\x3dtype.h
+		common\xgeodef.h = common\xgeodef.h
+		common\xgeotype.h = common\xgeotype.h
 		common\xsysdef.h = common\xsysdef.h
 	EndProjectSection
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "3rdinc", "3rdinc", "{E2D7A553-6C60-4689-8631-0BEFE5A59F25}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -51,9 +53,6 @@ Global
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
-	EndGlobalSection
-	GlobalSection(NestedProjects) = preSolution
-		{E2D7A553-6C60-4689-8631-0BEFE5A59F25} = {0DA449E1-BDB0-43B3-9146-64C5F0E09B22}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {33515DDD-35F5-4D86-837C-092BAA4031EB}

@@ -11,8 +11,8 @@
 #ifndef IMPORT_GL_H
 #define IMPORT_GL_H
 
-#include "graphics/gp_camera.h"
-#include "graphics/gp_geometry_render.h"
+#include "xgpcam.h"
+#include "xgpgeorender.h"
 #include "graphics/gp_shader.h"
 
 #endif // !IMPORT_GL_H

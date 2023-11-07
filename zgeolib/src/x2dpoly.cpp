@@ -10,7 +10,7 @@ namespace geo {	namespace v2 {
 @brief		Reverse polygon cw -> ccw | ccw -> cw
 @param		[in] poly : polygon
 ***********************************************************************************/
-API_EXPR void reverse_polygon(VecPoint2D& poly)
+Dllexport void reverse_polygon(VecPoint2D& poly)
 {
 	int nPolyCnt = static_cast<int>(poly.size());
 
@@ -29,7 +29,7 @@ API_EXPR void reverse_polygon(VecPoint2D& poly)
 *! @return : VecPoint2D polygon after inflating
 *! @author : thuong.nv			- [Date] : 08/28/2023
 ***********************************************************************************/
-API_EXPR VecPoint2D infact_polygon(const VecPoint2D& poly, const GFloat& fOffset)
+Dllexport VecPoint2D infact_polygon(const VecPoint2D& poly, const GFloat& fOffset)
 {
 	int nPolyCnt = static_cast<int>(poly.size());
 	int nPre = 0;
@@ -78,7 +78,7 @@ API_EXPR VecPoint2D infact_polygon(const VecPoint2D& poly, const GFloat& fOffset
 *! @return : VecPoint2D polygon after inflating
 *! @author : thuong.nv			- [Date] : 08/28/2023
 ***********************************************************************************/
-API_EXPR void infact_polygonx(VecPoint2D& poly, const GFloat& fOffset)
+Dllexport void infact_polygonx(VecPoint2D& poly, const GFloat& fOffset)
 {
 	int nPolyCnt = static_cast<int>(poly.size());
 	int nPre = 0;
@@ -125,7 +125,7 @@ API_EXPR void infact_polygonx(VecPoint2D& poly, const GFloat& fOffset)
 *! @author : thuong.nv			- [Date] : 08/03/2023
 *! @note   : shoelace formula | no hold
 ***********************************************************************************/
-API_EXPR GFloat get_area_polygon(const VecPoint2D& points)
+Dllexport GFloat get_area_polygon(const VecPoint2D& points)
 {
 	GFloat fArea = 0.f;
 
@@ -156,7 +156,7 @@ API_EXPR GFloat get_area_polygon(const VecPoint2D& points)
 *! @param  : [out] ptMax  : max point bounding
 *! @author : thuong.nv			- [Date] : 05/19/2023
 ***********************************************************************************/
-API_EXPR void get_bounding_box(const VecPoint2D& points, Point2D& ptMin, Point2D& ptMax)
+Dllexport void get_bounding_box(const VecPoint2D& points, Point2D& ptMin, Point2D& ptMax)
 {
 	GFloat fMinX = std::numeric_limits<GFloat>::max();
 	GFloat fMinY = std::numeric_limits<GFloat>::max();
@@ -184,7 +184,7 @@ API_EXPR void get_bounding_box(const VecPoint2D& points, Point2D& ptMin, Point2D
 @return		TRUE : inside | FALSE : outside
 @note		ref : https://wrf.ecse.rpi.edu/Research/Short_Notes/pnpoly.html
 ***********************************************************************************/
-API_EXPR GBool is_point_in_polygon(const Point2D& pt, const VecPoint2D& poly)
+Dllexport GBool is_point_in_polygon(const Point2D& pt, const VecPoint2D& poly)
 {
 	if (poly.size() < 3)
 	{
@@ -243,7 +243,7 @@ API_EXPR GBool is_point_in_polygon(const Point2D& pt, const VecPoint2D& poly)
 *!			 | INSIDE_2 ( 3) : poly2 inside poly1
 *! @note	: poly1 and poly 2 have number points greater than 3
 ***********************************************************************************/
-API_EXPR GInt rel_2polygon(const VecPoint2D& poly1, const VecPoint2D& poly2)
+Dllexport GInt rel_2polygon(const VecPoint2D& poly1, const VecPoint2D& poly2)
 {
 	if (poly1.size() < 3 || poly2.size() < 3)
 	{

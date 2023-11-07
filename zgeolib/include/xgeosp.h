@@ -21,7 +21,7 @@ namespace geo {
 	@param		[in] fEpsilon	: tolerance
 	@return		TRUE : equal | FALSE : no equal
 	*******************************************************************************/
-	API_EXPR GBool is_equal(const GFloat fVal1, const GFloat fVal2, const GFloat fEpsilon);
+	Dllexport GBool is_equal(const GFloat fVal1, const GFloat fVal2, const GFloat fEpsilon);
 
 	/*******************************************************************************
 	@brief		Convert a rect into a list of points
@@ -29,21 +29,21 @@ namespace geo {
 	@return		List pointF
 	@note		It can be counterclockwise or clockwise
 	********************************************************************************/
-	API_EXPR VecPoint2D	 convert_rectf_to_points(const Rect2D& rect);
+	Dllexport VecPoint2D	 convert_rectf_to_points(const Rect2D& rect);
 
 	/*******************************************************************************
 	*! @brief  : Convert from Radian to Degree
 	*! @param  : [in] fRad : angle float (radian)
 	*! @return : angle after convert
 	********************************************************************************/
-	API_EXPR GFloat r2d(const GFloat& fRad);
+	Dllexport GFloat r2d(const GFloat& fRad);
 
 	/*******************************************************************************
 	*! @brief  : Convert from Degree to Radian
 	*! @param  : [in] fDegree : angle float (degree)
 	*! @return : angle after convert
 	********************************************************************************/
-	API_EXPR GFloat d2r(const GFloat& fDegree);
+	Dllexport GFloat d2r(const GFloat& fDegree);
 
 }
 
