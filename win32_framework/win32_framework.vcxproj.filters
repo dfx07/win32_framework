@@ -101,9 +101,6 @@
     <ClInclude Include="..\include\graphics\gp_geometry_render.h">
       <Filter>Header Files\graphics</Filter>
     </ClInclude>
-    <ClInclude Include="..\include\math\xgeometry.h">
-      <Filter>Header Files\math</Filter>
-    </ClInclude>
     <ClInclude Include="..\include\math\xmath.h">
       <Filter>Header Files\math</Filter>
     </ClInclude>
@@ -121,9 +118,6 @@
     </ClInclude>
     <ClInclude Include="..\include\graphics\gp_shader.h">
       <Filter>Header Files\graphics</Filter>
-    </ClInclude>
-    <ClInclude Include="..\include\math\xgeotype.h">
-      <Filter>Header Files\math</Filter>
     </ClInclude>
     <ClInclude Include="..\include\xsyslogger.h">
       <Filter>Header Files\system</Filter>

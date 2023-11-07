@@ -13,6 +13,7 @@
 
 #include "xsystype.h"
 #include "xwinbase.h"
+#include "xgpwinctx.h"
 
 #include "graphics/wtext_render.h"
 #include <vector>
@@ -27,7 +28,7 @@ class Camera;
 * ⮟⮟ Class name: Window
 * Thông tin và ngữ cảnh của một handle
 ***********************************************************************************/
-class Dllexport Window : public WindowBase, public WindowOpenGLContext, public WindowEvent
+class Dllexport Window : public WindowBase, public gp::WindowOpenGLContext, public WindowEvent
 {
 protected:
 

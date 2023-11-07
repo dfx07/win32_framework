@@ -31,19 +31,6 @@
 #define GL_PRESSED			1
 #define GL_RELEASE			0
 
-#define ADD_ATRIBUTE(attribs, name, value)\
-{\
-    assert((size_t) attribCount < attribsize);\
-    attribs[attribCount++] = name;  \
-    attribs[attribCount++] = value; \
-}
-
-#define END_ATRIBUTE(attribs)\
-{\
-    assert((size_t) attribCount < attribsize); \
-    attribs[attribCount++] = 0;  \
-}
-
 #define ON_FUNCTION_WINDOW(bFunCheck, ...)\
 {\
     if(bFunCheck) \
@@ -86,16 +73,6 @@ typedef struct GDIPLUS_TOKEN
 	ULONG_PTR	m_pGdiplusToken;
 
 }  *GDIPLUS_TOKEN_PTR;
-
-typedef struct WindowRender
-{
-	HWND	m_hWnd		= NULL;
-	HDC		m_hDc		= NULL;
-	HGLRC	m_hGLRC		= NULL;
-
-	bool	m_bCreated  = false;	// create ok
-
-} *WindowRenderPtr;
 
 
 typedef enum tagGLKeyboard

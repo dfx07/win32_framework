@@ -614,4 +614,81 @@ API_EXPR VecPolyList cut_line_polygon(const Point2D& pt1, const Point2D& pt2, co
 	return vec_poly_split;
 }
 
+/***********************************************************************************
+*! @brief  : is the partition of a polygonal area (simple polygon) P into a set of triangles
+*! @param  : [in]  poly : split poly
+*! @return : VecPolyList (Every 3 consecutive points will be a triangle)
+*! @author : thuong.nv   - [Date] : 11/07/2023
+*! @note   : Polygon input/out is counterclockwise (CCW).
+************************************************************************************/
+API_EXPR VecPoint2D split_poly2trig_ear_clipping(const VecPoint2D& poly)
+{
+	VecPoint2D list_trig; VecPoint2D vecPolyTemp;
+
+	int nPolyCnt = static_cast<int>(poly.size());
+	if (nPolyCnt < 3)
+	{
+		_ASSERT(0);
+
+		return poly;
+	}
+
+	list_trig.reserve(nPolyCnt * 2);
+
+	vecPolyTemp = poly;
+
+	EnumOrien orien, orp12, orp23, orp31;
+	auto funCheckPointInTrigIdx = [&](VecPoint2D& _poly, int idx1, int idx2, int idx3)
+	{
+		int _nPolyCnt = static_cast<int>(_poly.size());
+
+		for (int i = 0; i < _nPolyCnt; i++)
+		{
+			// don't check index input
+			if (i == idx1 || i == idx2 || i == idx3)
+				continue;
+
+			orp12 = get_orientation_point_vector(_poly[idx1], _poly[idx2], _poly[i]);
+			orp23 = get_orientation_point_vector(_poly[idx2], _poly[idx3], _poly[i]);
+			orp31 = get_orientation_point_vector(_poly[idx3], _poly[idx1], _poly[i]);
+
+			if (orp12 == orp23 && orp23 == orp31)
+				return true;
+		}
+
+		return false;
+	};
+
+	int i, nOldSize, nCur, nNex, nPre;
+
+	while (vecPolyTemp.size() > 0)
+	{
+		//PS: prevent in case of infinite loops 
+		nPolyCnt = nOldSize = vecPolyTemp.size();
+
+		for (i = 0; i < nPolyCnt; i++)
+		{
+			nCur = i; nPre = ((i - 1) < 0) ? (nPolyCnt - 1) : (i - 1);
+			nNex = ((i + 1) >= nPolyCnt) ? 0 : (i + 1);
+
+			orien = get_orientation_point_vector(vecPolyTemp[nPre], vecPolyTemp[nCur], vecPolyTemp[nNex]);
+
+			if ((orien == EnumOrien::LEFT || orien == EnumOrien::COLLINEAR)
+				&& funCheckPointInTrigIdx(vecPolyTemp, nPre, nCur, nNex) == false)
+			{
+				list_trig.push_back(vecPolyTemp[nPre]);
+				list_trig.push_back(vecPolyTemp[nCur]);
+				list_trig.push_back(vecPolyTemp[nNex]);
+				vecPolyTemp.erase(vecPolyTemp.begin() + nCur);
+			}
+
+			nPolyCnt = vecPolyTemp.size();
+		}
+
+		if (vecPolyTemp.size() == nOldSize)
+			break;
+	}
+	return list_trig;
+}
+
 }}

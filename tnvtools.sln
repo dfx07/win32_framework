@@ -3,9 +3,18 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 16
 VisualStudioVersion = 16.0.33214.272
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "win32_framework", "win32_framework.vcxproj", "{97F72974-6550-44DE-AF0C-B0722B3763AA}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "win32_framework", "win32_framework\win32_framework.vcxproj", "{97F72974-6550-44DE-AF0C-B0722B3763AA}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "zgeolib", "..\zgeolib\zgeolib.vcxproj", "{762B0C09-77C8-4F9C-BB7D-965B3DE654F0}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "zgeolib", "zgeolib\zgeolib.vcxproj", "{762B0C09-77C8-4F9C-BB7D-965B3DE654F0}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "zgplib", "zgplib\zgplib.vcxproj", "{06782EC4-623C-4708-ABDD-3FCA3BF5A2E3}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Common", "Common", "{0DA449E1-BDB0-43B3-9146-64C5F0E09B22}"
+	ProjectSection(SolutionItems) = preProject
+		common\xsysdef.h = common\xsysdef.h
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "3rdinc", "3rdinc", "{E2D7A553-6C60-4689-8631-0BEFE5A59F25}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -31,9 +40,20 @@ Global
 		{762B0C09-77C8-4F9C-BB7D-965B3DE654F0}.Release|x64.Build.0 = Release|x64
 		{762B0C09-77C8-4F9C-BB7D-965B3DE654F0}.Release|x86.ActiveCfg = Release|Win32
 		{762B0C09-77C8-4F9C-BB7D-965B3DE654F0}.Release|x86.Build.0 = Release|Win32
+		{06782EC4-623C-4708-ABDD-3FCA3BF5A2E3}.Debug|x64.ActiveCfg = Debug|x64
+		{06782EC4-623C-4708-ABDD-3FCA3BF5A2E3}.Debug|x64.Build.0 = Debug|x64
+		{06782EC4-623C-4708-ABDD-3FCA3BF5A2E3}.Debug|x86.ActiveCfg = Debug|Win32
+		{06782EC4-623C-4708-ABDD-3FCA3BF5A2E3}.Debug|x86.Build.0 = Debug|Win32
+		{06782EC4-623C-4708-ABDD-3FCA3BF5A2E3}.Release|x64.ActiveCfg = Release|x64
+		{06782EC4-623C-4708-ABDD-3FCA3BF5A2E3}.Release|x64.Build.0 = Release|x64
+		{06782EC4-623C-4708-ABDD-3FCA3BF5A2E3}.Release|x86.ActiveCfg = Release|Win32
+		{06782EC4-623C-4708-ABDD-3FCA3BF5A2E3}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{E2D7A553-6C60-4689-8631-0BEFE5A59F25} = {0DA449E1-BDB0-43B3-9146-64C5F0E09B22}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {33515DDD-35F5-4D86-837C-092BAA4031EB}

@@ -58,6 +58,15 @@ namespace geo {	namespace v2
 	*********************************************************************************/
 	API_EXPR VecPolyList cut_line_polygon(const Point2D& pt1, const Point2D& pt2, const VecPoint2D& poly);
 
+	/********************************************************************************
+	*! @brief  : The partition of a polygonal area (simple polygon) P into a set of triangles
+	*! @param  : [in]  poly : split poly
+	*! @return : VecPolyList (Every 3 consecutive points will be a triangle)
+	*! @author : thuong.nv   - [Date] : 11/07/2023
+	*! @note   : Polygon input is counterclockwise (CCW).
+	*********************************************************************************/
+	API_EXPR VecPoint2D split_poly2trig_ear_clipping(const VecPoint2D& poly);
+
 }}
 
 #endif // !X2D_ALOGO_H

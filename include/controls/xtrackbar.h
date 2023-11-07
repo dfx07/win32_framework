@@ -13,7 +13,6 @@
 
 #include "xcontrolbase.h"
 #include "math/xeasing.h"
-#include "math/xgeometry.h"
 #include <vector>
 
 ___BEGIN_NAMESPACE___
@@ -342,6 +341,69 @@ private:
 		m_guideline_list.emplace_back(GuideLineData{ m_fMaxValue , true});
 	}
 
+protected: // Support function
+	Gdiplus::PointF GetProjectionPointToLsegment(const Gdiplus::PointF& ptLine1, const Gdiplus::PointF& ptLine2, const Gdiplus::PointF& pt)
+	{
+
+		auto funDot = [](const Gdiplus::PointF& v1, const Gdiplus::PointF& v2) ->float
+		{
+			return v1.X * v2.X + v1.Y * v2.Y;
+		};
+
+		Gdiplus::PointF ptPer;
+		Gdiplus::PointF vp1p2 = ptLine2 - ptLine1;  // p1p2
+		Gdiplus::PointF vp1p = pt - ptLine1;  // p1p
+		Gdiplus::PointF vp2p = pt - ptLine2;  // p2p
+
+		float fDis = vp1p2.X * vp1p2.X + vp1p2.Y * vp1p2.Y;
+
+		if (std::abs(fDis) < MATH_EPSILON)
+		{
+			float fDet = vp1p.X * vp1p2.X + vp1p.Y * vp1p2.Y;
+
+			float t = fDet / fDis;
+			ptPer.X = ptLine1.X + t * (ptLine2.X - ptLine1.X);
+			ptPer.Y = ptLine1.Y + t * (ptLine2.Y - ptLine1.Y);
+		}
+		else
+		{
+			ptPer = pt; // case 3 points coincide
+		}
+
+		int iRet = 0;
+
+		// Point in side line Segment
+		float fdot1 = funDot(ptLine2 - ptLine1, ptPer - ptLine1);
+		float fdot2 = funDot(ptLine1 - ptLine2, ptPer - ptLine2);
+
+		if (fdot1 >= MATH_EPSILON && fdot2 >= MATH_EPSILON)
+		{
+			iRet = 1;
+		}
+		else if (true)
+		{
+			float fDis1 = Magnitude(ptLine1 - ptPer);
+			float fDis2 = Magnitude(ptLine2 - ptPer);
+			iRet = (fDis1 <= fDis2) ? 2 : 3;
+		}
+
+		if (iRet == 2)
+		{
+			ptPer = ptLine1;
+		}
+		else if (iRet == 3)
+		{
+			ptPer = ptLine2;
+		}
+
+		return ptPer;
+	}
+
+	float Magnitude(const Gdiplus::PointF& v)
+	{
+		return std::sqrtf(v.X * v.X + v.Y * v.Y);
+	}
+
 protected:
 	/*******************************************************************************
 	*! @brief  : Process message event
@@ -365,10 +427,10 @@ protected:
 				long x = static_cast<long>(wParam);
 				long y = static_cast<long>(lParam);
 
-				Point2D pt;
-				geo::get_projection_point_to_lsegment({ m_start_loc.X, m_start_loc.Y }, { m_end_loc.X, m_end_loc.Y }, { x , y }, &pt, true);
-				float fValuePix  = geo::mag(pt - Point2D{ m_start_loc.X, m_start_loc.Y });
-				float fLengthPix = geo::mag(Point2D{ m_end_loc.X, m_end_loc.Y } - Point2D{ m_start_loc.X, m_start_loc.Y });
+				Gdiplus::PointF pt = GetProjectionPointToLsegment({ m_start_loc.X, m_start_loc.Y }, { m_end_loc.X, m_end_loc.Y }, {Gdiplus::REAL(x) , Gdiplus::REAL(y) });
+
+				float fValuePix  = Magnitude(pt - Gdiplus::PointF{ m_start_loc.X, m_start_loc.Y });
+				float fLengthPix = Magnitude(Gdiplus::PointF{ m_end_loc.X, m_end_loc.Y } - Gdiplus::PointF{ m_start_loc.X, m_start_loc.Y });
 
 				float value = m_fMinValue + (fValuePix / fLengthPix) * (m_fMaxValue - m_fMinValue);
 

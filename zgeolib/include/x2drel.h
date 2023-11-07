@@ -63,7 +63,7 @@ namespace geo{ namespace v2
 	*!           3 : same p2
 	*! @author : thuong.nv			- [Date] : 17/10/2023
 	********************************************************************************/
-	API_EXPR GInt get_rel_point_lsegment(const Point2D& pt1, const Point2D& pt2, const Point2D& pt);
+	API_EXPR GInt rel_point_lsegment(const Point2D& pt1, const Point2D& pt2, const Point2D& pt);
 
 	/********************************************************************************
 	@brief		Check polygon is convex
