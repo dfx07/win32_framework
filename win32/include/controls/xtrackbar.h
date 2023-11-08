@@ -690,7 +690,7 @@ protected:
 
 			swprintf_s(buff, nMaxBuff, L"%0.f", guideline.value);
 
-			auto rect_text = m_pRender->MeasureString(buff, wcslen(buff) +1, &m_StringFormat);
+			auto rect_text = m_pRender->MeasureString(buff, static_cast<int>(wcslen(buff) +1), &m_StringFormat);
 
 			rect_text_guideline.X		= point_value.X - rect_text.Width/2;
 			rect_text_guideline.Y		= point_value.Y - fLengthGuideLine - rect_text.Height;

@@ -39,7 +39,7 @@ enum class CameraMode
 * Base class for window handle inheritance
 ***********************************************************************************/
 template<CameraType T>
-class Dllexport Camera
+class Camera
 {
 protected:
 	glm::vec3       m_position;     // Vị trí camera

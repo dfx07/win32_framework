@@ -1,7 +1,8 @@
 ﻿
 #include "import_control.h"
 #include "import_gl.h"
-
+#include "xsyslogger.h"
+#include "import_geo.h"
 ____USE_NAMESPACE____
 
 
@@ -9,11 +10,11 @@ using namespace fox;
 
 //Button* btn;
 MenuContext* menu = NULL;
-Camera2D     cam2D;
+gp::Camera2D     cam2D;
 
-Shader       shader;
+gp::Shader       shader;
 
-GeometryRender render;
+gp::GeometryRender render;
 
 struct Component
 {
@@ -242,8 +243,9 @@ void Keyboard(WindowBase* win)
 
 float RectSDF(Vec2D p, Vec2D b, float r)
 {
-    Vec2D d = abs(p) - b + Vec2D(r);
-    return glm::min(glm::max(d.x, d.y), 0.f) + length(glm::max(d, 0.f)) - r;
+    Vec2D d = glm::abs(p) - b + Vec2D(r);
+
+    return glm::min(glm::max(d.x, d.y), 0.f) + glm::length(glm::max(d, 0.f)) - r;
 }
 
 void MouseScroll(WindowBase* win)
@@ -287,7 +289,7 @@ void MouseMove(WindowBase* win)
    p4 = { x, y };
 
 
-   bCheck = geo::is_same_direction(p2 - p1, p4 - p3, 0.01f);
+   bCheck = geo::v2::is_same_direction(p2 - p1, p4 - p3, 0.01f);
 }
 
 
@@ -355,6 +357,22 @@ int main()
     window->SetOnMouseScrollfunc(MouseScroll);
     window->SetOnMouseMovefunc(MouseMove);
 
+    //SubWindow* sub = new SubWindow();
+    //sub->SetSize(300, 100);
+
+    //Button* btn = new Button();
+    //btn->SetPosition(20, 30);
+    //btn->SetLabel(L"click vao day");
+    //btn->SetSize(100, 20);
+    //btn->UseEffect(true);
+    //btn->SetBorderRadius(3);
+    //btn->SetBorderColor(fox::RectUIControl::Color(255, 255, 255));
+    //btn->SetBorderWidth(1.f);
+
+    //sub->AddControl(btn);
+
+    //window->AddSubWindow(sub);
+
     window = create_window(window);
 
     CreatedDone(window);
@@ -363,7 +381,7 @@ int main()
     {
         window->process();
         window->draw();
-        window->wait_event();
+        window->poll_event();
     }
 
     destroy_window(window);

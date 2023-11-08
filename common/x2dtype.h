@@ -14,6 +14,9 @@
 #include "xgeodef.h"
 #include <vector>
 
+#ifdef USE_GLM_LIB
+#include <glm/glm.hpp>
+#endif // USE_GLM_LIB
 
 /////////////////////////////////////////////////////////////////////////////////////
 /***********************************************************************************/
@@ -201,7 +204,11 @@ struct tagLine
 	typedef T	value_type;
 	typedef tagLine<T> type;
 
+#ifdef USE_GLM_LIB
+	typedef glm::vec2	 value_type_point;
+#else 
 	typedef tagVec<2, T> value_type_point;
+#endif // USE_GLM_LIB
 
 public:
 	value_type_point ptStart;
@@ -209,8 +216,8 @@ public:
 
 	tagLine()
 	{
-		ptStart = tagVec<2, T>(0, 0);
-		ptEnd   = tagVec<2, T>(0, 0);
+		ptStart = value_type_point(0, 0);
+		ptEnd   = value_type_point(0, 0);
 	}
 
 	template<typename U, typename V>
@@ -219,6 +226,12 @@ public:
 		ptStart = value_type_point(ptS);
 		ptEnd = value_type_point(ptE);
 	}
+
+	tagLine(const value_type_point pts, const value_type_point pte)
+	{
+		ptStart = pts;
+		ptEnd = pte;
+	}
 };
 
 
@@ -226,8 +239,16 @@ public:
 /***********************************************************************************/
 // Type DEFINE
 
+#ifdef USE_GLM_LIB
+typedef glm::vec2					Vec2D;
+typedef glm::vec2					Point2D;
+
+#else
 typedef tagVec<2, float>			Vec2D;
 typedef tagVec<2, float>			Point2D;
+
+#endif // USE_GLM_LIB
+
 typedef tagRect<float>				Rect2D;
 typedef std::vector<Vec2D>			VecPoint2D;
 typedef std::vector<VecPoint2D>		VecPolyList;

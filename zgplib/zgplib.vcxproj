@@ -21,13 +21,15 @@
   <ItemGroup>
     <ClInclude Include="include\xgpcam.h" />
     <ClInclude Include="include\xgpctx.h" />
+    <ClInclude Include="include\xgpgeo_render.h" />
+    <ClInclude Include="include\xgpshader.h" />
     <ClInclude Include="include\xgpwinctx.h" />
     <ClInclude Include="include\xgpwintext_render.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="include\xgpgeo_render.h" />
     <ClCompile Include="src\xgpcam.cpp" />
     <ClCompile Include="src\xgpgeo_render.cpp" />
+    <ClCompile Include="src\xgpshader.cpp" />
     <ClCompile Include="src\xgpwinctx.cpp" />
     <ClCompile Include="src\xgpwintext_render.cpp" />
   </ItemGroup>

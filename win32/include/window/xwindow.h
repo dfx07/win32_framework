@@ -15,7 +15,7 @@
 #include "xwinbase.h"
 #include "xgpwinctx.h"
 
-#include "graphics/wtext_render.h"
+#include "xgpwintext_render.h"
 #include <vector>
 #include <stack>
 #include <mutex>
@@ -64,7 +64,7 @@ private:
 	CFPSCounter				m_fpscounter;
 
 	// Text render 2D
-	GLWinFontRender			m_text_render;
+	gp::GLWinFontRender		m_text_render;
 	const char*				m_fontNameTextRender;
 	unsigned int			m_fontSizeTextRender;
 

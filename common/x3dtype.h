@@ -14,6 +14,10 @@
 #include "xgeodef.h"
 #include <vector>
 
+#ifdef USE_GLM_LIB
+#include <glm/glm.hpp>
+#endif // USE_GLM_LIB
+
 /////////////////////////////////////////////////////////////////////////////////////
 /***********************************************************************************/
 // TYPE BASE VEC DEFINE
@@ -144,9 +148,18 @@ public:
 /***********************************************************************************/
 // Type DEFINE
 
+#ifdef USE_GLM_LIB
+typedef glm::vec3				Vec3D;
+typedef glm::vec3				Point3D;
+typedef glm::vec3				Color3;
+
+#else
 typedef tagVec<3, float>		Vec3D;
 typedef tagVec<3, float>		Point3D;
 typedef tagVec<3, float>		Color3;
+
+#endif // USE_GLM_LIB
+
 
 typedef std::vector<Point3D>	VecPoint3D;
 

@@ -17,6 +17,10 @@
 #include <GL/glew.h>
 #include <GL/wglew.h>
 
+#pragma comment (lib,"Gdiplus.lib")
+#pragma comment (lib,"opengl32.lib")
+#pragma comment (lib,"../build/lib/glew32.lib")
+
 #define ADD_ATRIBUTE(attribs, name, value)\
 {\
     assert((size_t) attribCount < attribsize);\
@@ -129,7 +133,7 @@ protected:
 	********************************************************************************/
 	void delete_opengl_context();
 
-protected:
+public:
 
 	/*******************************************************************************
 	*! @brief  : Get render device

@@ -86,6 +86,43 @@ bool GLWinFontRender::LoadFont(const char* fontname, unsigned int fontsize, Font
 	return m_bInitOK;
 }
 
+void GLWinFontRender::Use()
+{
+	if (!m_bInitOK) return;
+
+	// Only initialized once
+	if (!m_renlist)
+	{
+		m_renlist = glGenLists(1);
+
+		glNewList(m_renlist, GL_COMPILE);
+		{
+			glListBase(m_textbase - 32);
+
+			// Push information matrix
+			glPushAttrib(GL_LIST_BIT);
+
+			// Load model view matrix
+			glMatrixMode(GL_MODELVIEW);
+			glPushMatrix();
+			glLoadIdentity();
+
+			// Load projection matrix + can use glm;
+			glMatrixMode(GL_PROJECTION);
+			glPushMatrix();
+			glLoadIdentity();
+
+			glEnable(GL_BLEND);
+			glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+			glDisable(GL_DEPTH_TEST);
+		}
+		glEndList();
+	}
+
+	glCallList(m_renlist);
+	gluOrtho2D(0.0, m_width, m_height, 0.0);
+}
+
 void GLWinFontRender::DontUse()
 {
 	if (!m_bInitOK) return;

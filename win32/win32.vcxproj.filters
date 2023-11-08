@@ -19,9 +19,6 @@
     <Filter Include="Header Files\math">
       <UniqueIdentifier>{5e831aa2-24a3-4fd4-a051-fbb2554a1079}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Header Files\graphics">
-      <UniqueIdentifier>{827c4795-fd0c-4106-b144-df9736a715c2}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Header Files\ui">
       <UniqueIdentifier>{1c41e686-8757-4421-843f-46185ca747ac}</UniqueIdentifier>
     </Filter>
@@ -44,77 +41,68 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\include\xsysdef.h">
-      <Filter>Header Files\system</Filter>
-    </ClInclude>
-    <ClInclude Include="..\include\xsystype.h">
-      <Filter>Header Files\system</Filter>
-    </ClInclude>
-    <ClInclude Include="..\include\xsysutils.h">
-      <Filter>Header Files\system</Filter>
-    </ClInclude>
-    <ClInclude Include="..\include\wdef.h">
-      <Filter>Header Files\ui</Filter>
-    </ClInclude>
-    <ClInclude Include="..\include\wapi.h">
-      <Filter>Header Files\ui</Filter>
-    </ClInclude>
-    <ClInclude Include="..\include\controls\xbutton.h">
-      <Filter>Header Files\ui\controls</Filter>
-    </ClInclude>
-    <ClInclude Include="..\include\controls\xcheckbox.h">
-      <Filter>Header Files\ui\controls</Filter>
-    </ClInclude>
-    <ClInclude Include="..\include\controls\xlabel.h">
-      <Filter>Header Files\ui\controls</Filter>
-    </ClInclude>
-    <ClInclude Include="..\include\controls\xmenucontext.h">
-      <Filter>Header Files\ui\controls</Filter>
-    </ClInclude>
-    <ClInclude Include="..\include\window\xwindow.h">
-      <Filter>Header Files\ui\window</Filter>
-    </ClInclude>
-    <ClInclude Include="..\include\window\xsubwindow.h">
-      <Filter>Header Files\ui\window</Filter>
-    </ClInclude>
-    <ClInclude Include="..\include\wctrl.h">
-      <Filter>Header Files\ui</Filter>
-    </ClInclude>
-    <ClInclude Include="..\include\graphics\wtext_render.h">
-      <Filter>Header Files\graphics</Filter>
-    </ClInclude>
-    <ClInclude Include="..\include\import_control.h">
+    <ClInclude Include="include\import_control.h">
       <Filter>Header Files\api</Filter>
     </ClInclude>
-    <ClInclude Include="..\include\import_gl.h">
+    <ClInclude Include="include\import_geo.h">
       <Filter>Header Files\api</Filter>
     </ClInclude>
-    <ClInclude Include="..\include\xcontrolbase.h">
-      <Filter>Header Files\ui\controls</Filter>
+    <ClInclude Include="include\import_gl.h">
+      <Filter>Header Files\api</Filter>
     </ClInclude>
-    <ClInclude Include="..\include\xwinbase.h">
+    <ClInclude Include="include\math\xalgorithm.h">
+      <Filter>Header Files\math</Filter>
+    </ClInclude>
+    <ClInclude Include="include\math\xeasing.h">
+      <Filter>Header Files\math</Filter>
+    </ClInclude>
+    <ClInclude Include="include\math\xmath.h">
+      <Filter>Header Files\math</Filter>
+    </ClInclude>
+    <ClInclude Include="include\xsystype.h">
+      <Filter>Header Files\system</Filter>
+    </ClInclude>
+    <ClInclude Include="include\wapi.h">
+      <Filter>Header Files\ui</Filter>
+    </ClInclude>
+    <ClInclude Include="include\wctrl.h">
+      <Filter>Header Files\ui</Filter>
+    </ClInclude>
+    <ClInclude Include="include\wdef.h">
+      <Filter>Header Files\ui</Filter>
+    </ClInclude>
+    <ClInclude Include="include\window\xsubwindow.h">
       <Filter>Header Files\ui\window</Filter>
     </ClInclude>
-    <ClInclude Include="..\include\math\xmath.h">
-      <Filter>Header Files\math</Filter>
+    <ClInclude Include="include\window\xwindow.h">
+      <Filter>Header Files\ui\window</Filter>
     </ClInclude>
-    <ClInclude Include="..\include\math\xalgorithm.h">
-      <Filter>Header Files\math</Filter>
+    <ClInclude Include="include\xwinbase.h">
+      <Filter>Header Files\ui\window</Filter>
     </ClInclude>
-    <ClInclude Include="..\include\math\xeasing.h">
-      <Filter>Header Files\math</Filter>
-    </ClInclude>
-    <ClInclude Include="..\include\controls\xcombobox.h">
+    <ClInclude Include="include\controls\xbutton.h">
       <Filter>Header Files\ui\controls</Filter>
     </ClInclude>
-    <ClInclude Include="..\include\controls\xtrackbar.h">
+    <ClInclude Include="include\controls\xcheckbox.h">
       <Filter>Header Files\ui\controls</Filter>
     </ClInclude>
-    <ClInclude Include="..\include\graphics\gp_shader.h">
-      <Filter>Header Files\graphics</Filter>
+    <ClInclude Include="include\controls\xcombobox.h">
+      <Filter>Header Files\ui\controls</Filter>
     </ClInclude>
-    <ClInclude Include="..\include\xsyslogger.h">
-      <Filter>Header Files\system</Filter>
+    <ClInclude Include="include\controls\xlabel.h">
+      <Filter>Header Files\ui\controls</Filter>
+    </ClInclude>
+    <ClInclude Include="include\controls\xmenucontext.h">
+      <Filter>Header Files\ui\controls</Filter>
+    </ClInclude>
+    <ClInclude Include="include\controls\xtextbox.h">
+      <Filter>Header Files\ui\controls</Filter>
+    </ClInclude>
+    <ClInclude Include="include\controls\xtrackbar.h">
+      <Filter>Header Files\ui\controls</Filter>
+    </ClInclude>
+    <ClInclude Include="include\xcontrolbase.h">
+      <Filter>Header Files\ui\controls</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

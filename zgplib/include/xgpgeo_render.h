@@ -22,6 +22,7 @@ ____BEGIN_SECTION____(gp)
 ***********************************************************************************/
 class Dllexport GeometryRender
 {
+protected:
 	template<typename T>
 	using CacheData = std::vector<T>;
 
@@ -33,8 +34,6 @@ class Dllexport GeometryRender
 
 	typedef PointList<Point2D> PointList2D;
 	typedef PointList<Point3D> PointList3D;
-
-protected:
 
 	typedef struct tagPointData
 	{
@@ -81,6 +80,7 @@ protected:
 		PointList3D		m_ptList;
 		Color3			m_color;
 	} PolyData;
+
 
 public:
 	GeometryRender();

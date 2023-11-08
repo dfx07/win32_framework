@@ -3,7 +3,11 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 16
 VisualStudioVersion = 16.0.33214.272
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "win32_framework", "win32_framework\win32_framework.vcxproj", "{97F72974-6550-44DE-AF0C-B0722B3763AA}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "win32", "win32\win32.vcxproj", "{97F72974-6550-44DE-AF0C-B0722B3763AA}"
+	ProjectSection(ProjectDependencies) = postProject
+		{762B0C09-77C8-4F9C-BB7D-965B3DE654F0} = {762B0C09-77C8-4F9C-BB7D-965B3DE654F0}
+		{06782EC4-623C-4708-ABDD-3FCA3BF5A2E3} = {06782EC4-623C-4708-ABDD-3FCA3BF5A2E3}
+	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "zgeolib", "zgeolib\zgeolib.vcxproj", "{762B0C09-77C8-4F9C-BB7D-965B3DE654F0}"
 EndProject
@@ -16,6 +20,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Common", "Common", "{0DA449
 		common\xgeodef.h = common\xgeodef.h
 		common\xgeotype.h = common\xgeotype.h
 		common\xsysdef.h = common\xsysdef.h
+		common\xsyslogger.h = common\xsyslogger.h
+		common\xsysutils.h = common\xsysutils.h
 	EndProjectSection
 EndProject
 Global

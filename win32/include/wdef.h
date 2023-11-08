@@ -21,6 +21,9 @@
 #include <stack>
 #include <iostream>
 
+#include <gdiplus.h>
+#pragma comment(lib,"gdiplus.lib")
+
 
 // disable waring visual studio c++14
 #pragma warning( disable : 4244)
