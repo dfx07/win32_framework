@@ -326,6 +326,7 @@ typedef Control4Value<float> CPadding;
 /**********************************************************************************
 * ⮟⮟ Class name: Control base
 * Base class for inherited window controls
+* Note: Need to public inheriting to be dynamic cast
 ***********************************************************************************/
 class Dllexport RectUIControl
 {

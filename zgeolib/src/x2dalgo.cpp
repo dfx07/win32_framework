@@ -564,6 +564,10 @@ Dllexport VecPolyList cut_line_polygon(const Point2D& pt1, const Point2D& pt2, c
 		{
 			x = idx; y = (idx + 1) % nPolyCnt;
 
+			poly_split.push_back(poly[x]);
+			arMark[x] = true;
+			idx = y;
+
 			if ((nIdx = funExistIntersect(x, y)) >= 0)
 			{
 				poly_split.push_back(vMarkInters[nIdx].pt);
@@ -575,26 +579,15 @@ Dllexport VecPolyList cut_line_polygon(const Point2D& pt1, const Point2D& pt2, c
 					int st = vMarkInters[nIdxNext].idx_start;
 					int ed = vMarkInters[nIdxNext].idx_end;
 
-					if (get_orientation_point_vector(vMarkInters[nIdx].pt, vMarkInters[nIdxNext].pt, poly[st]) == or_pfirst)
-					{
-						poly_split.push_back(poly[st]);
-						arMark[st] = true;
-						idx = st;
-					}
-
 					if (get_orientation_point_vector(vMarkInters[nIdx].pt, vMarkInters[nIdxNext].pt, poly[ed]) == or_pfirst)
 					{
-						poly_split.push_back(poly[ed]);
-						arMark[ed] = true;
 						idx = ed;
 					}
+					else if (get_orientation_point_vector(vMarkInters[nIdx].pt, vMarkInters[nIdxNext].pt, poly[st]) == or_pfirst)
+					{
+						idx = st;
+					}
 				}
-			}
-			else
-			{
-				poly_split.push_back(poly[x]);
-				arMark[x] = true;
-				idx = y;
 			}
 
 			count++;
@@ -628,7 +621,7 @@ Dllexport VecPoint2D split_poly2trig_ear_clipping(const VecPoint2D& poly)
 	int nPolyCnt = static_cast<int>(poly.size());
 	if (nPolyCnt < 3)
 	{
-		_ASSERT(0);
+		//_ASSERT(0);
 
 		return poly;
 	}

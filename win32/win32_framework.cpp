@@ -10,11 +10,27 @@ using namespace fox;
 
 //Button* btn;
 MenuContext* menu = NULL;
+Combobox* cbb;
+Combobox* cbb_fun;
+
 gp::Camera2D     cam2D;
 
 gp::Shader       shader;
 
 gp::GeometryRender render;
+
+
+Point2D point_cur;
+VecPoint2D poly_inp;
+VecPolyList listpoly;
+
+int nLineStep = 0;
+Line2D line;
+
+VecPoint2D poly_ren;
+
+bool bShowCur = false;
+int  nModeInput = -1;
 
 struct Component
 {
@@ -58,82 +74,98 @@ Vec2D vSize;
 VecPoint3D vRectVertexDrawData;
 VecPoint2D vRectCoordDrawData;
 
+void execute_1(WindowBase* win, Button* btn)
+{
+
+    //line.ptStart = { -71 ,-175 };
+    //line.ptEnd = { 149, 89};
+
+    //poly_inp.clear();
+
+    //poly_inp.push_back({4,14   });
+    //poly_inp.push_back({-88,-85});
+    //poly_inp.push_back({36,-178});
+    //poly_inp.push_back({197,-91});
+    //poly_inp.push_back({214,18 });
+    //poly_inp.push_back({67,-72 });
+    //poly_inp.push_back({113,19 });
+    //poly_inp.push_back({59,	40 });
+
+
+    VecPolyList _listpoly = geo::v2::cut_line_polygon(line.ptStart, line.ptEnd, poly_inp);
+
+
+    listpoly.clear();
+    for (int i = 0; i < _listpoly.size(); i++)
+    {
+        VecPoint2D poly_cut = geo::v2::split_poly2trig_ear_clipping(_listpoly[i]);
+
+        listpoly.push_back(poly_cut);
+    }
+}
+
+
 void Create(WindowBase* win)
 {
-    ////Button* btn = new Button();
-    ////btn->SetLabel(L"Button 1");
-    ////btn->SetSize(100, 24);
-    ////btn->SetPosition(10, 40);
-    ////btn->SetBorderRadius(5);
-    ////btn->SetBorderWidth(3);
-    ////btn->UseEffect(true);
-    ////btn->Visible(true);
+    SubWindow* sub = new SubWindow();
+    sub->SetSize(210, 200);
 
-    //Trackbar* track = new Trackbar();
-    //track->SetSize(100, 24);
-    //track->SetPosition(12, 100);
-    //track->SetBorderRadius(2);
-    //track->SetBorderWidth(0);
-    ////btn->UseEffect(true);
-    //track->Visible(true);
+    Label* lb = new Label();
+    lb->SetText(_T("Input"));
+    lb->SetPosition(5, 12);
+    lb->SetSize(40, 16);
 
-    //Checkbox* chk = new Checkbox();
+    sub->AddControl(lb);
 
-    //chk->SetText(L"Check box");
-    //chk->SetPosition(10, 30);
-    //chk->SetSize(100, 20);
-    //chk->SetBorderWidth(0);
-    //chk->SetBorderRadius(2);
+    cbb = new Combobox();
+    cbb->SetPosition(5, 30);
+    cbb->AddItem(_T("poly"), new int(0));
+    cbb->AddItem(_T("line"), new int(1));
+    cbb->AddItem(_T("point"), new int(2));
+    cbb->SetSize(80, 16);
+    cbb->SetEventSelectedChange([](Combobox* cbb) {
 
-    ////menu = new MenuContext();
-    ////menu->AddItem(L"Item 1", MF_STRING , NULL);
-    ////menu->AddItem(L"Item 2", MF_STRING , NULL);
-    ////MenuContext* mn2 = new MenuContext(L"Item 3");
-    ////mn2->AddItem(L"Item 3.1", MF_STRING, NULL);
-    ////mn2->AddItem(L"Item 3.2", MF_STRING, NULL);
-    ////menu->Insert(mn2);
+        int nSel = cbb->GetSelectIndex();
 
-    ////win->AddControl(menu);
+        if (nSel >= 0)
+        {
+            nModeInput = *static_cast<int*>(cbb->GetItemData(nSel));
+        }
+
+        nLineStep = 0;
+    });
+
+    sub->AddControl(cbb);
+
+    cbb_fun = new Combobox();
+    cbb_fun->SetPosition(90, 30);
+    cbb_fun->AddItem(_T("cutLine2poly"), new int(0));
+    cbb_fun->SetSize(110, 16);
+
+    sub->AddControl(cbb_fun);
+
+    Button* btn = new Button();
+    btn->SetPosition(100, 120);
+    btn->SetBorderWidth(1);
+    btn->SetBorderRadius(3);
+    btn->SetSize(80, 16);
+    btn->SetLabel(_T("Execute"));
+    btn->SetEvent(execute_1);
+
+    sub->AddControl(btn);
+
+    Checkbox* cb = new Checkbox();
+    cb->SetSize(100, 16);
+    cb->SetPosition(5, 70);
+    cb->SetText(_T("show tracker cursor"));
+    cb->SetCheckEvent([](Checkbox* cbx) {
+        bShowCur = cbx->Checked(); 
+    });
+
+    sub->AddControl(cb);
 
 
-    //Combobox* cbb = new Combobox();
-    //cbb->AddItem(L"select 1", new int(1));
-    //cbb->AddItem(L"select 2", new int(2));
-    //cbb->Select(0);
-    //cbb->SetPosition(10, 60);
-    //cbb->SetSize(85, 20);
-
-    ////// draw input value
-    ////{
-    ////    Label* label = new Label();
-    ////    label->SetText(L"Input value:");
-    ////    label->SetPosition(5, 102);
-    ////    sub->AddControl(label);
-
-    ////    Textbox* textbox = new Textbox();
-    ////    textbox->SetPosition(90, 100);
-    ////    textbox->SetText(L"");
-    ////    textbox->SetSize(100, 20);
-    ////    sub->AddControl(textbox);
-    ////}
-
-    //SubWindow* sub = new SubWindow();
-    //sub->SetTitle(L"sub window");
-    //sub->SetPosition(20, 20);
-    //sub->SetSize(200, 200);
-    //sub->Visible(true);
-
-    ////sub->AddControl(btn);
-    //sub->AddControl(track);
-    //sub->AddControl(cbb);
-    //sub->AddControl(chk);
-    //win->AddSubWindow(sub);
-    ////Window* pWin = dynamic_cast<Window*>(win);
-
-    ////if (pWin)
-    ////{
-    ////    pWin->SetCamera()
-    ////}
+    win->AddSubWindow(sub);
 
     cam2D.InitView(win->GetWidth(), win->GetHeight(), 0.1f, 1000.f);
     cam2D.SetUpCamera({ 0.f, 0.f, 1.f }, { 0.f, 0.f, 1.f });
@@ -148,32 +180,6 @@ void Create(WindowBase* win)
     Vec3D c1 = {  1 , 1, 0 };
     Vec3D c2 = {  0 , 0, 1 };
 
-    //render.AddLine(VERTEX_3D(p1, c1), VERTEX_3D(p2, c2));
-    render.AddRectangle(p1, p2, p3, p4);
-    render.UpdateRenderData();
-
-    
-
-
-    //int width  = win->GetWidth();
-    //int height = win->GetHeight();
-
-    //vResolution = Vec2D(width, height);
-    //vSize = Vec2D(200, 200);
-
-    //Rect2D rectDraw = Rect2D(10, 10, vSize);
-
-    //Vec2D vertx1 = rectDraw.TopLeft();
-    //Vec2D vertx2 = rectDraw.TopRight();
-    //Vec2D vertx3 = rectDraw.BottomLeft();
-    //Vec2D vertx4 = rectDraw.BottomRight();
-
-    //vRectVertexDrawData.push_back({vertx1, 0.f}); vRectCoordDrawData.push_back({0, 1});
-    //vRectVertexDrawData.push_back({vertx2, 0.f}); vRectCoordDrawData.push_back({1, 1});
-    //vRectVertexDrawData.push_back({vertx3, 0.f}); vRectCoordDrawData.push_back({0, 0});
-    //vRectVertexDrawData.push_back({vertx3, 0.f}); vRectCoordDrawData.push_back({0, 0});
-    //vRectVertexDrawData.push_back({vertx2, 0.f}); vRectCoordDrawData.push_back({1, 1});
-    //vRectVertexDrawData.push_back({vertx4, 0.f}); vRectCoordDrawData.push_back({1, 0});
 }
 
 GLuint vaoID;
@@ -220,11 +226,47 @@ void CreatedDone(Window* win)
     glOrtho(left, right, bottom, top, 0.f, -1000.f);
 }
 
+
+
 void MouseButton(WindowBase* win, int button, int action)
 {
-    if (button == GLMouse::RightButton && action == GL_PRESSED)
+    if (button == GLMouse::LeftButton && action == GL_PRESSED)
     {
-        //menu->Show({ 10 ,10 });
+        long x, y;
+        if (win->GetCursorPosCenter(x, y) == false)
+            return;
+
+        switch (nModeInput)
+        {
+            case 0: // add poly
+            {
+                poly_inp.push_back({ x, y });
+                poly_ren = geo::v2::split_poly2trig_ear_clipping(poly_inp);
+
+                break;
+            }
+            case 1: // add line
+            {
+                if (nLineStep == 0)
+                {
+                    line.ptStart = { x, y };
+                    nLineStep++;
+                }
+                else if(nLineStep == 1)
+                {
+                    line.ptEnd = { x, y };
+                    nLineStep = -1;
+                }
+
+                break;
+            }
+            case 2: // 
+            {
+                break;
+            }
+            default:
+                break;
+        }
     }
 }
 
@@ -264,7 +306,7 @@ void MouseScroll(WindowBase* win)
     float bottom = -float(win->GetHeight() / 2);
     float top    =  float(win->GetHeight() / 2);
 
-            // Projection matrix sử dụng thuộc tính zoom
+    // Projection matrix sử dụng thuộc tính zoom
     left         =  left  / cam2D.GetZoom();
     right        =  right / cam2D.GetZoom();
     bottom       =  bottom/ cam2D.GetZoom();
@@ -286,47 +328,83 @@ void MouseMove(WindowBase* win)
    long x, y;
    win->GetCursorPosCenter(x, y);
 
-   p4 = { x, y };
+   if (bShowCur)
+   {
+       point_cur = { x, y };
+   }
 
+   if (nLineStep > 0)
+   {
+       line.ptEnd = { x, y };
+   }
 
-   bCheck = geo::v2::is_same_direction(p2 - p1, p4 - p3, 0.01f);
 }
 
-
-
 float z = 10.f;
-
-
-
 
 void Draw(WindowBase* win)
 {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glClearColor(120.0 / 255.0, 139.f / 255.0, 201.0 / 255.0, 1.0);
 
-
-    glBegin(GL_LINES);
+    if (nLineStep > 0)
     {
-        if (bCheck)
+        glColor3f(1.f, 1.f, 0.f);
+        glBegin(GL_LINES);
         {
-            glColor3f(1.f, 0.f, 0.f);
+            glVertex2f(line.ptStart.x, line.ptStart.y);
+            glVertex2f(line.ptEnd.x, line.ptEnd.y);
         }
-        else
-        {
-            glColor3f(1.f, 1.f, 1.f);
-        }
-
-        glVertex3f(p1.x, p1.y, z);
-
-        glVertex3f(p2.x, p2.y, z);
-
-        glColor3f(1.f, 1.f, 1.f);
-
-        glVertex3f(p3.x, p3.y, z);
-
-        glVertex3f(p4.x, p4.y, z);
+        glEnd();
     }
-    glEnd();
+
+    if (bShowCur)
+    {
+        glPointSize(5.f);
+        glBegin(GL_POINTS);
+        {
+            glVertex2f(point_cur.x, point_cur.y);
+        }
+        glEnd();
+    }
+
+    if (poly_ren.size() > 0 && listpoly.size() == 0)
+    {
+        if (nModeInput == 0)
+        {
+            glBegin(GL_LINES);
+            {
+                glVertex2f(poly_ren.back().x, poly_ren.back().y);
+                glVertex2f(point_cur.x, point_cur.y);
+            }
+            glEnd();
+        }
+
+        glEnableClientState(GL_VERTEX_ARRAY);
+        glVertexPointer(2, GL_FLOAT, sizeof(Vec2D), &poly_ren[0]);
+        glDrawArrays(GL_TRIANGLES, 0, poly_ren.size());
+
+        glColor3f(1.f, 0.f, 0.f);
+        glVertexPointer(2, GL_FLOAT, sizeof(Vec2D), &poly_inp[0]);
+        glDrawArrays(GL_LINE_LOOP, 0, poly_inp.size());
+
+        glDisableClientState(GL_VERTEX_ARRAY);
+        glDisableClientState(GL_COLOR_ARRAY);
+    }
+
+    
+    
+    float color = 0.2f;
+    for (int i = 0; i < listpoly.size(); i++)
+    {
+        glEnableClientState(GL_VERTEX_ARRAY);
+        glColor3f(color, 0.f, 0.f);
+        glVertexPointer(2, GL_FLOAT, sizeof(Vec2D), &listpoly[i][0]);
+        glDrawArrays(GL_TRIANGLES, 0, listpoly[i].size());
+        glDisableClientState(GL_VERTEX_ARRAY);
+
+        color += 0.2;
+    }
 
 }
 
@@ -338,6 +416,7 @@ void Resize(WindowBase* win)
 
 void Process(WindowBase* pWin)
 {
+
 }
 
 int main()
@@ -357,22 +436,6 @@ int main()
     window->SetOnMouseScrollfunc(MouseScroll);
     window->SetOnMouseMovefunc(MouseMove);
 
-    //SubWindow* sub = new SubWindow();
-    //sub->SetSize(300, 100);
-
-    //Button* btn = new Button();
-    //btn->SetPosition(20, 30);
-    //btn->SetLabel(L"click vao day");
-    //btn->SetSize(100, 20);
-    //btn->UseEffect(true);
-    //btn->SetBorderRadius(3);
-    //btn->SetBorderColor(fox::RectUIControl::Color(255, 255, 255));
-    //btn->SetBorderWidth(1.f);
-
-    //sub->AddControl(btn);
-
-    //window->AddSubWindow(sub);
-
     window = create_window(window);
 
     CreatedDone(window);
@@ -381,7 +444,7 @@ int main()
     {
         window->process();
         window->draw();
-        window->poll_event();
+        window->wait_event();
     }
 
     destroy_window(window);

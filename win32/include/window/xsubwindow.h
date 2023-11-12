@@ -557,12 +557,12 @@ public:
 			{
 				pControlRectUI->SetEraseBackgroundColor(m_bk_color);
 			}
-		}
 
-		if (pControl->GetType() == ControlType::CHECKBOX ||
-			pControl->GetType() == ControlType::LABEL)
-		{
-			pControlRectUI->SetBackgroundColor(m_bk_color);
+			if (pControl->GetType() == ControlType::CHECKBOX ||
+				pControl->GetType() == ControlType::LABEL)
+			{
+				pControlRectUI->SetBackgroundColor(m_bk_color);
+			}
 		}
 	}
 

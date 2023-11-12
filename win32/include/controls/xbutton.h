@@ -428,6 +428,10 @@ public:
 		{
 			m_EventFunLeave(NULL, this);
 		}
+		else if (state == BtnState::Click)
+		{
+			m_EventFun(NULL, this);
+		}
 		m_eState = state;
 	}
 
