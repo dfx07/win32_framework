@@ -21,7 +21,7 @@ ___BEGIN_NAMESPACE___
 * ⮟⮟ Class name: Combobox control
 * Combobox control for window
 ***********************************************************************************/
-class Dllexport Combobox : public ControlBase, public RectUIControl
+class Dllexport Combobox : public ControlBase, protected RectUIControl
 {
 	enum CBB_EVENT
 	{
@@ -236,6 +236,16 @@ public:
 		}
 
 		return m_items[index].data;
+	}
+
+	/*******************************************************************************
+	*! @brief  : Get current select index
+	*! @return : int
+	*! @author : thuong.nv          - [Date] : 12/11/2023
+	*******************************************************************************/
+	int GetSelectIndex()
+	{
+		return m_iSelected;
 	}
 
 protected:
@@ -569,7 +579,7 @@ protected:
 		return 0;
 	}
 
-public:
+protected:
 
 	/*******************************************************************************
 	*! @brief  : Draw title bar and button dropdown
