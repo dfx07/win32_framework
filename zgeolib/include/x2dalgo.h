@@ -56,16 +56,17 @@ namespace geo {	namespace v2
 	*! @author : thuong.nv   - [Date] : 29/10/2023
 	*! @note   : Polygon input is counterclockwise (CCW).
 	*********************************************************************************/
-	Dllexport VecPolyList cut_line_polygon(const Point2D& pt1, const Point2D& pt2, const VecPoint2D& poly);
+	Dllexport VecPolyList cut_line2poly(const Point2D& pt1, const Point2D& pt2, const VecPoint2D& poly);
 
 	/********************************************************************************
 	*! @brief  : The partition of a polygonal area (simple polygon) P into a set of triangles
-	*! @param  : [in]  poly : split poly
+	*! @param  : [in]  poly : polygon
 	*! @return : VecPolyList (Every 3 consecutive points will be a triangle)
 	*! @author : thuong.nv   - [Date] : 11/07/2023
-	*! @note   : Polygon input is counterclockwise (CCW).
+	*! @note   : Polygon input is counterclockwise (CCW winding).
+	*!           For convex or concave polygon
 	*********************************************************************************/
-	Dllexport VecPoint2D split_poly2trig_ear_clipping(const VecPoint2D& poly);
+	Dllexport VecPoint2D poly2trig_ear_clipping(const VecPoint2D& poly);
 
 }}
 

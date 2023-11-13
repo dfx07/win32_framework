@@ -92,13 +92,13 @@ void execute_1(WindowBase* win, Button* btn)
     //poly_inp.push_back({59,	40 });
 
 
-    VecPolyList _listpoly = geo::v2::cut_line_polygon(line.ptStart, line.ptEnd, poly_inp);
+    VecPolyList _listpoly = geo::v2::cut_line2poly(line.ptStart, line.ptEnd, poly_inp);
 
 
     listpoly.clear();
     for (int i = 0; i < _listpoly.size(); i++)
     {
-        VecPoint2D poly_cut = geo::v2::split_poly2trig_ear_clipping(_listpoly[i]);
+        VecPoint2D poly_cut = geo::v2::poly2trig_ear_clipping(_listpoly[i]);
 
         listpoly.push_back(poly_cut);
     }
@@ -241,7 +241,7 @@ void MouseButton(WindowBase* win, int button, int action)
             case 0: // add poly
             {
                 poly_inp.push_back({ x, y });
-                poly_ren = geo::v2::split_poly2trig_ear_clipping(poly_inp);
+                poly_ren = geo::v2::poly2trig_ear_clipping(poly_inp);
 
                 break;
             }
