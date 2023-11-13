@@ -48,6 +48,17 @@ namespace geo {	namespace v2
 	Dllexport VecPolyList clip_polygon_weiler(const VecPoint2D& poly, const VecPoint2D& clipPoly);
 
 	/********************************************************************************
+	*! @brief  : Union two convex polygon (without hole)
+	*! @param  : [in]  poly1 : convex polygon
+	*! @param  : [in]  poly2 : convex polygon
+	*! @return : VecPolyList list poly clip
+	*! @author : thuong.nv   - [Date] : 13/11/2023
+	*! @note   : Polygon input is counterclockwise (CCW). without holes
+	*! @refer  : https://stackoverflow.com/questions/6844462/polygon-union-without-holes
+	*********************************************************************************/
+	Dllexport VecPoint2D union_polygon(const VecPoint2D& poly1, const VecPoint2D& poly2);
+
+	/********************************************************************************
 	*! @brief  : Cut line and polygon
 	*! @param  : [in]  pt1  : Point in line
 	*! @param  : [in]  pt2  : Point in line

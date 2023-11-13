@@ -420,17 +420,17 @@ public:
 	{
 		m_eOldState = (free_oldstate) ? BtnState::Normal : m_eState;
 
-		if ( m_EventFunEnter && state == BtnState::Hover)
+		if (state == BtnState::Hover)
 		{
-			m_EventFunEnter(NULL, this);
+			CHECK_RUN_FUNCTION(m_EventFunEnter, NULL, this);
 		}
-		else if (m_EventFunLeave && state == BtnState::Normal)
+		else if (state == BtnState::Normal)
 		{
-			m_EventFunLeave(NULL, this);
+			CHECK_RUN_FUNCTION(m_EventFunLeave, NULL, this);
 		}
 		else if (state == BtnState::Click)
 		{
-			m_EventFun(NULL, this);
+			CHECK_RUN_FUNCTION(m_EventFun, NULL, this);
 		}
 		m_eState = state;
 	}

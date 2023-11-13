@@ -443,6 +443,20 @@ VecPolyList clip_polygon_weiler(const VecPoint2D& _poly, const VecPoint2D& _clip
 }
 
 /***********************************************************************************
+*! @brief  : Union two convex polygon (without hole)
+*! @param  : [in]  poly1 : convex polygon
+*! @param  : [in]  poly2 : convex polygon
+*! @return : VecPolyList list poly clip
+*! @author : thuong.nv   - [Date] : 13/11/2023
+*! @note   : Polygon input is counterclockwise (CCW). without holes
+*! @refer  : https://stackoverflow.com/questions/6844462/polygon-union-without-holes
+************************************************************************************/
+Dllexport VecPoint2D union_polygon(const VecPoint2D& poly1, const VecPoint2D& poly2)
+{
+	return VecPoint2D();
+}
+
+/***********************************************************************************
 *! @brief  : Cut line and polygon
 *! @param  : [in]  line : Line
 *! @param  : [in]  poly : polygon

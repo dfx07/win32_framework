@@ -17,6 +17,15 @@
 namespace geo{ namespace v2
 {
 	/*******************************************************************************
+	@brief		Check two point is the same
+	@param		[in] pt1		: point 1
+	@param		[in] pt2		: point 2
+	@param		[in] ftolerance : > math_epsilon
+	@return		true : same | false : not same
+	********************************************************************************/
+	Dllexport GBool	is_same(const Point2D& p1, const Point2D& p2, const GFloat& ftolerance = MATH_EPSILON);
+
+	/*******************************************************************************
 	@brief		Check two vector is the same direction (parallel ||
 	@param		[in] pt1		: vector 1 (not normal)
 	@param		[in] pt2		: vector 2 (not normal)

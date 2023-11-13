@@ -240,9 +240,21 @@ void MouseButton(WindowBase* win, int button, int action)
         {
             case 0: // add poly
             {
-                poly_inp.push_back({ x, y });
-                poly_ren = geo::v2::poly2trig_ear_clipping(poly_inp);
+                //End input;
+                if (poly_inp.size() >= 3 && 
+                    geo::v2::is_same(poly_inp[poly_inp.size() - 2], { x, y }))
+                {
+                    nModeInput = -1;
+                    poly_inp.pop_back();
+                }
 
+                if (poly_inp.size() <= 0)
+                    poly_inp.push_back({ x, y });
+                else
+                    poly_inp.back() = { x, y };
+
+                poly_ren = geo::v2::poly2trig_ear_clipping(poly_inp);
+                poly_inp.push_back({ x, y });
                 break;
             }
             case 1: // add line
@@ -312,7 +324,10 @@ void MouseScroll(WindowBase* win)
     bottom       =  bottom/ cam2D.GetZoom();
     top          =  top   / cam2D.GetZoom();
 
-    gluOrtho2D(left, right, bottom, top);
+    glMatrixMode(GL_PROJECTION);
+    glLoadIdentity();
+
+    glOrtho(left, right, bottom, top, 0.f, -1000.f);
 }
 
 Point2D p1 = { -15, -12 };
@@ -338,6 +353,10 @@ void MouseMove(WindowBase* win)
        line.ptEnd = { x, y };
    }
 
+   if (nModeInput == 0 && poly_inp.size() > 0)
+   {
+       poly_inp.back() = { x, y };
+   }
 }
 
 float z = 10.f;
@@ -370,16 +389,6 @@ void Draw(WindowBase* win)
 
     if (poly_ren.size() > 0 && listpoly.size() == 0)
     {
-        if (nModeInput == 0)
-        {
-            glBegin(GL_LINES);
-            {
-                glVertex2f(poly_ren.back().x, poly_ren.back().y);
-                glVertex2f(point_cur.x, point_cur.y);
-            }
-            glEnd();
-        }
-
         glEnableClientState(GL_VERTEX_ARRAY);
         glVertexPointer(2, GL_FLOAT, sizeof(Vec2D), &poly_ren[0]);
         glDrawArrays(GL_TRIANGLES, 0, poly_ren.size());
@@ -392,8 +401,6 @@ void Draw(WindowBase* win)
         glDisableClientState(GL_COLOR_ARRAY);
     }
 
-    
-    
     float color = 0.2f;
     for (int i = 0; i < listpoly.size(); i++)
     {
